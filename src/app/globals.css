@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
+@import "tailwindcss";
+
+
+
+body {
+    direction: rtl;
+}
+
+* {
+    font-family: 'Cairo', sans-serif;
+}
+
+@layer utilities {
+  .max-container {
+    @apply mx-auto max-w-[1440px];
+  }
+
+  .padding-container {
+    @apply px-6 lg:px-20;
+  }
+
+  .flexCenter {
+    @apply flex items-center justify-center;
+  }
+
+  .flexBetween {
+    @apply flex items-center justify-between;
+  }
+
+  /* FONTS */
+  .regular-18 {
+    @apply text-[18px] font-[400];
+  }
+
+  .regular-16 {
+    @apply text-[16px] font-[400];
+  }
+
+  .regular-14 {
+    @apply text-[14px] font-[400];
+  }
+
+  .bold-64 {
+    @apply text-[64px] font-[700] leading-[150%];
+  }
+
+  .bold-40 {
+    @apply text-[40px] font-[700] leading-[120%];
+  }
+
+  .bold-32 {
+    @apply text-[32px] font-[700] leading-[120%];
+  }
+
+  .bold-20 {
+    @apply text-[20px] font-[700];
+  }
+
+  .bold-18 {
+    @apply text-[18px] font-[700];
+  }
+
+  .bold-16 {
+    @apply text-[16px] font-[700];
+  }
+
+  .bold-14 {
+    @apply text-[14px] font-[700];
+  }
+
+  .bg-main {
+    @apply bg-[#f8f9fa];
+  }
+
+  .bg-secondary {
+    @apply bg-[#87ceeb];
+  }
+
+  .bg-accent {
+    @apply bg-[#088395];
+  }
+
+  .text-main {
+    @apply text-[#f8f9fa];
+  }
+
+  .text-secondary {
+    @apply text-[#87ceeb];
+  }
+
+  .text-accent {
+    @apply text-[#088395];
+  }
+
+  .font-main {
+    @apply font-[Cairo];
+  }
+}
