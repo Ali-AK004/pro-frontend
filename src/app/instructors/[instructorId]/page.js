@@ -13,7 +13,9 @@ const InstructorProfile = () => {
   const [instructor, setInstructor] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { id: instructorId } = params;
+  const { instructorId } = params;
+
+  console.log(instructorId)
 
   useEffect(() => {
     const fetchInstructor = async () => {
@@ -41,6 +43,7 @@ const InstructorProfile = () => {
       } catch (err) {
         console.error('خطأ في جلب بيانات المدرس:', err);
         setError('حدث خطأ أثناء تحميل بيانات المدرس');
+        setInstructor(null);
       } finally {
         setIsLoading(false);
       }
