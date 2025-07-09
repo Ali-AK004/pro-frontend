@@ -1,48 +1,68 @@
 'use client';
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
-// Create Context
 const UserContext = createContext();
 
-// Provider Component
 export function UserProvider({ children }) {
+  const router = useRouter();
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // 🔄 Fetch current user from backend
   const fetchCurrentUser = async () => {
+    setLoading(true);
     try {
       const response = await axios.get('http://localhost:8080/api/auth/me', {
-        withCredentials: true, // ensure cookies are sent
-        headers: {
-          "Content-Type": "application/json",
-        },
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" },
       });
       setUser(response.data);
+      setError(null);
+      return response.data;
     } catch (error) {
-      console.error('Error fetching current user:', error);
-      setUser(null);
+      // Handle 401 specifically (unauthorized)
+      if (error.response?.status === 401) {
+        console.log('No authenticated user');
+        setUser(null);
+        setError(null); // No error, just not logged in
+      } else {
+        console.error('Error fetching current user:', error);
+        setError(error.response?.data?.message || 'Failed to fetch user');
+      }
+      return null;
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ❌ Clear user on signout
   const clearUser = () => {
     setUser(null);
   };
 
-  // 🔥 On component mount, fetch user
   useEffect(() => {
     fetchCurrentUser();
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, clearUser, fetchCurrentUser }}>
+    <UserContext.Provider value={{ 
+      user, 
+      setUser, 
+      clearUser, 
+      fetchCurrentUser,
+      loading,
+      error
+    }}>
       {children}
     </UserContext.Provider>
   );
 }
 
-// Custom hook for consuming context
 export function useUserData() {
-  return useContext(UserContext);
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUserData must be used within a UserProvider');
+  }
+  return context;
 }

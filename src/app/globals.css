@@ -11,6 +11,10 @@ body {
     font-family: 'Cairo', sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 @layer utilities {
   .max-container {
     @apply mx-auto max-w-[1440px];
@@ -91,6 +95,10 @@ body {
 
   .text-accent {
     @apply text-[#088395];
+  }
+
+  .border-secondary {
+    @apply border-[#87ceeb];
   }
 
   .font-main {

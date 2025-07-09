@@ -1,4 +1,5 @@
 import { UserProvider } from "../../models/UserContext";
+import NavBar from "../../components/navBar";
 import "./globals.css";
 
 export const metadata = {

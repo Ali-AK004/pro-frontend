@@ -47,17 +47,17 @@ const Login = () => {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
+            "Accept": "application/json",
           },
         }
       );
       setUser(response.data);
-      console.log(response.data);
       router.push('/');
       return response.data;
     } catch (error) {
       console.error(error)
-        // const errorMessage = error.response?.data?.error ||error.response?.data?.message ||'حدث خطأ أثناء تسجيل الدخول';
-        // setError(errorMessage);
+        const errorMessage = error.response?.data?.error ||error.response?.data?.message ||'حدث خطأ أثناء تسجيل الدخول';
+        setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

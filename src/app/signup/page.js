@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { FaEyeSlash, FaRegEye } from "react-icons/fa";
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-
 const SignUp = () => {
   const [formData, setFormData] = useState({
     fullname: '',
@@ -55,6 +54,8 @@ const SignUp = () => {
     'شمال سيناء',
     'سوهاج'
   ];
+
+  // if (user) router.push('/')
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -123,9 +124,31 @@ const SignUp = () => {
       newErrors.parentPhoneNumber = 'رقم الهاتف غير صحيح';
     }
 
+    if (formData.phoneNumber === formData.parentPhoneNumber) {
+      newErrors.phoneNumber = newErrors.parentPhoneNumber = 'يجب أن تكون الأرقام مختلفة';
+    }
+
     // التحقق من تاريخ الميلاد
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = 'تاريخ الميلاد مطلوب';
+    } else {
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      
+      // Calculate age
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      // Validate age range
+      if (age < 5) {
+        newErrors.dateOfBirth = 'يجب أن يكون العمر 5 سنوات على الأقل';
+      } else if (age > 100) {
+        newErrors.dateOfBirth = 'يجب أن يكون العمر أقل من 100 سنة';
+      }
     }
 
     // التحقق من المحافظة
@@ -184,6 +207,9 @@ const SignUp = () => {
         <div className="w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
           {/* Header */}
           <div className="text-center">
+            <Link href="/" className='mx-auto flexCenter w-fit'>
+              <h1 className="bold-32 text-gray-900">لوجو</h1>
+            </Link>
             <h2 className="bold-32 text-gray-900">
               إنشاء حساب جديد
             </h2>
