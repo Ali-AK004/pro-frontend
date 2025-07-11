@@ -1,8 +1,15 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { FaBookOpen, FaPlay, FaArrowLeft, FaShoppingCart, FaCreditCard, FaTag, FaImage, FaClock, FaUser, FaCheck, FaTimes } from 'react-icons/fa';
-import axios from 'axios';
+import { FaBookOpen, FaArrowLeft } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Import components
+import LessonCard from './components/LessonCard';
+import LessonViewer from './components/LessonViewer';
+import PaymentModal from './components/PaymentModal';
+import { lessonAPI, handleAPIError } from './services/lessonAPI';
 
 const CourseDetails = () => {
   const params = useParams();
@@ -13,11 +20,10 @@ const CourseDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
+  const [selectedLessonProgress, setSelectedLessonProgress] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('');
-  const [accessCode, setAccessCode] = useState('');
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [paymentResult, setPaymentResult] = useState(null);
+  const [showLessonViewer, setShowLessonViewer] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // جلب بيانات الكورس من API المدرس
   useEffect(() => {
@@ -26,20 +32,11 @@ const CourseDetails = () => {
       setError(null);
 
       try {
-        const response = await axios.get(
-          `http://localhost:8080/api/students/instructors/${instructorId}/full-profile`,
-          {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            }
-          }
-        );
+        const response = await lessonAPI.courses.getInstructorProfile(instructorId);
+        const instructorData = response.data;
 
-        if (response.data && response.data.courses) {
-          const foundCourse = response.data.courses.find(c => c.id === courseId);
-          console.log(response.data)
+        if (instructorData && instructorData.courses) {
+          const foundCourse = instructorData.courses.find(c => c.id === courseId);
           if (foundCourse) {
             setCourse(foundCourse);
           } else {
@@ -50,7 +47,7 @@ const CourseDetails = () => {
         }
       } catch (err) {
         console.error('خطأ في جلب بيانات الكورس:', err);
-        setError('حدث خطأ أثناء تحميل بيانات الكورس');
+        setError(handleAPIError(err, 'حدث خطأ أثناء تحميل بيانات الكورس'));
       } finally {
         setIsLoading(false);
       }
@@ -59,74 +56,34 @@ const CourseDetails = () => {
     if (instructorId && courseId) {
       fetchCourse();
     }
-  }, [instructorId, courseId]);
+  }, [instructorId, courseId, refreshTrigger]);
 
-  // فتح مودال الدفع لحصة معينة
+  // Handler functions
   const handlePurchaseLesson = (lesson) => {
     setSelectedLesson(lesson);
     setShowPaymentModal(true);
-    setPaymentResult(null);
   };
 
-  // معالجة عملية الدفع
-  const handlePayment = async () => {
-  if (!paymentMethod) {
-    alert('يرجى اختيار طريقة الدفع');
-    return;
-  }
+  const handleViewLesson = (lesson, lessonProgress) => {
+    setSelectedLesson(lesson);
+    setSelectedLessonProgress(lessonProgress);
+    setShowLessonViewer(true);
+  };
 
-  if (paymentMethod === 'ACCESS_CODE' && !accessCode.trim()) {
-    alert('يرجى إدخال كود الوصول');
-    return;
-  }
-
-  setIsProcessingPayment(true);
-
-  try {
-    const requestData = {
-      lessonId: selectedLesson.id,
-      accessCode: accessCode
-    };
-
-    console.log(requestData)
-
-    const response = await axios.post(
-      'http://localhost:8080/api/payments/access-lesson',
-      JSON.stringify(requestData), // Explicitly stringify
-      {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json', // Crucial header
-          'Accept': 'application/json'
-        }
-      }
-    );
-
-    setPaymentResult({
-      success: true,
-      message: 'تم شراء الحصة بنجاح!',
-      data: response.data
-    });
-
-  } catch (error) {
-    console.error('Payment error:', error.response?.data || error.message);
-    setPaymentResult({
-      success: false,
-      message: error.response?.data?.detail || 'حدث خطأ أثناء عملية الدفع',
-      data: null
-    });
-  } finally {
-    setIsProcessingPayment(false);
-  }
-};
-
-  // إغلاق مودال الدفع
-  const closePaymentModal = () => {
+  const handlePaymentSuccess = () => {
+    setRefreshTrigger(prev => prev + 1);
     setShowPaymentModal(false);
+    toast.success('تم شراء الدرس بنجاح!');
+  };
+
+  const handleProgressUpdate = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleBackFromViewer = () => {
+    setShowLessonViewer(false);
     setSelectedLesson(null);
-    setPaymentMethod('');
-    setAccessCode('');
-    setPaymentResult(null);
+    setSelectedLessonProgress(null);
   };
 
   if (isLoading) {
@@ -160,6 +117,18 @@ const CourseDetails = () => {
 
   if (!course) {
     return null;
+  }
+
+  // Show lesson viewer if a lesson is selected
+  if (showLessonViewer && selectedLesson) {
+    return (
+      <LessonViewer
+        lesson={selectedLesson}
+        lessonProgress={selectedLessonProgress}
+        onBack={handleBackFromViewer}
+        onProgressUpdate={handleProgressUpdate}
+      />
+    );
   }
 
   return (
@@ -215,37 +184,17 @@ const CourseDetails = () => {
 
         {/* Lessons List */}
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="bold-24 text-gray-900 mb-6">الحصص المتاحة للشراء</h2>
+          <h2 className="bold-24 text-gray-900 mb-6">دروس الكورس</h2>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {course.lessons && course.lessons.length > 0 ? (
               course.lessons.map((lesson, index) => (
-                <div
+                <LessonCard
                   key={lesson.id || index}
-                  className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="bold-18 text-gray-900 mb-2">
-                        {lesson.name}
-                      </h3>
-
-                      <p className="regular-14 text-gray-600 mb-4">
-                        {lesson.description || 'وصف الحصة غير متاح'}
-                      </p>
-                    </div>
-
-                    <div className="text-center">
-                      <button
-                        onClick={() => handlePurchaseLesson(lesson)}
-                        className="bg-accent cursor-pointer text-white px-6 py-3 rounded-lg bold-14 hover:bg-opacity-90 transition-colors flexCenter gap-2 shadow-md hover:shadow-lg"
-                      >
-                        <FaShoppingCart className="w-4 h-4" />
-                        شراء الحصة
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  lesson={lesson}
+                  onPurchase={handlePurchaseLesson}
+                  onViewLesson={handleViewLesson}
+                />
               ))
             ) : (
               <div className="text-center py-8">
@@ -258,139 +207,12 @@ const CourseDetails = () => {
         </div>
 
         {/* Payment Modal */}
-        {showPaymentModal && selectedLesson && (
-          <div className="fixed inset-0 bg-black/20 bg-opacity-50 flexCenter z-50">
-            <div className="bg-white rounded-2xl p-8 max-w-[700px] w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <h2 className="bold-24 text-gray-900 mb-6 text-center">شراء الحصة</h2>
-
-              {/* Lesson Summary */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <h3 className="bold-16 text-gray-900 mb-3">تفاصيل الحصة</h3>
-                <div className="space-y-2">
-                  <div className="flexBetween">
-                    <span className="regular-14 text-gray-600">الكورس:</span>
-                    <span className="regular-14 text-gray-900">{course.name}</span>
-                  </div>
-                  <div className="flexBetween">
-                    <span className="regular-14 text-gray-600">الحصة:</span>
-                    <span className="regular-14 text-gray-900">{selectedLesson.name || 'درس'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Methods */}
-              <div className="mb-6">
-                <h3 className="bold-16 text-gray-900 mb-4">طريقة الدفع</h3>
-
-                <div className="space-y-3">
-                  {/* Access Code Payment */}
-                  <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
-                    paymentMethod === 'ACCESS_CODE' ? 'border-accent bg-accent bg-opacity-10' : 'border-gray-200'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="ACCESS_CODE"
-                      checked={paymentMethod === 'ACCESS_CODE'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="mr-3"
-                    />
-                    <div className="flex items-center gap-3 pr-5">
-                      <FaTag className="w-5 h-5 text-green-600" />
-                      <div>
-                        <div className="bold-14 text-gray-900">كود الوصول</div>
-                        <div className="regular-12 text-gray-600">ادفع باستخدام كود وصول</div>
-                      </div>
-                    </div>
-                  </label>
-
-                  {/* Fawry Payment */}
-                  <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
-                    paymentMethod === 'FAWRY' ? 'border-accent bg-accent bg-opacity-10' : 'border-gray-200'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="FAWRY"
-                      checked={paymentMethod === 'FAWRY'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="mr-3"
-                    />
-                    <div className="flex items-center gap-3 pr-5">
-                      <FaCreditCard className="w-5 h-5 text-blue-600" />
-                      <div>
-                        <div className="bold-14 text-gray-900">فوري</div>
-                        <div className="regular-12 text-gray-600">ادفع عبر خدمة فوري</div>
-                      </div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Access Code Input */}
-              {paymentMethod === 'ACCESS_CODE' && (
-                <div className="mb-6">
-                  <label className="block bold-14 text-gray-700 mb-2">
-                    كود الوصول
-                  </label>
-                  <input
-                    type="text"
-                    value={accessCode}
-                    onChange={(e) => {setAccessCode(e.target.value)}}
-                    placeholder="أدخل كود الوصول"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-accent focus:outline-none regular-14"
-                  />
-                </div>
-              )}
-
-              {/* Payment Result */}
-              {paymentResult && (
-                <div className={`mb-6 p-4 rounded-lg ${
-                  paymentResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-                }`}>
-                  <div className="flex items-center gap-2">
-                    {paymentResult.success ? (
-                      <FaCheck className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <FaTimes className="w-5 h-5 text-red-600" />
-                    )}
-                    <span className={`bold-14 ${paymentResult.success ? 'text-green-800' : 'text-red-800'}`}>
-                      {paymentResult.message}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                <button
-                  onClick={closePaymentModal}
-                  className="flex-1 cursor-pointer border border-gray-300 text-gray-700 py-3 rounded-lg bold-14 hover:bg-gray-50 transition-colors"
-                  disabled={isProcessingPayment}
-                >
-                  إلغاء
-                </button>
-                <button
-                  onClick={handlePayment}
-                  disabled={!paymentMethod || isProcessingPayment || (paymentMethod === 'ACCESS_CODE' && !accessCode.trim())}
-                  className="flex-1 cursor-pointer bg-accent text-white py-3 rounded-lg bold-14 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flexCenter gap-2"
-                >
-                  {isProcessingPayment ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      جاري المعالجة...
-                    </>
-                  ) : (
-                    <>
-                      <FaCreditCard className="w-4 h-4" />
-                      تأكيد الشراء
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <PaymentModal
+          lesson={selectedLesson}
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onSuccess={handlePaymentSuccess}
+        />
       </div>
     </div>
   );
