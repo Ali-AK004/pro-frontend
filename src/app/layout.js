@@ -1,5 +1,8 @@
 import { UserProvider } from "../../models/UserContext";
 import NavBar from "../../components/navBar";
+import FloatingChatButton from "./components/FloatingChatButton";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 
 export const metadata = {
@@ -13,6 +16,19 @@ export default function RootLayout({ children }) {
       <body>
         <UserProvider>
           {children}
+          <FloatingChatButton />
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={true}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
         </UserProvider>
       </body>
     </html>

@@ -1,29 +1,32 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUserData } from '../../../models/UserContext';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+"use client";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useUserData } from "../../../models/UserContext";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Import components
-import AdminSidebar from './components/AdminSidebar';
-import DashboardOverview from './components/DashboardOverview';
-import UserManagement from './components/UserManagement';
-import CourseManagement from './components/CourseManagement';
-import LessonManagement from './components/LessonManagement';
-import AccessCodeManagement from './components/AccessCodeManagement';
+import AdminSidebar from "./components/AdminSidebar";
+import DashboardOverview from "./components/DashboardOverview";
+import UserManagement from "./components/UserManagement";
+import CourseManagement from "./components/CourseManagement";
+import LessonManagement from "./components/LessonManagement";
+import ExamManagement from "./components/ExamManagement";
+import AssignmentManagement from "./components/AssignmentManagement";
+import AccessCodeManagement from "./components/AccessCodeManagement";
+import AIChat from "../components/AIChat";
 
 const AdminDashboard = () => {
   const router = useRouter();
   const { user, loading } = useUserData();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   // Check if user is admin
   useEffect(() => {
     if (loading) return;
 
     if (!user) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
@@ -40,7 +43,9 @@ const AdminDashboard = () => {
       <div className="min-h-screen bg-gray-100 flexCenter">
         <div className="flexCenter flex-col">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-          <p className="mt-4 regular-16 text-gray-600">جاري تحميل لوحة التحكم...</p>
+          <p className="mt-4 regular-16 text-gray-600">
+            جاري تحميل لوحة التحكم...
+          </p>
         </div>
       </div>
     );
@@ -49,17 +54,35 @@ const AdminDashboard = () => {
   // Render main content
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
+      case "dashboard":
         return <DashboardOverview />;
-      case 'users':
+      case "users":
         return <UserManagement />;
-      case 'courses':
+      case "courses":
         return <CourseManagement />;
-      case 'lessons':
+      case "lessons":
         return <LessonManagement />;
-      case 'access-codes':
+      case "exams":
+        return <ExamManagement />;
+      case "assignments":
+        return <AssignmentManagement />;
+      case "ai-chat":
+        return (
+          <div className="p-8">
+            <div className="max-w-4xl mx-auto">
+              <h1 className="bold-32 text-gray-900 mb-8">المساعد الذكي</h1>
+              <div
+                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+                style={{ height: "600px" }}
+              >
+                <AIChat isOpen={true} onClose={() => {}} className="h-full" />
+              </div>
+            </div>
+          </div>
+        );
+      case "access-codes":
         return <AccessCodeManagement />;
-      case 'analytics':
+      case "analytics":
         return <DashboardOverview />; // For now, use the same component
       default:
         return <DashboardOverview />;
@@ -72,9 +95,7 @@ const AdminDashboard = () => {
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Content */}
-      <div className="flex-1 mr-80">
-        {renderContent()}
-      </div>
+      <div className="flex-1 mr-80">{renderContent()}</div>
     </div>
   );
 };

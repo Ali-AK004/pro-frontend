@@ -1,14 +1,14 @@
-import axios from 'axios';
+import axios from "axios";
 
-const BASE_URL = 'http://localhost:8080/api';
+const BASE_URL = "http://localhost:8080/api";
 
 // Create axios instance with default config
 const apiClient = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    "Content-Type": "application/json",
+    Accept: "application/json",
   },
 });
 
@@ -17,7 +17,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
@@ -28,9 +28,9 @@ export const lessonAPI = {
   payment: {
     // Grant lesson access with access code
     grantAccess: (lessonId, accessCode) =>
-      apiClient.post('/payments/access-lesson', {
+      apiClient.post("/payments/access-lesson", {
         lessonId,
-        accessCode
+        accessCode,
       }),
 
     // Pay with Fawry
@@ -53,23 +53,23 @@ export const lessonAPI = {
   // Lesson Details and Progress
   lessons: {
     // Get lesson details (requires ownership)
-    getDetails: (lessonId) =>
-      apiClient.get(`/students/lessons/${lessonId}`),
+    getDetails: (lessonId) => apiClient.get(`/students/lessons/${lessonId}`),
 
     // Get student's paid lessons
-    getPaidLessons: () =>
-      apiClient.get('/students/my-lessons'),
+    getPaidLessons: () => apiClient.get("/students/my-lessons"),
   },
 
   // Exam Management
   exams: {
     // Get exam details
-    getExam: (examId) =>
-      apiClient.get(`/exams/${examId}`),
+    getExam: (examId) => apiClient.get(`/exams/${examId}`),
 
     // Submit exam
     submitExam: (examId, answers) =>
       apiClient.post(`/exams/${examId}/submit`, answers),
+
+    // Get exam results (for instructors/admins)
+    getResults: (examId) => apiClient.get(`/exams/${examId}/results`),
   },
 
   // Assignment Management
@@ -96,7 +96,7 @@ export const lessonAPI = {
 };
 
 // Helper function for handling API errors
-export const handleAPIError = (error, defaultMessage = 'حدث خطأ غير متوقع') => {
+export const handleAPIError = (error, defaultMessage = "حدث خطأ غير متوقع") => {
   if (error.response?.data?.message) {
     return error.response.data.message;
   }
@@ -104,8 +104,8 @@ export const handleAPIError = (error, defaultMessage = 'حدث خطأ غير م�
     return error.response.data.detail;
   }
   if (error.response?.data) {
-    return typeof error.response.data === 'string' 
-      ? error.response.data 
+    return typeof error.response.data === "string"
+      ? error.response.data
       : error.response.data.error || defaultMessage;
   }
   if (error.message) {
@@ -121,15 +121,15 @@ export const handleAPISuccess = (response) => {
 
 // Lesson Progress Status Enum (matching backend)
 export const LessonProgressStatus = {
-  PURCHASED: 'PURCHASED',
-  EXAM_PASSED: 'EXAM_PASSED', 
-  VIDEO_WATCHED: 'VIDEO_WATCHED',
-  ASSIGNMENT_DONE: 'ASSIGNMENT_DONE'
+  PURCHASED: "PURCHASED",
+  EXAM_PASSED: "EXAM_PASSED",
+  VIDEO_WATCHED: "VIDEO_WATCHED",
+  ASSIGNMENT_DONE: "ASSIGNMENT_DONE",
 };
 
 // Lesson Parts Enum (matching backend)
 export const LessonPart = {
-  EXAM: 'EXAM',
-  VIDEO: 'VIDEO', 
-  ASSIGNMENT: 'ASSIGNMENT'
+  EXAM: "EXAM",
+  VIDEO: "VIDEO",
+  ASSIGNMENT: "ASSIGNMENT",
 };
