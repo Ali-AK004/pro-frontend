@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { instructorAPI, handleAPIError } from '../services/instructorAPI';
 import { useUserData } from '../../../../models/UserContext';
 import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   FiUser,
   FiMail,
@@ -47,7 +48,7 @@ const InstructorProfileManagement = () => {
       
       // Update user context with new data
       updateUser(response.data);
-      
+      console.log(response.data)
       toast.success('تم تحديث الملف الشخصي بنجاح');
       setIsEditing(false);
     } catch (error) {
@@ -79,7 +80,7 @@ const InstructorProfileManagement = () => {
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2"
+            className="cursor-pointer bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2"
           >
             <FiEdit className="w-5 h-5" />
             تعديل الملف الشخصي
@@ -109,7 +110,7 @@ const InstructorProfileManagement = () => {
                   )}
                 </div>
                 {isEditing && (
-                  <button className="absolute bottom-0 right-0 bg-secondary text-white p-2 rounded-full hover:bg-opacity-90 transition-colors">
+                  <button className="cursor-pointer absolute bottom-0 right-0 bg-secondary text-white p-2 rounded-full hover:bg-opacity-90 transition-colors">
                     <FiCamera className="w-4 h-4" />
                   </button>
                 )}
@@ -144,7 +145,7 @@ const InstructorProfileManagement = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={handleCancel}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flexCenter gap-2"
+                    className="cursor-pointer px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flexCenter gap-2"
                   >
                     <FiX className="w-4 h-4" />
                     إلغاء
@@ -152,7 +153,7 @@ const InstructorProfileManagement = () => {
                   <button
                     onClick={handleUpdateProfile}
                     disabled={isLoading}
-                    className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2 disabled:opacity-50"
+                    className="cursor-pointer px-4 py-2 bg-secondary text-white rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2 disabled:opacity-50"
                   >
                     <FiSave className="w-4 h-4" />
                     {isLoading ? 'جاري الحفظ...' : 'حفظ التغييرات'}

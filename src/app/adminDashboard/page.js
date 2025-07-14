@@ -27,11 +27,11 @@ const AdminDashboard = () => {
       return;
     }
 
-    if (user.role !== 'ADMIN') {
-      toast.error('غير مصرح لك بالوصول لهذه الصفحة');
-      router.push('/');
-      return;
-    }
+    // if (user.role !== 'ADMIN') {
+    //   toast.error('غير مصرح لك بالوصول لهذه الصفحة');
+    //   router.push('/');
+    //   return;
+    // }
   }, [user, loading, router]);
 
   // Loading state

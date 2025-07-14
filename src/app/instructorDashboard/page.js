@@ -27,11 +27,11 @@ const InstructorDashboard = () => {
       return;
     }
     
-    if (user.role !== 'INSTRUCTOR') {
-      toast.error('غير مصرح لك بالوصول لهذه الصفحة');
-      router.push('/');
-      return;
-    }
+    // if (user.role !== 'INSTRUCTOR') {
+    //   toast.error('غير مصرح لك بالوصول لهذه الصفحة');
+    //   router.push('/');
+    //   return;
+    // }
   }, [user, loading, router]);
 
   // Loading state
@@ -50,7 +50,7 @@ const InstructorDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <InstructorDashboardOverview />;
+        return <InstructorDashboardOverview setActiveTab={setActiveTab} />;
       case 'courses':
         return <InstructorCourseManagement />;
       case 'lessons':
@@ -64,7 +64,7 @@ const InstructorDashboard = () => {
       case 'profile':
         return <InstructorProfileManagement />;
       default:
-        return <InstructorDashboardOverview />;
+        return <InstructorDashboardOverview setActiveTab={setActiveTab} />;
     }
   };
 
@@ -72,10 +72,12 @@ const InstructorDashboard = () => {
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
       <InstructorSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      
+
       {/* Main Content */}
-      <div className="flex-1 mr-80">
-        {renderContent()}
+      <div className="flex-1 lg:mr-80 mr-0">
+        <div className="pt-16 lg:pt-0">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );

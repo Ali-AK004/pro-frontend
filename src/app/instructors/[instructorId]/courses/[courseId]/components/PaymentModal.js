@@ -83,14 +83,14 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/20 bg-opacity-50 flexCenter z-50">
+      <div className="bg-white rounded-xl p-6 w-full max-w-[650px] mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="bold-24 text-gray-900">شراء الدرس</h2>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-1 border border-gray-900/50 hover:bg-gray-100 rounded-sm cursor-pointer transition-colors"
           >
             <FaTimes className="w-5 h-5 text-gray-500" />
           </button>
@@ -188,7 +188,7 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
                   value={accessCode}
                   onChange={(e) => setAccessCode(e.target.value)}
                   placeholder="أدخل كود الوصول"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border focus:border-[#088395] "
                 />
                 <p className="regular-12 text-gray-500 mt-1">
                   يمكنك الحصول على كود الوصول من المدرس أو الإدارة
@@ -213,14 +213,14 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
             <div className="flex gap-3">
               <button
                 onClick={handleClose}
-                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-colors"
+                className="flex-1 cursor-pointer bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-colors"
               >
                 إلغاء
               </button>
               <button
                 onClick={handlePayment}
                 disabled={isProcessing || !paymentMethod}
-                className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flexCenter gap-2"
+                className="flex-1 bg-accent cursor-pointer text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flexCenter gap-2"
               >
                 {isProcessing ? (
                   <>

@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FaPlay, 
-  FaLock, 
-  FaCheck, 
-  FaClock, 
-  FaFileAlt, 
+import {
+  FaPlay,
+  FaLock,
+  FaCheck,
+  FaClock,
+  FaFileAlt,
   FaQuestionCircle,
   FaShoppingCart,
   FaDollarSign,
   FaEye,
-  FaDownload
 } from 'react-icons/fa';
-import { lessonAPI, handleAPIError, LessonProgressStatus } from '../services/lessonAPI';
-import { toast } from 'react-toastify';
+import { lessonAPI, LessonProgressStatus } from '../services/lessonAPI';
 
 const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
   const [accessStatus, setAccessStatus] = useState(null);
@@ -123,7 +121,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
   }
 
   return (
-    <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-white">
+    <div className="border border-gray-200 w-full rounded-lg p-6 hover:shadow-md transition-shadow bg-white">
       {/* Lesson Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
@@ -199,11 +197,11 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-2">
+      <div className="flex justify-end gap-2">
         {!accessStatus?.hasAccess ? (
           <button
             onClick={() => onPurchase(lesson)}
-            className="flex-1 bg-accent text-white py-3 px-4 rounded-lg bold-16 hover:bg-opacity-90 transition-colors flexCenter gap-2"
+            className="cursor-pointer bg-accent text-white py-3 px-8 rounded-lg bold-16 hover:bg-opacity-90 transition-colors flexCenter gap-2"
           >
             <FaShoppingCart className="w-4 h-4" />
             شراء الدرس

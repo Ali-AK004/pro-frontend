@@ -186,7 +186,7 @@ const CourseDetails = () => {
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="bold-24 text-gray-900 mb-6">دروس الكورس</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex gap-6">
             {course.lessons && course.lessons.length > 0 ? (
               course.lessons.map((lesson, index) => (
                 <LessonCard

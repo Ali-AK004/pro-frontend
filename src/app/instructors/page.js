@@ -34,9 +34,6 @@ const Instructors = () => {
           }
         }
       );
-
-      // If you want to do something with the response data:
-      console.log(response.data);
       
       // Navigate to instructor profile page
       router.push(`/instructors/${instructorId.trim()}`);

@@ -35,8 +35,6 @@ const Profile = () => {
           withCredentials: true
         });
 
-        console.log(response.data)
-
         setUserLessons(response.data || []);
       } catch (error) {
         console.error('خطأ في جلب الحصص:', error);

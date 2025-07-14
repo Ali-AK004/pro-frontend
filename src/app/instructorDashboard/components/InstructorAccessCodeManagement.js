@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { instructorAPI, handleAPIError } from '../services/instructorAPI';
 import { useUserData } from '../../../../models/UserContext';
-import { toast } from 'react-toastify';
+import { Slide } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   FiCode,
   FiPlus,
   FiCopy,
   FiDownload,
   FiSearch,
-  FiFilter,
   FiX,
   FiCheck,
   FiClock,
@@ -22,13 +23,12 @@ const InstructorAccessCodeManagement = () => {
   const [lessons, setLessons] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
+
   const [selectedLesson, setSelectedLesson] = useState('');
   const [showGenerateModal, setShowGenerateModal] = useState(false);
 
-  // Form state for generating codes
   const [generateForm, setGenerateForm] = useState({
-    lessonId: '',
+    lessonId: selectedLesson || '', // Initialize with selectedLesson if available
     count: 5
   });
 
@@ -40,10 +40,16 @@ const InstructorAccessCodeManagement = () => {
   }, [user]);
 
   useEffect(() => {
-    if (selectedCourse) {
-      fetchLessonsForCourse(selectedCourse);
+    if (courses.length > 0) {
+      fetchAllLessons();
     }
-  }, [selectedCourse]);
+  }, [courses]);
+
+  // useEffect(() => {
+  //   if (selectedCourse) {
+  //     fetchLessonsForCourse(selectedCourse);
+  //   }
+  // }, [selectedCourse]);
 
   const fetchCourses = async () => {
     try {
@@ -54,41 +60,49 @@ const InstructorAccessCodeManagement = () => {
     }
   };
 
-  const fetchLessonsForCourse = async (courseId) => {
-    try {
-      const response = await instructorAPI.courses.getLessons(courseId);
-      setLessons(response.data || []);
-    } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل الدروس'));
+const fetchLessonsForCourse = async (courseId) => {
+  try {
+    const response = await instructorAPI.courses.getLessons(courseId);
+    setLessons(prev => {
+      // Remove old lessons for this course
+      const filtered = prev.filter(l => l.course?.id !== courseId);
+      // Add new lessons with course association
+      const newLessons = response.data.map(lesson => ({
+        ...lesson,
+        course: { id: courseId, name: courses.find(c => c.id === courseId)?.name || '' }
+      }));
+      return [...filtered, ...newLessons];
+    });
+  } catch (error) {
+    toast.error(handleAPIError(error, 'فشل في تحميل الدروس'));
+  }
+};
+
+const fetchAllLessons = async () => {
+  try {
+    const allLessons = [];
+    for (const course of courses) {
+      const response = await instructorAPI.courses.getLessons(course.id);
+      const courseLessons = response.data.map(lesson => ({
+        ...lesson,
+        course: { id: course.id, name: course.name }
+      }));
+      allLessons.push(...courseLessons);
     }
-  };
+    setLessons(allLessons);
+  } catch (error) {
+    toast.error(handleAPIError(error, 'فشل في تحميل الدروس'));
+  }
+};
 
   const fetchAccessCodes = async () => {
     try {
       setIsLoading(true);
-      // Mock data for now - in real implementation, you'd fetch from API
-      setAccessCodes([
-        {
-          id: 1,
-          code: 'ABC123XYZ',
-          lesson: { id: 1, name: 'مقدمة في البرمجة', course: { name: 'كورس البرمجة' } },
-          isUsed: false,
-          usedBy: null,
-          createdAt: '2024-01-15T10:30:00Z',
-          usedAt: null
-        },
-        {
-          id: 2,
-          code: 'DEF456UVW',
-          lesson: { id: 2, name: 'المتغيرات والثوابت', course: { name: 'كورس البرمجة' } },
-          isUsed: true,
-          usedBy: { name: 'أحمد محمد', email: 'ahmed@example.com' },
-          createdAt: '2024-01-14T09:15:00Z',
-          usedAt: '2024-01-16T14:20:00Z'
-        }
-      ]);
+      const response = await instructorAPI.accessCodes.getByInstructor(user.id);
+      setAccessCodes(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, 'فشل في تحميل أكواد الوصول'));
+      console.error('Error fetching access codes:', error);
     } finally {
       setIsLoading(false);
     }
@@ -98,19 +112,18 @@ const InstructorAccessCodeManagement = () => {
     e.preventDefault();
     try {
       setIsLoading(true);
-      const response = await instructorAPI.lessons.generateAccessCodes(
+      await instructorAPI.lessons.generateAccessCodes(
         generateForm.lessonId,
         generateForm.count
       );
-      
+
       toast.success(`تم إنشاء ${generateForm.count} كود وصول بنجاح`);
       setShowGenerateModal(false);
       setGenerateForm({ lessonId: '', count: 5 });
-      
-      // Add new codes to the list
-      const newCodes = response.data || [];
-      setAccessCodes(prev => [...newCodes, ...prev]);
-      
+
+      // Refresh the access codes list
+      await fetchAccessCodes();
+
     } catch (error) {
       toast.error(handleAPIError(error, 'فشل في إنشاء أكواد الوصول'));
     } finally {
@@ -128,8 +141,8 @@ const InstructorAccessCodeManagement = () => {
 
   const downloadCodes = () => {
     const codesText = accessCodes
-      .filter(code => !code.isUsed)
-      .map(code => `${code.code} - ${code.lesson.name}`)
+      .filter(code => !code.used)
+      .map(code => `${code.code} - ${code.lessonName}`)
       .join('\n');
     
     const blob = new Blob([codesText], { type: 'text/plain' });
@@ -146,16 +159,32 @@ const InstructorAccessCodeManagement = () => {
   };
 
   const filteredCodes = accessCodes.filter(code => {
-    const matchesSearch = code.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         code.lesson.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCourse = !selectedCourse || code.lesson.course?.id === selectedCourse;
-    const matchesLesson = !selectedLesson || code.lesson.id === selectedLesson;
-    
-    return matchesSearch && matchesCourse && matchesLesson;
+    // Safety checks for data structure
+    if (!code) return false;
+
+    const matchesSearch = code.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         code.lessonName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLesson = !selectedLesson || code.lessonId === selectedLesson;
+
+    return matchesSearch && matchesLesson;
   });
 
   return (
     <div className="p-8">
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={true}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        transition={Slide}
+        className={`z-50`}
+      />
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -165,14 +194,14 @@ const InstructorAccessCodeManagement = () => {
         <div className="flex gap-3">
           <button
             onClick={downloadCodes}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg bold-16 hover:bg-green-700 transition-all duration-300 flexCenter gap-2"
+            className="cursor-pointer bg-green-600 text-white px-6 py-3 rounded-lg bold-16 hover:bg-green-700 transition-all duration-300 flexCenter gap-2"
           >
             <FiDownload className="w-5 h-5" />
             تحميل الأكواد
           </button>
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
+            className="cursor-pointer bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
           >
             <FiPlus className="w-5 h-5" />
             إنشاء أكواد جديدة
@@ -195,26 +224,9 @@ const InstructorAccessCodeManagement = () => {
           </div>
           
           <select
-            value={selectedCourse}
-            onChange={(e) => {
-              setSelectedCourse(e.target.value);
-              setSelectedLesson('');
-            }}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-          >
-            <option value="">جميع الكورسات</option>
-            {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.name}
-              </option>
-            ))}
-          </select>
-
-          <select
             value={selectedLesson}
             onChange={(e) => setSelectedLesson(e.target.value)}
             className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-            disabled={!selectedCourse}
           >
             <option value="">جميع الدروس</option>
             {lessons.map((lesson) => (
@@ -225,16 +237,15 @@ const InstructorAccessCodeManagement = () => {
           </select>
 
           <div className="flex gap-2">
-            <button className="flex-1 bg-secondary text-white py-3 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300">
+            <button className="cursor-pointer flex-1 bg-secondary text-white py-3 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300">
               تطبيق
             </button>
             <button
               onClick={() => {
                 setSearchTerm('');
-                setSelectedCourse('');
                 setSelectedLesson('');
               }}
-              className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="cursor-pointer px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               إعادة تعيين
             </button>
@@ -263,7 +274,7 @@ const InstructorAccessCodeManagement = () => {
             </div>
             <div>
               <p className="regular-12 text-gray-500">أكواد مستخدمة</p>
-              <p className="bold-20 text-gray-900">{accessCodes.filter(c => c.isUsed).length}</p>
+              <p className="bold-20 text-gray-900">{accessCodes.filter(c => c.used).length}</p>
             </div>
           </div>
         </div>
@@ -275,7 +286,7 @@ const InstructorAccessCodeManagement = () => {
             </div>
             <div>
               <p className="regular-12 text-gray-500">أكواد متاحة</p>
-              <p className="bold-20 text-gray-900">{accessCodes.filter(c => !c.isUsed).length}</p>
+              <p className="bold-20 text-gray-900">{accessCodes.filter(c => !c.used).length}</p>
             </div>
           </div>
         </div>
@@ -310,7 +321,7 @@ const InstructorAccessCodeManagement = () => {
                   الدرس
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  الكورس
+                  المنشئ
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   الحالة
@@ -342,7 +353,7 @@ const InstructorAccessCodeManagement = () => {
                     <p className="regular-14 text-gray-600 mb-4">لا توجد أكواد وصول للعرض</p>
                     <button
                       onClick={() => setShowGenerateModal(true)}
-                      className="bg-secondary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
+                      className="cursor-pointer bg-secondary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
                     >
                       إنشاء أول كود
                     </button>
@@ -356,23 +367,16 @@ const InstructorAccessCodeManagement = () => {
                         <code className="bg-gray-100 px-3 py-1 rounded font-mono text-sm">
                           {code.code}
                         </code>
-                        <button
-                          onClick={() => copyToClipboard(code.code)}
-                          className="p-1 hover:bg-gray-200 rounded transition-colors"
-                          title="نسخ الكود"
-                        >
-                          <FiCopy className="w-4 h-4 text-gray-500" />
-                        </button>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="regular-14 text-gray-900">{code.lesson.name}</p>
+                      <p className="regular-14 text-gray-900">{code.lessonName || 'غير محدد'}</p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="regular-14 text-gray-600">{code.lesson.course?.name}</p>
+                      <p className="regular-14 text-gray-600">{code.creatorName || 'غير محدد'}</p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {code.isUsed ? (
+                      {code.used ? (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                           <FiCheck className="w-3 h-3 mr-1" />
                           مستخدم
@@ -386,14 +390,14 @@ const InstructorAccessCodeManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <p className="regular-12 text-gray-500">
-                        {new Date(code.createdAt).toLocaleDateString('ar-EG')}
+                        {code.createdAt ? new Date(code.createdAt).toLocaleDateString('ar-EG') : 'غير محدد'}
                       </p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => copyToClipboard(code.code)}
-                          className="text-blue-600 hover:text-blue-900 transition-colors"
+                          className="cursor-pointer text-blue-600 hover:text-blue-900 transition-colors"
                           title="نسخ"
                         >
                           <FiCopy className="w-4 h-4" />
@@ -410,13 +414,13 @@ const InstructorAccessCodeManagement = () => {
 
       {/* Generate Access Codes Modal */}
       {showGenerateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">إنشاء أكواد وصول</h2>
               <button
                 onClick={() => setShowGenerateModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
               </button>
@@ -432,15 +436,20 @@ const InstructorAccessCodeManagement = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                 >
                   <option value="">اختر الدرس</option>
-                  {courses.map((course) => (
-                    <optgroup key={course.id} label={course.name}>
-                      {course.lessons?.map((lesson) => (
-                        <option key={lesson.id} value={lesson.id}>
-                          {lesson.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
+                  {courses.map((course) => {
+                    const courseLessons = lessons.filter(lesson => lesson.course?.id === course.id);
+                    if (courseLessons.length === 0) return null;
+
+                    return (
+                      <optgroup key={course.id} label={course.name}>
+                        {courseLessons.map((lesson) => (
+                          <option key={lesson.id} value={lesson.id}>
+                            {lesson.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
                 </select>
               </div>
 
@@ -463,14 +472,14 @@ const InstructorAccessCodeManagement = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-secondary text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                  className="cursor-pointer flex-1 bg-secondary text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
                 >
                   {isLoading ? 'جاري الإنشاء...' : 'إنشاء الأكواد'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowGenerateModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+                  className="cursor-pointer flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
                 >
                   إلغاء
                 </button>

@@ -52,6 +52,10 @@ export const instructorAPI = {
     // Get course lessons
     getLessons: (courseId) => 
       apiClient.get(`/courses/${courseId}/lessons`),
+    
+    // Delete course
+    delete: (instructorId, courseId) => 
+      apiClient.delete(`/${instructorId}/courses/${courseId}`),
   },
 
   // Lesson Management
@@ -60,13 +64,32 @@ export const instructorAPI = {
     create: (courseId, data) => 
       apiClient.post(`/courses/${courseId}/lessons`, data),
     
+    // Delete lesson
+    delete: (instructorId, lessonId) => 
+      apiClient.delete(`${instructorId}/lessons/${lessonId}`),
+    
     // Update instructor's own lesson
     update: (instructorId, lessonId, data) => 
       apiClient.put(`/${instructorId}/lessons/${lessonId}`, data),
     
     // Generate access codes for lesson
-    generateAccessCodes: (lessonId, count) => 
+    generateAccessCodes: (lessonId, count) =>
       apiClient.post(`/lessons/${lessonId}/generate-codes?count=${count}`),
+  },
+
+  // Access Codes Management
+  accessCodes: {
+    // Get all access codes for instructor
+    getByInstructor: (instructorId) =>
+      apiClient.get(`/${instructorId}/access-codes`),
+
+    // Get access codes for specific lesson
+    getByLesson: (lessonId) =>
+      apiClient.get(`/lessons/${lessonId}/access-codes`),
+
+    // Delete access code
+    delete: (instructorId, codeId) =>
+      apiClient.delete(`/${instructorId}/access-codes/${codeId}`),
   },
 
   // Profile Management

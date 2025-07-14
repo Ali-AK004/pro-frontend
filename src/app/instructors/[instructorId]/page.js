@@ -15,8 +15,6 @@ const InstructorProfile = () => {
   const [error, setError] = useState(null);
   const { instructorId } = params;
 
-  console.log(instructorId)
-
   useEffect(() => {
     const fetchInstructor = async () => {
       setIsLoading(true);
@@ -35,7 +33,6 @@ const InstructorProfile = () => {
         );
 
         if (response.data) {
-          console.log(response.data)
           setInstructor(response.data);
         } else {
           setError('لم يتم العثور على المدرس');
