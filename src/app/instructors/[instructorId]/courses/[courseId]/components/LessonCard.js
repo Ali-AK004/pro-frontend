@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   FaPlay,
   FaLock,
@@ -9,8 +9,13 @@ import {
   FaShoppingCart,
   FaDollarSign,
   FaEye,
-} from 'react-icons/fa';
-import { lessonAPI, LessonProgressStatus } from '../services/lessonAPI';
+} from "react-icons/fa";
+import {
+  studentAPI,
+  LessonProgressStatus,
+  canAccessLessonPart,
+  formatProgressStatus,
+} from "../../../../../services/studentAPI";
 
 const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
   const [accessStatus, setAccessStatus] = useState(null);
@@ -24,13 +29,15 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
   const checkLessonAccess = async () => {
     try {
       setIsLoading(true);
-      const response = await lessonAPI.payment.checkAccess(lesson.id);
+      const response = await studentAPI.payments.checkAccess(lesson.id);
       setAccessStatus(response.data);
-      
+
       // If has access, get lesson details for progress
       if (response.data.hasAccess) {
-        const lessonDetails = await lessonAPI.lessons.getDetails(lesson.id);
-        setLessonProgress(lessonDetails.data);
+        const lessonDetails = await studentAPI.lessons.getLessonDetails(
+          lesson.id
+        );
+        setLessonProgress(lessonDetails.data.progress);
       }
     } catch (error) {
       // If error, assume no access
@@ -56,56 +63,81 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
   };
 
   const getProgressText = (status) => {
+    const baseStatus = formatProgressStatus(status);
+
     switch (status) {
       case LessonProgressStatus.PURCHASED:
-        return 'تم الشراء - ابدأ الامتحان';
+        return `${baseStatus} - ابدأ الامتحان`;
       case LessonProgressStatus.EXAM_PASSED:
-        return 'تم اجتياز الامتحان - شاهد الفيديو';
+        return `${baseStatus} - شاهد الفيديو`;
       case LessonProgressStatus.VIDEO_WATCHED:
-        return 'تم مشاهدة الفيديو - حل الواجب';
+        return `${baseStatus} - حل الواجب`;
       case LessonProgressStatus.ASSIGNMENT_DONE:
-        return 'مكتمل';
+        return "مكتمل";
       default:
-        return 'غير متاح';
+        return "غير متاح";
     }
   };
 
   const getProgressColor = (status) => {
     switch (status) {
       case LessonProgressStatus.PURCHASED:
-        return 'text-orange-600 bg-orange-50 border-orange-200';
+        return "text-orange-600 bg-orange-50 border-orange-200";
       case LessonProgressStatus.EXAM_PASSED:
-        return 'text-blue-600 bg-blue-50 border-blue-200';
+        return "text-blue-600 bg-blue-50 border-blue-200";
       case LessonProgressStatus.VIDEO_WATCHED:
-        return 'text-green-600 bg-green-50 border-green-200';
+        return "text-green-600 bg-green-50 border-green-200";
       case LessonProgressStatus.ASSIGNMENT_DONE:
-        return 'text-green-700 bg-green-100 border-green-300';
+        return "text-green-700 bg-green-100 border-green-300";
       default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
 
   const canAccessPart = (part) => {
     if (!lessonProgress) return false;
-    
+
     const status = lessonProgress.progressStatus;
-    
+
     switch (part) {
-      case 'exam':
+      case "exam":
         return status === LessonProgressStatus.PURCHASED;
-      case 'video':
+      case "video":
         return [
           LessonProgressStatus.EXAM_PASSED,
           LessonProgressStatus.VIDEO_WATCHED,
-          LessonProgressStatus.ASSIGNMENT_DONE
+          LessonProgressStatus.ASSIGNMENT_DONE,
         ].includes(status);
-      case 'assignment':
+      case "assignment":
         return [
           LessonProgressStatus.VIDEO_WATCHED,
-          LessonProgressStatus.ASSIGNMENT_DONE
+          LessonProgressStatus.ASSIGNMENT_DONE,
         ].includes(status);
       default:
         return false;
+    }
+  };
+
+  const getInitialTab = (progressStatus, lesson) => {
+    switch (progressStatus) {
+      case LessonProgressStatus.PURCHASED:
+        // If lesson has exam, start with exam; otherwise start with video
+        return lesson.exam ? "exam" : "video";
+
+      case LessonProgressStatus.EXAM_PASSED:
+        // Exam passed, go to video
+        return "video";
+
+      case LessonProgressStatus.VIDEO_WATCHED:
+        // Video watched, go to assignment if exists
+        return lesson.assignment ? "assignment" : "video";
+
+      case LessonProgressStatus.ASSIGNMENT_DONE:
+        // Everything done, show video (or any tab user prefers)
+        return "video";
+
+      default:
+        return lesson.exam ? "exam" : "video";
     }
   };
 
@@ -127,13 +159,14 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
         <div className="flex-1">
           <h3 className="bold-18 text-gray-900 mb-2 flex items-center gap-2">
             {lesson.name}
-            {accessStatus?.hasAccess && getProgressIcon(lessonProgress?.progressStatus)}
+            {accessStatus?.hasAccess &&
+              getProgressIcon(lessonProgress?.progressStatus)}
           </h3>
           <p className="regular-14 text-gray-600 mb-3">
-            {lesson.description || 'وصف الدرس غير متاح'}
+            {lesson.description || "وصف الدرس غير متاح"}
           </p>
         </div>
-        
+
         {/* Price Badge */}
         <div className="bg-accent text-white px-3 py-1 rounded-full bold-14 flex items-center gap-1">
           <FaDollarSign className="w-3 h-3" />
@@ -143,10 +176,14 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
 
       {/* Progress Status */}
       {accessStatus?.hasAccess && lessonProgress && (
-        <div className={`mb-4 px-3 py-2 rounded-lg border ${getProgressColor(lessonProgress.progressStatus)}`}>
+        <div
+          className={`mb-4 px-3 py-2 rounded-lg border ${getProgressColor(lessonProgress.progressStatus)}`}
+        >
           <div className="flex items-center gap-2">
             {getProgressIcon(lessonProgress.progressStatus)}
-            <span className="bold-14">{getProgressText(lessonProgress.progressStatus)}</span>
+            <span className="bold-14">
+              {getProgressText(lessonProgress.progressStatus)}
+            </span>
           </div>
         </div>
       )}
@@ -154,44 +191,66 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
       {/* Lesson Components */}
       <div className="grid grid-cols-3 gap-2 mb-4">
         {/* Exam */}
-        <div className={`p-3 rounded-lg border text-center ${
-          lesson.exam 
-            ? (canAccessPart('exam') ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200')
-            : 'bg-gray-100 border-gray-300'
-        }`}>
-          <FaQuestionCircle className={`w-5 h-5 mx-auto mb-1 ${
-            lesson.exam 
-              ? (canAccessPart('exam') ? 'text-blue-500' : 'text-gray-400')
-              : 'text-gray-300'
-          }`} />
+        <div
+          className={`p-3 rounded-lg border text-center ${
+            lesson.exam
+              ? canAccessPart("exam")
+                ? "bg-blue-50 border-blue-200"
+                : "bg-gray-50 border-gray-200"
+              : "bg-gray-100 border-gray-300"
+          }`}
+        >
+          <FaQuestionCircle
+            className={`w-5 h-5 mx-auto mb-1 ${
+              lesson.exam
+                ? canAccessPart("exam")
+                  ? "text-blue-500"
+                  : "text-gray-400"
+                : "text-gray-300"
+            }`}
+          />
           <p className="regular-12 text-gray-600">
-            {lesson.exam ? 'امتحان' : 'لا يوجد امتحان'}
+            {lesson.exam ? "امتحان" : "لا يوجد امتحان"}
           </p>
         </div>
 
         {/* Video */}
-        <div className={`p-3 rounded-lg border text-center ${
-          canAccessPart('video') ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-        }`}>
-          <FaPlay className={`w-5 h-5 mx-auto mb-1 ${
-            canAccessPart('video') ? 'text-green-500' : 'text-gray-400'
-          }`} />
+        <div
+          className={`p-3 rounded-lg border text-center ${
+            canAccessPart("video")
+              ? "bg-green-50 border-green-200"
+              : "bg-gray-50 border-gray-200"
+          }`}
+        >
+          <FaPlay
+            className={`w-5 h-5 mx-auto mb-1 ${
+              canAccessPart("video") ? "text-green-500" : "text-gray-400"
+            }`}
+          />
           <p className="regular-12 text-gray-600">فيديو</p>
         </div>
 
         {/* Assignment */}
-        <div className={`p-3 rounded-lg border text-center ${
-          lesson.assignment 
-            ? (canAccessPart('assignment') ? 'bg-purple-50 border-purple-200' : 'bg-gray-50 border-gray-200')
-            : 'bg-gray-100 border-gray-300'
-        }`}>
-          <FaFileAlt className={`w-5 h-5 mx-auto mb-1 ${
-            lesson.assignment 
-              ? (canAccessPart('assignment') ? 'text-purple-500' : 'text-gray-400')
-              : 'text-gray-300'
-          }`} />
+        <div
+          className={`p-3 rounded-lg border text-center ${
+            lesson.assignment
+              ? canAccessPart("assignment")
+                ? "bg-purple-50 border-purple-200"
+                : "bg-gray-50 border-gray-200"
+              : "bg-gray-100 border-gray-300"
+          }`}
+        >
+          <FaFileAlt
+            className={`w-5 h-5 mx-auto mb-1 ${
+              lesson.assignment
+                ? canAccessPart("assignment")
+                  ? "text-purple-500"
+                  : "text-gray-400"
+                : "text-gray-300"
+            }`}
+          />
           <p className="regular-12 text-gray-600">
-            {lesson.assignment ? 'واجب' : 'لا يوجد واجب'}
+            {lesson.assignment ? "واجب" : "لا يوجد واجب"}
           </p>
         </div>
       </div>
@@ -208,7 +267,13 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
           </button>
         ) : (
           <button
-            onClick={() => onViewLesson(lesson, lessonProgress)}
+            onClick={() => {
+              const initialTab = getInitialTab(
+                lessonProgress?.progressStatus,
+                lesson
+              );
+              onViewLesson(lesson, lessonProgress, initialTab);
+            }}
             className="flex-1 bg-secondary text-white py-3 px-4 rounded-lg bold-16 hover:bg-opacity-90 transition-colors flexCenter gap-2"
           >
             <FaEye className="w-4 h-4" />
@@ -221,7 +286,8 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
       {accessStatus?.hasAccess && accessStatus?.expiryDate && (
         <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-center">
           <p className="regular-12 text-yellow-700">
-            ينتهي الوصول في: {new Date(accessStatus.expiryDate).toLocaleDateString('ar-EG')}
+            ينتهي الوصول في:{" "}
+            {new Date(accessStatus.expiryDate).toLocaleDateString("ar-EG")}
           </p>
         </div>
       )}

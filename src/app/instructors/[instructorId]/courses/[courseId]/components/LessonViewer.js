@@ -14,14 +14,25 @@ import {
   FaClipboardCheck,
 } from "react-icons/fa";
 import {
-  lessonAPI,
+  studentAPI,
   handleAPIError,
   LessonProgressStatus,
-} from "../services/lessonAPI";
+  canAccessLessonPart,
+  formatProgressStatus,
+  getNextStep,
+} from "../../../../../services/studentAPI";
+import { examAPI } from "../../../../../services/examAPI";
+import { assignmentAPI } from "../../../../../services/assignmentAPI";
 import { toast } from "react-toastify";
 
-const LessonViewer = ({ lesson, lessonProgress, onBack, onProgressUpdate }) => {
-  const [activeTab, setActiveTab] = useState("overview");
+const LessonViewer = ({
+  lesson,
+  lessonProgress,
+  onBack,
+  onProgressUpdate,
+  initialTab = null,
+}) => {
+  const [activeTab, setActiveTab] = useState(initialTab || "overview");
   const [examData, setExamData] = useState(null);
   const [assignmentData, setAssignmentData] = useState(null);
   const [examAnswers, setExamAnswers] = useState({});
@@ -39,9 +50,13 @@ const LessonViewer = ({ lesson, lessonProgress, onBack, onProgressUpdate }) => {
       loadAssignmentData();
     }
 
-    // Set initial tab based on progress
-    setInitialTab();
-  }, [lesson, lessonProgress]);
+    // Set initial tab based on progress or passed parameter
+    if (initialTab) {
+      setActiveTab(initialTab);
+    } else {
+      setInitialTab();
+    }
+  }, [lesson, lessonProgress, initialTab]);
 
   const setInitialTab = () => {
     const status = lessonProgress?.progressStatus;
@@ -71,7 +86,8 @@ const LessonViewer = ({ lesson, lessonProgress, onBack, onProgressUpdate }) => {
 
   const loadExamData = async () => {
     try {
-      const response = await lessonAPI.exams.getExam(lesson.exam.id);
+      // Use the new lesson-specific exam endpoint
+      const response = await studentAPI.lessons.getExam(lesson.id);
       setExamData(response.data);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل بيانات الامتحان"));
@@ -80,9 +96,8 @@ const LessonViewer = ({ lesson, lessonProgress, onBack, onProgressUpdate }) => {
 
   const loadAssignmentData = async () => {
     try {
-      const response = await lessonAPI.assignments.getAssignment(
-        lesson.assignment.id
-      );
+      // Use the new lesson-specific assignment endpoint
+      const response = await studentAPI.lessons.getAssignment(lesson.id);
       setAssignmentData(response.data);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل بيانات الواجب"));
@@ -92,10 +107,7 @@ const LessonViewer = ({ lesson, lessonProgress, onBack, onProgressUpdate }) => {
   const handleExamSubmit = async () => {
     try {
       setIsLoading(true);
-      const response = await lessonAPI.exams.submitExam(
-        lesson.exam.id,
-        examAnswers
-      );
+      const response = await examAPI.exams.submit(lesson.exam.id, examAnswers);
       setExamResult(response.data);
 
       if (response.data.passed) {
@@ -113,13 +125,8 @@ const LessonViewer = ({ lesson, lessonProgress, onBack, onProgressUpdate }) => {
   };
 
   const handleVideoEnd = () => {
-    setVideoWatched(true);
-    toast.success("تم تسجيل مشاهدة الفيديو");
-    onProgressUpdate();
-
-    if (lesson.assignment) {
-      setActiveTab("assignment");
-    }
+    // Call the new backend endpoint to mark video as watched
+    handleVideoComplete();
   };
 
   const handleAssignmentSubmit = async () => {
@@ -130,7 +137,7 @@ const LessonViewer = ({ lesson, lessonProgress, onBack, onProgressUpdate }) => {
 
     try {
       setIsLoading(true);
-      await lessonAPI.assignments.submitAssignment(
+      await assignmentAPI.assignments.submit(
         lesson.assignment.id,
         assignmentSubmission
       );
@@ -143,31 +150,34 @@ const LessonViewer = ({ lesson, lessonProgress, onBack, onProgressUpdate }) => {
     }
   };
 
+  const handleVideoComplete = async () => {
+    try {
+      await studentAPI.lessons.markVideoWatched(lesson.id);
+      setVideoWatched(true);
+      onProgressUpdate(); // Refresh progress to enable assignment tab
+      toast.success("تم تسجيل مشاهدة الفيديو");
+
+      // Auto-switch to assignment tab if available
+      if (
+        lesson.assignment &&
+        canAccessLessonPart(
+          LessonProgressStatus.VIDEO_WATCHED,
+          "assignment",
+          !!lesson.exam,
+          !!lesson.assignment
+        )
+      ) {
+        setActiveTab("assignment");
+      }
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تسجيل مشاهدة الفيديو"));
+    }
+  };
+
   const canAccessTab = (tab) => {
     const status = lessonProgress?.progressStatus;
 
-    switch (tab) {
-      case "exam":
-        return status === LessonProgressStatus.PURCHASED && lesson.exam;
-      case "video":
-        return (
-          [
-            LessonProgressStatus.EXAM_PASSED,
-            LessonProgressStatus.VIDEO_WATCHED,
-            LessonProgressStatus.ASSIGNMENT_DONE,
-          ].includes(status) ||
-          (!lesson.exam && status === LessonProgressStatus.PURCHASED)
-        );
-      case "assignment":
-        return (
-          [
-            LessonProgressStatus.VIDEO_WATCHED,
-            LessonProgressStatus.ASSIGNMENT_DONE,
-          ].includes(status) && lesson.assignment
-        );
-      default:
-        return true;
-    }
+    return canAccessLessonPart(status, tab, !!lesson.exam, !!lesson.assignment);
   };
 
   const getTabIcon = (tab) => {
@@ -316,20 +326,9 @@ const LessonViewer = ({ lesson, lessonProgress, onBack, onProgressUpdate }) => {
   );
 };
 
-// Helper function to get progress text
+// Helper function to get progress text (using imported helper)
 const getProgressText = (status) => {
-  switch (status) {
-    case LessonProgressStatus.PURCHASED:
-      return "تم الشراء";
-    case LessonProgressStatus.EXAM_PASSED:
-      return "تم اجتياز الامتحان";
-    case LessonProgressStatus.VIDEO_WATCHED:
-      return "تم مشاهدة الفيديو";
-    case LessonProgressStatus.ASSIGNMENT_DONE:
-      return "مكتمل";
-    default:
-      return "غير متاح";
-  }
+  return formatProgressStatus(status);
 };
 
 // Overview Tab Component

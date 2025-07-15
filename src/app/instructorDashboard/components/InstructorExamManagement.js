@@ -301,7 +301,7 @@ const InstructorExamManagement = () => {
                     onClick={() => handleViewResults(exam)}
                     className="flex-1 bg-blue-50 text-blue-600 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
                   >
-                    <FiBarChart3 className="w-4 h-4" />
+                    <FiBarChart className="w-4 h-4" />
                     النتائج
                   </button>
                   <button

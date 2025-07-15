@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { adminAPI, handleAPIError } from '../services/adminAPI';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import { adminAPI, handleAPIError } from "../services/adminAPI";
+import { toast } from "react-toastify";
 import {
   FiPlus,
   FiSearch,
@@ -12,24 +12,24 @@ import {
   FiFileText,
   FiCalendar,
   FiCheck,
-} from 'react-icons/fi';
+} from "react-icons/fi";
 
 const AccessCodeManagement = () => {
   const [accessCodes, setAccessCodes] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLesson, setSelectedLesson] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLesson, setSelectedLesson] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedCodes, setSelectedCodes] = useState([]);
 
   // Form states
   const [generateForm, setGenerateForm] = useState({
-    lessonId: '',
-    count: 10
+    lessonId: "",
+    count: 10,
   });
 
   useEffect(() => {
@@ -41,32 +41,11 @@ const AccessCodeManagement = () => {
   const fetchAccessCodes = async () => {
     try {
       setIsLoading(true);
-      // This would be replaced with actual API call when available
-      // For now, we'll use mock data
-      setAccessCodes([
-        {
-          id: '1',
-          code: 'ABC123XYZ',
-          lesson: { id: '1', name: 'مقدمة في البرمجة' },
-          course: { id: '1', name: 'كورس البرمجة الأساسية' },
-          isUsed: false,
-          usedBy: null,
-          createdAt: new Date().toISOString(),
-          usedAt: null
-        },
-        {
-          id: '2',
-          code: 'DEF456ABC',
-          lesson: { id: '1', name: 'مقدمة في البرمجة' },
-          course: { id: '1', name: 'كورس البرمجة الأساسية' },
-          isUsed: true,
-          usedBy: { id: '1', username: 'student1', fullname: 'أحمد محمد' },
-          createdAt: new Date().toISOString(),
-          usedAt: new Date().toISOString()
-        }
-      ]);
+      const response = await adminAPI.accessCodes.getAll();
+      setAccessCodes(response.data?.content || []);
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل أكواد الوصول'));
+      toast.error(handleAPIError(error, "فشل في تحميل أكواد الوصول"));
+      setAccessCodes([]);
     } finally {
       setIsLoading(false);
     }
@@ -74,23 +53,28 @@ const AccessCodeManagement = () => {
 
   const fetchLessons = async () => {
     try {
-      // This would be replaced with actual API call when available
-      setLessons([
-        { id: '1', name: 'مقدمة في البرمجة', course: { id: '1', name: 'كورس البرمجة الأساسية' } }
-      ]);
+      if (selectedCourse) {
+        const response = await adminAPI.lessons.getByCourse(selectedCourse);
+        // Handle paginated response
+        setLessons(response.data?.content || response.data || []);
+      } else {
+        // For now, if no course is selected, show empty list
+        setLessons([]);
+      }
     } catch (error) {
-      console.error('Error fetching lessons:', error);
+      toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
+      setLessons([]);
     }
   };
 
   const fetchCourses = async () => {
     try {
-      // This would be replaced with actual API call when available
-      setCourses([
-        { id: '1', name: 'كورس البرمجة الأساسية' }
-      ]);
+      const response = await adminAPI.courses.getAll();
+      // Handle paginated response
+      setCourses(response.data?.content || response.data || []);
     } catch (error) {
-      console.error('Error fetching courses:', error);
+      toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
+      setCourses([]);
     }
   };
 
@@ -104,10 +88,10 @@ const AccessCodeManagement = () => {
       );
       toast.success(`تم إنشاء ${generateForm.count} كود وصول بنجاح`);
       setShowGenerateModal(false);
-      setGenerateForm({ lessonId: '', count: 10 });
+      setGenerateForm({ lessonId: "", count: 10 });
       fetchAccessCodes();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في إنشاء أكواد الوصول'));
+      toast.error(handleAPIError(error, "فشل في إنشاء أكواد الوصول"));
     } finally {
       setIsLoading(false);
     }
@@ -115,31 +99,34 @@ const AccessCodeManagement = () => {
 
   const handleCopyCode = (code) => {
     navigator.clipboard.writeText(code);
-    toast.success('تم نسخ الكود بنجاح');
+    toast.success("تم نسخ الكود بنجاح");
   };
 
   const handleCopyAllCodes = () => {
-    const codes = accessCodes.map(item => item.code).join('\n');
+    const codes = accessCodes.map((item) => item.code).join("\n");
     navigator.clipboard.writeText(codes);
-    toast.success('تم نسخ جميع الأكواد بنجاح');
+    toast.success("تم نسخ جميع الأكواد بنجاح");
   };
 
   const handleDownloadCodes = () => {
-    const codes = accessCodes.map(item => 
-      `${item.code} - ${item.lesson.name} - ${item.isUsed ? 'مستخدم' : 'غير مستخدم'}`
-    ).join('\n');
-    
-    const blob = new Blob([codes], { type: 'text/plain' });
+    const codes = accessCodes
+      .map(
+        (item) =>
+          `${item.code} - ${item.lesson.name} - ${item.isUsed ? "مستخدم" : "غير مستخدم"}`
+      )
+      .join("\n");
+
+    const blob = new Blob([codes], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'access-codes.txt';
+    a.download = "access-codes.txt";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
-    toast.success('تم تحميل الأكواد بنجاح');
+
+    toast.success("تم تحميل الأكواد بنجاح");
   };
 
   const handleSearch = () => {
@@ -151,25 +138,30 @@ const AccessCodeManagement = () => {
     let filteredCodes = accessCodes;
 
     if (searchTerm.trim()) {
-      filteredCodes = filteredCodes.filter(item =>
-        item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.lesson.name.toLowerCase().includes(searchTerm.toLowerCase())
+      filteredCodes = filteredCodes.filter(
+        (item) =>
+          item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.lesson.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (selectedLesson) {
-      filteredCodes = filteredCodes.filter(item => item.lesson.id === selectedLesson);
+      filteredCodes = filteredCodes.filter(
+        (item) => item.lesson.id === selectedLesson
+      );
     }
 
     if (selectedCourse) {
-      filteredCodes = filteredCodes.filter(item => item.course.id === selectedCourse);
+      filteredCodes = filteredCodes.filter(
+        (item) => item.course.id === selectedCourse
+      );
     }
 
     setAccessCodes(filteredCodes);
   };
 
-  const filteredLessons = selectedCourse 
-    ? lessons.filter(lesson => lesson.course.id === selectedCourse)
+  const filteredLessons = selectedCourse
+    ? lessons.filter((lesson) => lesson.course.id === selectedCourse)
     : lessons;
 
   return (
@@ -178,7 +170,9 @@ const AccessCodeManagement = () => {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">إدارة أكواد الوصول</h1>
-          <p className="regular-16 text-gray-600">إنشاء وإدارة أكواد الوصول للدروس</p>
+          <p className="regular-16 text-gray-600">
+            إنشاء وإدارة أكواد الوصول للدروس
+          </p>
         </div>
         <div className="flex gap-3">
           <button
@@ -216,14 +210,14 @@ const AccessCodeManagement = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             />
           </div>
           <select
             value={selectedCourse}
             onChange={(e) => {
               setSelectedCourse(e.target.value);
-              setSelectedLesson(''); // Reset lesson when course changes
+              setSelectedLesson(""); // Reset lesson when course changes
             }}
             className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
           >
@@ -278,12 +272,24 @@ const AccessCodeManagement = () => {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-4 text-right bold-14 text-gray-900">الكود</th>
-                  <th className="px-6 py-4 text-right bold-14 text-gray-900">الدرس</th>
-                  <th className="px-6 py-4 text-right bold-14 text-gray-900">الكورس</th>
-                  <th className="px-6 py-4 text-right bold-14 text-gray-900">الحالة</th>
-                  <th className="px-6 py-4 text-right bold-14 text-gray-900">تاريخ الإنشاء</th>
-                  <th className="px-6 py-4 text-right bold-14 text-gray-900">الإجراءات</th>
+                  <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    الكود
+                  </th>
+                  <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    الدرس
+                  </th>
+                  <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    الكورس
+                  </th>
+                  <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    الحالة
+                  </th>
+                  <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    تاريخ الإنشاء
+                  </th>
+                  <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    الإجراءات
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -302,14 +308,20 @@ const AccessCodeManagement = () => {
                         </button>
                       </div>
                     </td>
-                    <td className="px-6 py-4 regular-14 text-gray-900">{item.lesson.name}</td>
-                    <td className="px-6 py-4 regular-14 text-gray-900">{item.course.name}</td>
+                    <td className="px-6 py-4 regular-14 text-gray-900">
+                      {item.lesson?.name || "غير محدد"}
+                    </td>
+                    <td className="px-6 py-4 regular-14 text-gray-900">
+                      {item.course?.name || "غير محدد"}
+                    </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm ${
-                        item.isUsed 
-                          ? 'bg-red-100 text-red-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm ${
+                          item.isUsed
+                            ? "bg-red-100 text-red-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
                         {item.isUsed ? (
                           <>
                             <FiX className="w-3 h-3" />
@@ -324,7 +336,7 @@ const AccessCodeManagement = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 regular-14 text-gray-500">
-                      {new Date(item.createdAt).toLocaleDateString('ar-EG')}
+                      {new Date(item.createdAt).toLocaleDateString("ar-EG")}
                     </td>
                     <td className="px-6 py-4">
                       <button
@@ -361,11 +373,18 @@ const AccessCodeManagement = () => {
 
             <form onSubmit={handleGenerateAccessCodes} className="space-y-6">
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">الدرس *</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  الدرس *
+                </label>
                 <select
                   required
                   value={generateForm.lessonId}
-                  onChange={(e) => setGenerateForm({...generateForm, lessonId: e.target.value})}
+                  onChange={(e) =>
+                    setGenerateForm({
+                      ...generateForm,
+                      lessonId: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                 >
                   <option value="">اختر الدرس</option>
@@ -378,18 +397,27 @@ const AccessCodeManagement = () => {
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">عدد الأكواد *</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  عدد الأكواد *
+                </label>
                 <input
                   type="number"
                   required
                   min="1"
                   max="100"
                   value={generateForm.count}
-                  onChange={(e) => setGenerateForm({...generateForm, count: parseInt(e.target.value)})}
+                  onChange={(e) =>
+                    setGenerateForm({
+                      ...generateForm,
+                      count: parseInt(e.target.value),
+                    })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="10"
                 />
-                <p className="regular-12 text-gray-500 mt-1">الحد الأقصى: 100 كود</p>
+                <p className="regular-12 text-gray-500 mt-1">
+                  الحد الأقصى: 100 كود
+                </p>
               </div>
 
               <div className="flex gap-4 pt-4">
@@ -398,7 +426,7 @@ const AccessCodeManagement = () => {
                   disabled={isLoading}
                   className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
                 >
-                  {isLoading ? 'جاري الإنشاء...' : 'إنشاء الأكواد'}
+                  {isLoading ? "جاري الإنشاء..." : "إنشاء الأكواد"}
                 </button>
                 <button
                   type="button"
@@ -442,7 +470,9 @@ const AccessCodeManagement = () => {
                       <FiCopy className="w-5 h-5" />
                     </button>
                   </div>
-                  <p className="regular-14 text-gray-600">انقر على أيقونة النسخ لنسخ الكود</p>
+                  <p className="regular-14 text-gray-600">
+                    انقر على أيقونة النسخ لنسخ الكود
+                  </p>
                 </div>
 
                 {/* Code Details */}
@@ -469,7 +499,7 @@ const AccessCodeManagement = () => {
                       <p className="regular-12 text-gray-500">تاريخ الإنشاء</p>
                     </div>
                     <p className="bold-14 text-gray-900">
-                      {new Date(item.createdAt).toLocaleDateString('ar-EG')}
+                      {new Date(item.createdAt).toLocaleDateString("ar-EG")}
                     </p>
                   </div>
 
@@ -482,8 +512,10 @@ const AccessCodeManagement = () => {
                       )}
                       <p className="regular-12 text-gray-500">الحالة</p>
                     </div>
-                    <p className={`bold-14 ${item.isUsed ? 'text-red-600' : 'text-green-600'}`}>
-                      {item.isUsed ? 'مستخدم' : 'متاح للاستخدام'}
+                    <p
+                      className={`bold-14 ${item.isUsed ? "text-red-600" : "text-green-600"}`}
+                    >
+                      {item.isUsed ? "مستخدم" : "متاح للاستخدام"}
                     </p>
                   </div>
                 </div>
@@ -491,7 +523,9 @@ const AccessCodeManagement = () => {
                 {/* Usage Details */}
                 {item.isUsed && item.usedBy && (
                   <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                    <h4 className="bold-16 text-red-800 mb-3">تفاصيل الاستخدام</h4>
+                    <h4 className="bold-16 text-red-800 mb-3">
+                      تفاصيل الاستخدام
+                    </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="regular-12 text-red-600 mb-1">المستخدم</p>
@@ -500,9 +534,11 @@ const AccessCodeManagement = () => {
                         </p>
                       </div>
                       <div>
-                        <p className="regular-12 text-red-600 mb-1">تاريخ الاستخدام</p>
+                        <p className="regular-12 text-red-600 mb-1">
+                          تاريخ الاستخدام
+                        </p>
                         <p className="bold-14 text-red-800">
-                          {new Date(item.usedAt).toLocaleDateString('ar-EG')}
+                          {new Date(item.usedAt).toLocaleDateString("ar-EG")}
                         </p>
                       </div>
                     </div>

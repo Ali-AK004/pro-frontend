@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { adminAPI, handleAPIError } from '../services/adminAPI';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import { adminAPI, handleAPIError } from "../services/adminAPI";
+import { toast } from "react-toastify";
 import {
   FiPlus,
   FiSearch,
@@ -12,14 +12,14 @@ import {
   FiEye,
   FiX,
   FiBook,
-} from 'react-icons/fi';
+} from "react-icons/fi";
 
 const LessonManagement = () => {
   const [lessons, setLessons] = useState([]);
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -27,20 +27,20 @@ const LessonManagement = () => {
 
   // Form states
   const [lessonForm, setLessonForm] = useState({
-    name: '',
-    description: '',
-    photoUrl: '',
-    price: '',
-    videoUrl: '',
-    courseId: ''
+    name: "",
+    description: "",
+    photoUrl: "",
+    price: "",
+    videoUrl: "",
+    courseId: "",
   });
 
   const [editForm, setEditForm] = useState({
-    name: '',
-    description: '',
-    photoUrl: '',
-    price: '',
-    videoUrl: ''
+    name: "",
+    description: "",
+    photoUrl: "",
+    price: "",
+    videoUrl: "",
   });
 
   useEffect(() => {
@@ -51,10 +51,18 @@ const LessonManagement = () => {
   const fetchLessons = async () => {
     try {
       setIsLoading(true);
-      // This would be replaced with actual API call when available
-      setLessons([]);
+      if (selectedCourse) {
+        const response = await adminAPI.lessons.getByCourse(selectedCourse);
+        // Handle paginated response
+        setLessons(response.data?.content || response.data || []);
+      } else {
+        // For now, if no course is selected, show empty list
+        // since we don't have a "get all lessons" endpoint
+        setLessons([]);
+      }
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل الدروس'));
+      toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
+      setLessons([]);
     } finally {
       setIsLoading(false);
     }
@@ -62,10 +70,12 @@ const LessonManagement = () => {
 
   const fetchCourses = async () => {
     try {
-      // This would be replaced with actual API call when available
-      setCourses([]);
+      const response = await adminAPI.courses.getAll();
+      // Handle paginated response
+      setCourses(response.data?.content || response.data || []);
     } catch (error) {
-      console.error('Error fetching courses:', error);
+      toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
+      setCourses([]);
     }
   };
 
@@ -74,19 +84,19 @@ const LessonManagement = () => {
     try {
       setIsLoading(true);
       await adminAPI.lessons.create(lessonForm.courseId, lessonForm);
-      toast.success('تم إنشاء الدرس بنجاح');
+      toast.success("تم إنشاء الدرس بنجاح");
       setShowCreateModal(false);
       setLessonForm({
-        name: '',
-        description: '',
-        photoUrl: '',
-        price: '',
-        videoUrl: '',
-        courseId: ''
+        name: "",
+        description: "",
+        photoUrl: "",
+        price: "",
+        videoUrl: "",
+        courseId: "",
       });
       fetchLessons();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في إنشاء الدرس'));
+      toast.error(handleAPIError(error, "فشل في إنشاء الدرس"));
     } finally {
       setIsLoading(false);
     }
@@ -97,28 +107,28 @@ const LessonManagement = () => {
     try {
       setIsLoading(true);
       await adminAPI.lessons.update(selectedLesson.id, editForm);
-      toast.success('تم تحديث الدرس بنجاح');
+      toast.success("تم تحديث الدرس بنجاح");
       setShowEditModal(false);
       fetchLessons();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحديث الدرس'));
+      toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteLesson = async (lessonId) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا الدرس؟')) {
+    if (!window.confirm("هل أنت متأكد من حذف هذا الدرس؟")) {
       return;
     }
 
     try {
       setIsLoading(true);
       await adminAPI.lessons.delete(lessonId);
-      toast.success('تم حذف الدرس بنجاح');
+      toast.success("تم حذف الدرس بنجاح");
       fetchLessons();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في حذف الدرس'));
+      toast.error(handleAPIError(error, "فشل في حذف الدرس"));
     } finally {
       setIsLoading(false);
     }
@@ -130,9 +140,10 @@ const LessonManagement = () => {
       return;
     }
 
-    const filteredLessons = lessons.filter(lesson =>
-      lesson.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lesson.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredLessons = lessons.filter(
+      (lesson) =>
+        lesson.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lesson.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setLessons(filteredLessons);
   };
@@ -141,10 +152,10 @@ const LessonManagement = () => {
     setSelectedLesson(lesson);
     setEditForm({
       name: lesson.name,
-      description: lesson.description || '',
-      photoUrl: lesson.photoUrl || '',
-      price: lesson.price?.toString() || '',
-      videoUrl: lesson.videoUrl || ''
+      description: lesson.description || "",
+      photoUrl: lesson.photoUrl || "",
+      price: lesson.price?.toString() || "",
+      videoUrl: lesson.videoUrl || "",
     });
     setShowEditModal(true);
   };
@@ -155,7 +166,9 @@ const LessonManagement = () => {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">إدارة الدروس</h1>
-          <p className="regular-16 text-gray-600">إنشاء وتعديل وإدارة الدروس التعليمية</p>
+          <p className="regular-16 text-gray-600">
+            إنشاء وتعديل وإدارة الدروس التعليمية
+          </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -177,7 +190,7 @@ const LessonManagement = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             />
           </div>
           <select
@@ -206,7 +219,10 @@ const LessonManagement = () => {
         {isLoading ? (
           // Loading skeleton
           Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
+            >
               <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
               <div className="bg-gray-200 h-6 rounded mb-2"></div>
               <div className="bg-gray-200 h-4 rounded mb-4"></div>
@@ -229,7 +245,10 @@ const LessonManagement = () => {
           </div>
         ) : (
           lessons.map((lesson) => (
-            <div key={lesson.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
+            <div
+              key={lesson.id}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
+            >
               {/* Lesson Image/Video Thumbnail */}
               <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-500 relative">
                 {lesson.photoUrl ? (
@@ -252,20 +271,22 @@ const LessonManagement = () => {
 
               {/* Lesson Content */}
               <div className="p-6">
-                <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">{lesson.name}</h3>
+                <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">
+                  {lesson.name}
+                </h3>
                 <p className="regular-14 text-gray-600 mb-4 line-clamp-3">
-                  {lesson.description || 'لا يوجد وصف متاح'}
+                  {lesson.description || "لا يوجد وصف متاح"}
                 </p>
 
                 {/* Lesson Stats */}
                 <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
                     <FiBook className="w-4 h-4" />
-                    <span>{lesson.course?.name || 'غير محدد'}</span>
+                    <span>{lesson.course?.name || "غير محدد"}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <FiDollarSign className="w-4 h-4" />
-                    <span>{lesson.price || 'مجاني'}</span>
+                    <span>{lesson.price || "مجاني"}</span>
                   </div>
                 </div>
 
@@ -317,23 +338,34 @@ const LessonManagement = () => {
 
             <form onSubmit={handleCreateLesson} className="space-y-6">
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">اسم الدرس *</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  اسم الدرس *
+                </label>
                 <input
                   type="text"
                   required
                   value={lessonForm.name}
-                  onChange={(e) => setLessonForm({...lessonForm, name: e.target.value})}
+                  onChange={(e) =>
+                    setLessonForm({ ...lessonForm, name: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="أدخل اسم الدرس"
                 />
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">وصف الدرس</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  وصف الدرس
+                </label>
                 <textarea
                   rows={4}
                   value={lessonForm.description}
-                  onChange={(e) => setLessonForm({...lessonForm, description: e.target.value})}
+                  onChange={(e) =>
+                    setLessonForm({
+                      ...lessonForm,
+                      description: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="أدخل وصف الدرس"
                 />
@@ -341,24 +373,32 @@ const LessonManagement = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block bold-14 text-gray-900 mb-2">السعر *</label>
+                  <label className="block bold-14 text-gray-900 mb-2">
+                    السعر *
+                  </label>
                   <input
                     type="number"
                     required
                     min="0"
                     step="0.01"
                     value={lessonForm.price}
-                    onChange={(e) => setLessonForm({...lessonForm, price: e.target.value})}
+                    onChange={(e) =>
+                      setLessonForm({ ...lessonForm, price: e.target.value })
+                    }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                     placeholder="0.00"
                   />
                 </div>
                 <div>
-                  <label className="block bold-14 text-gray-900 mb-2">الكورس *</label>
+                  <label className="block bold-14 text-gray-900 mb-2">
+                    الكورس *
+                  </label>
                   <select
                     required
                     value={lessonForm.courseId}
-                    onChange={(e) => setLessonForm({...lessonForm, courseId: e.target.value})}
+                    onChange={(e) =>
+                      setLessonForm({ ...lessonForm, courseId: e.target.value })
+                    }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                   >
                     <option value="">اختر الكورس</option>
@@ -372,23 +412,31 @@ const LessonManagement = () => {
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">رابط الفيديو *</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  رابط الفيديو *
+                </label>
                 <input
                   type="url"
                   required
                   value={lessonForm.videoUrl}
-                  onChange={(e) => setLessonForm({...lessonForm, videoUrl: e.target.value})}
+                  onChange={(e) =>
+                    setLessonForm({ ...lessonForm, videoUrl: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="https://example.com/video.mp4"
                 />
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">رابط صورة الدرس</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  رابط صورة الدرس
+                </label>
                 <input
                   type="url"
                   value={lessonForm.photoUrl}
-                  onChange={(e) => setLessonForm({...lessonForm, photoUrl: e.target.value})}
+                  onChange={(e) =>
+                    setLessonForm({ ...lessonForm, photoUrl: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="https://example.com/image.jpg"
                 />
@@ -400,7 +448,7 @@ const LessonManagement = () => {
                   disabled={isLoading}
                   className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
                 >
-                  {isLoading ? 'جاري الإنشاء...' : 'إنشاء الدرس'}
+                  {isLoading ? "جاري الإنشاء..." : "إنشاء الدرس"}
                 </button>
                 <button
                   type="button"

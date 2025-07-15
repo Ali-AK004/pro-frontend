@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { adminAPI, handleAPIError } from '../services/adminAPI';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import { adminAPI, handleAPIError } from "../services/adminAPI";
+import { toast } from "react-toastify";
 import {
   FiPlus,
   FiSearch,
@@ -11,13 +11,13 @@ import {
   FiEye,
   FiX,
   FiImage,
-} from 'react-icons/fi';
+} from "react-icons/fi";
 
 const CourseManagement = () => {
   const [courses, setCourses] = useState([]);
   const [instructors, setInstructors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -25,16 +25,16 @@ const CourseManagement = () => {
 
   // Form states
   const [courseForm, setCourseForm] = useState({
-    name: '',
-    description: '',
-    photoUrl: '',
-    instructorId: ''
+    name: "",
+    description: "",
+    photoUrl: "",
+    instructorId: "",
   });
 
   const [editForm, setEditForm] = useState({
-    name: '',
-    description: '',
-    photoUrl: ''
+    name: "",
+    description: "",
+    photoUrl: "",
   });
 
   useEffect(() => {
@@ -45,10 +45,12 @@ const CourseManagement = () => {
   const fetchCourses = async () => {
     try {
       setIsLoading(true);
-      // This would be replaced with actual API call when available
-      setCourses([]);
+      const response = await adminAPI.courses.getAll();
+      // Handle paginated response
+      setCourses(response.data?.content || response.data || []);
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل الكورسات'));
+      toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
+      setCourses([]);
     } finally {
       setIsLoading(false);
     }
@@ -56,10 +58,12 @@ const CourseManagement = () => {
 
   const fetchInstructors = async () => {
     try {
-      // This would be replaced with actual API call when available
-      setInstructors([]);
+      const response = await adminAPI.users.getAllInstructors();
+      // Handle both paginated and non-paginated responses
+      setInstructors(response.data?.content || response.data || []);
     } catch (error) {
-      console.error('Error fetching instructors:', error);
+      toast.error(handleAPIError(error, "فشل في تحميل المدرسين"));
+      setInstructors([]);
     }
   };
 
@@ -68,17 +72,17 @@ const CourseManagement = () => {
     try {
       setIsLoading(true);
       await adminAPI.courses.create(courseForm.instructorId, courseForm);
-      toast.success('تم إنشاء الكورس بنجاح');
+      toast.success("تم إنشاء الكورس بنجاح");
       setShowCreateModal(false);
       setCourseForm({
-        name: '',
-        description: '',
-        photoUrl: '',
-        instructorId: ''
+        name: "",
+        description: "",
+        photoUrl: "",
+        instructorId: "",
       });
       fetchCourses();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في إنشاء الكورس'));
+      toast.error(handleAPIError(error, "فشل في إنشاء الكورس"));
     } finally {
       setIsLoading(false);
     }
@@ -89,28 +93,32 @@ const CourseManagement = () => {
     try {
       setIsLoading(true);
       await adminAPI.courses.update(selectedCourse.id, editForm);
-      toast.success('تم تحديث الكورس بنجاح');
+      toast.success("تم تحديث الكورس بنجاح");
       setShowEditModal(false);
       fetchCourses();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحديث الكورس'));
+      toast.error(handleAPIError(error, "فشل في تحديث الكورس"));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteCourse = async (courseId) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا الكورس؟ سيتم حذف جميع الدروس المرتبطة به.')) {
+    if (
+      !window.confirm(
+        "هل أنت متأكد من حذف هذا الكورس؟ سيتم حذف جميع الدروس المرتبطة به."
+      )
+    ) {
       return;
     }
 
     try {
       setIsLoading(true);
       await adminAPI.courses.delete(courseId);
-      toast.success('تم حذف الكورس بنجاح');
+      toast.success("تم حذف الكورس بنجاح");
       fetchCourses();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في حذف الكورس'));
+      toast.error(handleAPIError(error, "فشل في حذف الكورس"));
     } finally {
       setIsLoading(false);
     }
@@ -122,9 +130,10 @@ const CourseManagement = () => {
       return;
     }
 
-    const filteredCourses = courses.filter(course =>
-      course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      course.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredCourses = courses.filter(
+      (course) =>
+        course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setCourses(filteredCourses);
   };
@@ -133,8 +142,8 @@ const CourseManagement = () => {
     setSelectedCourse(course);
     setEditForm({
       name: course.name,
-      description: course.description || '',
-      photoUrl: course.photoUrl || ''
+      description: course.description || "",
+      photoUrl: course.photoUrl || "",
     });
     setShowEditModal(true);
   };
@@ -145,7 +154,9 @@ const CourseManagement = () => {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">إدارة الكورسات</h1>
-          <p className="regular-16 text-gray-600">إنشاء وتعديل وإدارة الكورسات التعليمية</p>
+          <p className="regular-16 text-gray-600">
+            إنشاء وتعديل وإدارة الكورسات التعليمية
+          </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -167,7 +178,7 @@ const CourseManagement = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             />
           </div>
           <button
@@ -184,7 +195,10 @@ const CourseManagement = () => {
         {isLoading ? (
           // Loading skeleton
           Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
+            >
               <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
               <div className="bg-gray-200 h-6 rounded mb-2"></div>
               <div className="bg-gray-200 h-4 rounded mb-4"></div>
@@ -207,7 +221,10 @@ const CourseManagement = () => {
           </div>
         ) : (
           courses.map((course) => (
-            <div key={course.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
+            <div
+              key={course.id}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
+            >
               {/* Course Image */}
               <div className="h-48 bg-gradient-to-br from-accent to-secondary relative">
                 {course.photoUrl ? (
@@ -225,16 +242,18 @@ const CourseManagement = () => {
 
               {/* Course Content */}
               <div className="p-6">
-                <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">{course.name}</h3>
+                <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">
+                  {course.name}
+                </h3>
                 <p className="regular-14 text-gray-600 mb-4 line-clamp-3">
-                  {course.description || 'لا يوجد وصف متاح'}
+                  {course.description || "لا يوجد وصف متاح"}
                 </p>
 
                 {/* Course Stats */}
                 <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
                     <FiUser className="w-4 h-4" />
-                    <span>{course.instructor?.fullname || 'غير محدد'}</span>
+                    <span>{course.instructor?.fullname || "غير محدد"}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <FiBook className="w-4 h-4" />
@@ -290,45 +309,67 @@ const CourseManagement = () => {
 
             <form onSubmit={handleCreateCourse} className="space-y-6">
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">اسم الكورس *</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  اسم الكورس *
+                </label>
                 <input
                   type="text"
                   required
                   value={courseForm.name}
-                  onChange={(e) => setCourseForm({...courseForm, name: e.target.value})}
+                  onChange={(e) =>
+                    setCourseForm({ ...courseForm, name: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="أدخل اسم الكورس"
                 />
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">وصف الكورس</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  وصف الكورس
+                </label>
                 <textarea
                   rows={4}
                   value={courseForm.description}
-                  onChange={(e) => setCourseForm({...courseForm, description: e.target.value})}
+                  onChange={(e) =>
+                    setCourseForm({
+                      ...courseForm,
+                      description: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="أدخل وصف الكورس"
                 />
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">رابط صورة الكورس</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  رابط صورة الكورس
+                </label>
                 <input
                   type="url"
                   value={courseForm.photoUrl}
-                  onChange={(e) => setCourseForm({...courseForm, photoUrl: e.target.value})}
+                  onChange={(e) =>
+                    setCourseForm({ ...courseForm, photoUrl: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                   placeholder="https://example.com/image.jpg"
                 />
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">المدرس المسؤول *</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  المدرس المسؤول *
+                </label>
                 <select
                   required
                   value={courseForm.instructorId}
-                  onChange={(e) => setCourseForm({...courseForm, instructorId: e.target.value})}
+                  onChange={(e) =>
+                    setCourseForm({
+                      ...courseForm,
+                      instructorId: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                 >
                   <option value="">اختر المدرس</option>
@@ -346,7 +387,7 @@ const CourseManagement = () => {
                   disabled={isLoading}
                   className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
                 >
-                  {isLoading ? 'جاري الإنشاء...' : 'إنشاء الكورس'}
+                  {isLoading ? "جاري الإنشاء..." : "إنشاء الكورس"}
                 </button>
                 <button
                   type="button"
@@ -377,32 +418,44 @@ const CourseManagement = () => {
 
             <form onSubmit={handleUpdateCourse} className="space-y-6">
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">اسم الكورس *</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  اسم الكورس *
+                </label>
                 <input
                   type="text"
                   required
                   value={editForm.name}
-                  onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, name: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">وصف الكورس</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  وصف الكورس
+                </label>
                 <textarea
                   rows={4}
                   value={editForm.description}
-                  onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, description: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">رابط صورة الكورس</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  رابط صورة الكورس
+                </label>
                 <input
                   type="url"
                   value={editForm.photoUrl}
-                  onChange={(e) => setEditForm({...editForm, photoUrl: e.target.value})}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, photoUrl: e.target.value })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
@@ -413,7 +466,7 @@ const CourseManagement = () => {
                   disabled={isLoading}
                   className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
                 >
-                  {isLoading ? 'جاري التحديث...' : 'تحديث الكورس'}
+                  {isLoading ? "جاري التحديث..." : "تحديث الكورس"}
                 </button>
                 <button
                   type="button"
@@ -461,9 +514,11 @@ const CourseManagement = () => {
               {/* Course Details */}
               <div className="space-y-4">
                 <div>
-                  <h3 className="bold-18 text-gray-900 mb-2">{selectedCourse.name}</h3>
+                  <h3 className="bold-18 text-gray-900 mb-2">
+                    {selectedCourse.name}
+                  </h3>
                   <p className="regular-14 text-gray-600">
-                    {selectedCourse.description || 'لا يوجد وصف متاح'}
+                    {selectedCourse.description || "لا يوجد وصف متاح"}
                   </p>
                 </div>
 
@@ -471,12 +526,14 @@ const CourseManagement = () => {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="regular-12 text-gray-500 mb-1">المدرس</p>
                     <p className="bold-14 text-gray-900">
-                      {selectedCourse.instructor?.fullname || 'غير محدد'}
+                      {selectedCourse.instructor?.fullname || "غير محدد"}
                     </p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="regular-12 text-gray-500 mb-1">عدد الدروس</p>
-                    <p className="bold-14 text-gray-900">{selectedCourse.lessonCount || 0}</p>
+                    <p className="bold-14 text-gray-900">
+                      {selectedCourse.lessonCount || 0}
+                    </p>
                   </div>
                 </div>
               </div>

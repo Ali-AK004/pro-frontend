@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { examAPI } from '../../services/examAPI';
+import React, { useState, useEffect } from "react";
+import { examAPI } from "../../services/examAPI";
 import {
   FiX,
   FiPlus,
@@ -9,25 +9,35 @@ import {
   FiClock,
   FiAward,
   FiHelpCircle,
-} from 'react-icons/fi';
+} from "react-icons/fi";
 
-const ExamCreationModal = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  lessons, 
-  initialData = null, 
-  isLoading = false, 
-  isEdit = false 
+const ExamCreationModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  lessons,
+  initialData = null,
+  isLoading = false,
+  isEdit = false,
 }) => {
-  const [examData, setExamData] = useState(examAPI.validation.createDefaultExam());
+  const [examData, setExamData] = useState(
+    examAPI.validation.createDefaultExam()
+  );
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (initialData && isEdit) {
+      // Ensure all fields have proper default values to avoid controlled/uncontrolled issues
+      const defaultExam = examAPI.validation.createDefaultExam();
       setExamData({
+        ...defaultExam,
         ...initialData,
-        lessonId: initialData.lessonId || ''
+        lessonId: initialData.lessonId || "",
+        title: initialData.title || "",
+        passingScore: initialData.passingScore || defaultExam.passingScore,
+        timeLimitMinutes:
+          initialData.timeLimitMinutes || defaultExam.timeLimitMinutes,
+        questions: initialData.questions || defaultExam.questions,
       });
     } else {
       setExamData(examAPI.validation.createDefaultExam());
@@ -35,118 +45,121 @@ const ExamCreationModal = ({
   }, [initialData, isEdit]);
 
   const handleInputChange = (field, value) => {
-    setExamData(prev => ({
+    setExamData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: null
-      }));
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
   const handleQuestionChange = (questionIndex, field, value) => {
-    setExamData(prev => ({
+    setExamData((prev) => ({
       ...prev,
-      questions: prev.questions.map((question, index) => 
-        index === questionIndex 
-          ? { ...question, [field]: value }
-          : question
-      )
+      questions: prev.questions.map((question, index) =>
+        index === questionIndex ? { ...question, [field]: value } : question
+      ),
     }));
   };
 
   const handleAnswerChange = (questionIndex, answerIndex, field, value) => {
-    setExamData(prev => ({
+    setExamData((prev) => ({
       ...prev,
-      questions: prev.questions.map((question, qIndex) => 
-        qIndex === questionIndex 
+      questions: prev.questions.map((question, qIndex) =>
+        qIndex === questionIndex
           ? {
               ...question,
-              answers: question.answers.map((answer, aIndex) => 
-                aIndex === answerIndex 
-                  ? { ...answer, [field]: value }
-                  : answer
-              )
+              answers: question.answers.map((answer, aIndex) =>
+                aIndex === answerIndex ? { ...answer, [field]: value } : answer
+              ),
             }
           : question
-      )
+      ),
     }));
   };
 
   const addQuestion = () => {
-    setExamData(prev => ({
+    setExamData((prev) => ({
       ...prev,
-      questions: [...prev.questions, examAPI.validation.createDefaultQuestion()]
+      questions: [
+        ...prev.questions,
+        examAPI.validation.createDefaultQuestion(),
+      ],
     }));
   };
 
   const removeQuestion = (questionIndex) => {
     if (examData.questions.length <= 1) return;
-    
-    setExamData(prev => ({
+
+    setExamData((prev) => ({
       ...prev,
-      questions: prev.questions.filter((_, index) => index !== questionIndex)
+      questions: prev.questions.filter((_, index) => index !== questionIndex),
     }));
   };
 
   const addAnswer = (questionIndex) => {
-    setExamData(prev => ({
+    setExamData((prev) => ({
       ...prev,
-      questions: prev.questions.map((question, index) => 
-        index === questionIndex 
+      questions: prev.questions.map((question, index) =>
+        index === questionIndex
           ? {
               ...question,
-              answers: [...question.answers, { answerText: '', correct: false }]
+              answers: [
+                ...question.answers,
+                { answerText: "", correct: false },
+              ],
             }
           : question
-      )
+      ),
     }));
   };
 
   const removeAnswer = (questionIndex, answerIndex) => {
     const question = examData.questions[questionIndex];
     if (question.answers.length <= 1) return;
-    
-    setExamData(prev => ({
+
+    setExamData((prev) => ({
       ...prev,
-      questions: prev.questions.map((q, qIndex) => 
-        qIndex === questionIndex 
+      questions: prev.questions.map((q, qIndex) =>
+        qIndex === questionIndex
           ? {
               ...q,
-              answers: q.answers.filter((_, aIndex) => aIndex !== answerIndex)
+              answers: q.answers.filter((_, aIndex) => aIndex !== answerIndex),
             }
           : q
-      )
+      ),
     }));
   };
 
   const handleQuestionTypeChange = (questionIndex, newType) => {
     const newQuestion = examAPI.validation.createDefaultQuestion(newType);
-    
-    setExamData(prev => ({
+
+    setExamData((prev) => ({
       ...prev,
-      questions: prev.questions.map((question, index) => 
-        index === questionIndex 
+      questions: prev.questions.map((question, index) =>
+        index === questionIndex
           ? {
               ...newQuestion,
               questionText: question.questionText,
-              points: question.points
+              points: question.points,
             }
           : question
-      )
+      ),
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     const validation = examAPI.validation.validateExamData(examData);
-    
+
     if (!validation.isValid) {
       setErrors(validation.errors);
       return;
@@ -163,7 +176,7 @@ const ExamCreationModal = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="bold-24 text-gray-900">
-            {isEdit ? 'تعديل الامتحان' : 'إنشاء امتحان جديد'}
+            {isEdit ? "تعديل الامتحان" : "إنشاء امتحان جديد"}
           </h2>
           <button
             onClick={onClose}
@@ -187,9 +200,11 @@ const ExamCreationModal = ({
                   </label>
                   <select
                     value={examData.lessonId}
-                    onChange={(e) => handleInputChange('lessonId', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("lessonId", e.target.value)
+                    }
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                      errors.lessonId ? 'border-red-300' : 'border-gray-300'
+                      errors.lessonId ? "border-red-300" : "border-gray-300"
                     }`}
                     required
                   >
@@ -201,22 +216,24 @@ const ExamCreationModal = ({
                     ))}
                   </select>
                   {errors.lessonId && (
-                    <p className="mt-1 text-sm text-red-600">{errors.lessonId}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.lessonId}
+                    </p>
                   )}
                 </div>
               )}
 
               {/* Title */}
-              <div className={!isEdit ? '' : 'md:col-span-2'}>
+              <div className={!isEdit ? "" : "md:col-span-2"}>
                 <label className="block bold-14 text-gray-700 mb-2">
                   عنوان الامتحان
                 </label>
                 <input
                   type="text"
                   value={examData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.title ? 'border-red-300' : 'border-gray-300'
+                    errors.title ? "border-red-300" : "border-gray-300"
                   }`}
                   placeholder="أدخل عنوان الامتحان"
                   required
@@ -238,14 +255,22 @@ const ExamCreationModal = ({
                   max="100"
                   step="0.01"
                   value={examData.passingScore}
-                  onChange={(e) => handleInputChange('passingScore', parseFloat(e.target.value))}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    handleInputChange(
+                      "passingScore",
+                      value === "" ? "" : parseFloat(value) || 0
+                    );
+                  }}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.passingScore ? 'border-red-300' : 'border-gray-300'
+                    errors.passingScore ? "border-red-300" : "border-gray-300"
                   }`}
                   required
                 />
                 {errors.passingScore && (
-                  <p className="mt-1 text-sm text-red-600">{errors.passingScore}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.passingScore}
+                  </p>
                 )}
               </div>
 
@@ -259,14 +284,24 @@ const ExamCreationModal = ({
                   type="number"
                   min="1"
                   value={examData.timeLimitMinutes}
-                  onChange={(e) => handleInputChange('timeLimitMinutes', parseInt(e.target.value))}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    handleInputChange(
+                      "timeLimitMinutes",
+                      value === "" ? "" : parseInt(value) || 1
+                    );
+                  }}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.timeLimitMinutes ? 'border-red-300' : 'border-gray-300'
+                    errors.timeLimitMinutes
+                      ? "border-red-300"
+                      : "border-gray-300"
                   }`}
                   required
                 />
                 {errors.timeLimitMinutes && (
-                  <p className="mt-1 text-sm text-red-600">{errors.timeLimitMinutes}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.timeLimitMinutes}
+                  </p>
                 )}
               </div>
             </div>
@@ -332,7 +367,7 @@ const ExamCreationModal = ({
             ) : (
               <FiSave className="w-4 h-4" />
             )}
-            {isEdit ? 'حفظ التغييرات' : 'إنشاء الامتحان'}
+            {isEdit ? "حفظ التغييرات" : "إنشاء الامتحان"}
           </button>
         </div>
       </div>
@@ -341,22 +376,22 @@ const ExamCreationModal = ({
 };
 
 // Question Editor Component
-const QuestionEditor = ({ 
-  question, 
-  questionIndex, 
-  onQuestionChange, 
-  onAnswerChange, 
+const QuestionEditor = ({
+  question,
+  questionIndex,
+  onQuestionChange,
+  onAnswerChange,
   onQuestionTypeChange,
-  onAddAnswer, 
-  onRemoveAnswer, 
-  onRemoveQuestion, 
+  onAddAnswer,
+  onRemoveAnswer,
+  onRemoveQuestion,
   canRemoveQuestion,
-  errors 
+  errors,
 }) => {
   const questionTypes = [
-    { value: 'SINGLE_CHOICE', label: 'اختيار واحد' },
-    { value: 'MULTIPLE_CHOICE', label: 'اختيار متعدد' },
-    { value: 'TRUE_FALSE', label: 'صح أم خطأ' }
+    { value: "SINGLE_CHOICE", label: "اختيار واحد" },
+    { value: "MULTIPLE_CHOICE", label: "اختيار متعدد" },
+    { value: "TRUE_FALSE", label: "صح أم خطأ" },
   ];
 
   return (
@@ -380,26 +415,36 @@ const QuestionEditor = ({
           <label className="block bold-14 text-gray-700 mb-2">نص السؤال</label>
           <textarea
             value={question.questionText}
-            onChange={(e) => onQuestionChange(questionIndex, 'questionText', e.target.value)}
+            onChange={(e) =>
+              onQuestionChange(questionIndex, "questionText", e.target.value)
+            }
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent resize-none ${
-              errors[`question_${questionIndex}_text`] ? 'border-red-300' : 'border-gray-300'
+              errors[`question_${questionIndex}_text`]
+                ? "border-red-300"
+                : "border-gray-300"
             }`}
             rows="2"
             placeholder="أدخل نص السؤال"
             required
           />
           {errors[`question_${questionIndex}_text`] && (
-            <p className="mt-1 text-sm text-red-600">{errors[`question_${questionIndex}_text`]}</p>
+            <p className="mt-1 text-sm text-red-600">
+              {errors[`question_${questionIndex}_text`]}
+            </p>
           )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Question Type */}
           <div>
-            <label className="block bold-14 text-gray-700 mb-2">نوع السؤال</label>
+            <label className="block bold-14 text-gray-700 mb-2">
+              نوع السؤال
+            </label>
             <select
               value={question.questionType}
-              onChange={(e) => onQuestionTypeChange(questionIndex, e.target.value)}
+              onChange={(e) =>
+                onQuestionTypeChange(questionIndex, e.target.value)
+              }
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
             >
               {questionTypes.map((type) => (
@@ -418,14 +463,25 @@ const QuestionEditor = ({
               min="0.01"
               step="0.01"
               value={question.points}
-              onChange={(e) => onQuestionChange(questionIndex, 'points', parseFloat(e.target.value))}
+              onChange={(e) => {
+                const value = e.target.value;
+                onQuestionChange(
+                  questionIndex,
+                  "points",
+                  value === "" ? "" : parseFloat(value) || 0.01
+                );
+              }}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                errors[`question_${questionIndex}_points`] ? 'border-red-300' : 'border-gray-300'
+                errors[`question_${questionIndex}_points`]
+                  ? "border-red-300"
+                  : "border-gray-300"
               }`}
               required
             />
             {errors[`question_${questionIndex}_points`] && (
-              <p className="mt-1 text-sm text-red-600">{errors[`question_${questionIndex}_points`]}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors[`question_${questionIndex}_points`]}
+              </p>
             )}
           </div>
         </div>
@@ -434,7 +490,7 @@ const QuestionEditor = ({
         <div>
           <div className="flex items-center justify-between mb-3">
             <label className="block bold-14 text-gray-700">الإجابات</label>
-            {question.questionType !== 'TRUE_FALSE' && (
+            {question.questionType !== "TRUE_FALSE" && (
               <button
                 type="button"
                 onClick={() => onAddAnswer(questionIndex)}
@@ -447,54 +503,82 @@ const QuestionEditor = ({
           </div>
 
           {errors[`question_${questionIndex}_answers`] && (
-            <p className="mb-2 text-sm text-red-600">{errors[`question_${questionIndex}_answers`]}</p>
+            <p className="mb-2 text-sm text-red-600">
+              {errors[`question_${questionIndex}_answers`]}
+            </p>
           )}
-          
+
           {errors[`question_${questionIndex}_correct`] && (
-            <p className="mb-2 text-sm text-red-600">{errors[`question_${questionIndex}_correct`]}</p>
+            <p className="mb-2 text-sm text-red-600">
+              {errors[`question_${questionIndex}_correct`]}
+            </p>
           )}
 
           <div className="space-y-2">
             {question.answers.map((answer, answerIndex) => (
               <div key={answerIndex} className="flex items-center gap-3">
                 <input
-                  type={question.questionType === 'MULTIPLE_CHOICE' ? 'checkbox' : 'radio'}
+                  type={
+                    question.questionType === "MULTIPLE_CHOICE"
+                      ? "checkbox"
+                      : "radio"
+                  }
                   name={`question_${questionIndex}_correct`}
                   checked={answer.correct}
                   onChange={(e) => {
-                    if (question.questionType === 'MULTIPLE_CHOICE') {
-                      onAnswerChange(questionIndex, answerIndex, 'correct', e.target.checked);
+                    if (question.questionType === "MULTIPLE_CHOICE") {
+                      onAnswerChange(
+                        questionIndex,
+                        answerIndex,
+                        "correct",
+                        e.target.checked
+                      );
                     } else {
                       // For single choice and true/false, uncheck others
                       question.answers.forEach((_, aIndex) => {
-                        onAnswerChange(questionIndex, aIndex, 'correct', aIndex === answerIndex);
+                        onAnswerChange(
+                          questionIndex,
+                          aIndex,
+                          "correct",
+                          aIndex === answerIndex
+                        );
                       });
                     }
                   }}
                   className="w-4 h-4 text-accent focus:ring-accent border-gray-300 rounded"
                 />
-                
+
                 <input
                   type="text"
                   value={answer.answerText}
-                  onChange={(e) => onAnswerChange(questionIndex, answerIndex, 'answerText', e.target.value)}
+                  onChange={(e) =>
+                    onAnswerChange(
+                      questionIndex,
+                      answerIndex,
+                      "answerText",
+                      e.target.value
+                    )
+                  }
                   className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors[`question_${questionIndex}_answer_${answerIndex}`] ? 'border-red-300' : 'border-gray-300'
+                    errors[`question_${questionIndex}_answer_${answerIndex}`]
+                      ? "border-red-300"
+                      : "border-gray-300"
                   }`}
                   placeholder="نص الإجابة"
-                  disabled={question.questionType === 'TRUE_FALSE'}
+                  disabled={question.questionType === "TRUE_FALSE"}
                   required
                 />
-                
-                {question.questionType !== 'TRUE_FALSE' && question.answers.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => onRemoveAnswer(questionIndex, answerIndex)}
-                    className="text-red-500 hover:text-red-700 transition-colors"
-                  >
-                    <FiTrash2 className="w-4 h-4" />
-                  </button>
-                )}
+
+                {question.questionType !== "TRUE_FALSE" &&
+                  question.answers.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveAnswer(questionIndex, answerIndex)}
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                    </button>
+                  )}
               </div>
             ))}
           </div>

@@ -1,13 +1,21 @@
-'use client';
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { FaSearch, FaChalkboardTeacher, FaUsers, FaBookOpen, FaStar, FaArrowLeft } from 'react-icons/fa';
-import axios from 'axios';
-import NavBar from '../../../components/navBar';
-import Link from 'next/link';
+"use client";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  FaSearch,
+  FaChalkboardTeacher,
+  FaUsers,
+  FaBookOpen,
+  FaStar,
+  FaArrowLeft,
+} from "react-icons/fa";
+import { studentAPI, handleAPIError } from "../services/studentAPI";
+import { toast } from "react-toastify";
+import NavBar from "../../../components/navBar";
+import Link from "next/link";
 
 const Instructors = () => {
-  const [instructorId, setInstructorId] = useState('');
+  const [instructorId, setInstructorId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
@@ -16,7 +24,7 @@ const Instructors = () => {
     e.preventDefault();
 
     if (!instructorId.trim()) {
-      setError('يرجى إدخال ID المدرس');
+      setError("يرجى إدخال ID المدرس");
       return;
     }
 
@@ -24,23 +32,15 @@ const Instructors = () => {
     setError(null);
 
     try {
-      const response = await axios.get(
-        `http://localhost:8080/api/students/instructors/${instructorId.trim()}/full-profile`,
-        {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        }
+      const response = await studentAPI.profile.getInstructorFullProfile(
+        instructorId.trim()
       );
-      
+
       // Navigate to instructor profile page
       router.push(`/instructors/${instructorId.trim()}`);
-      
     } catch (error) {
-      console.error('Error fetching instructor profile:', error);
-      setError(error.response?.data?.message || 'حدث خطأ أثناء جلب بيانات المدرس');
+      console.error("Error fetching instructor profile:", error);
+      setError(handleAPIError(error, "حدث خطأ أثناء جلب بيانات المدرس"));
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +57,7 @@ const Instructors = () => {
       <div className="max-container padding-container py-12">
         <div className="flex items-center justify-start">
           <Link
-            href={'/'}
+            href={"/"}
             className="flexCenter hover:bg-[#088395] hover:border hover:border-[#088395] hover:text-white gap-2 cursor-pointer text-accent hover:text-opacity-80 transition-all border border-accent rounded-lg py-1 px-4 mb-6"
           >
             <FaArrowLeft className="w-4 h-4" />
@@ -71,18 +71,24 @@ const Instructors = () => {
             <h1 className="bold-48 text-gray-900">المدرسين</h1>
           </div>
           <p className="regular-18 text-gray-600 max-w-2xl mx-auto">
-            ابحث عن المدرس باستخدام ID الخاص به لعرض ملفه الشخصي ومعلوماته التفصيلية
+            ابحث عن المدرس باستخدام ID الخاص به لعرض ملفه الشخصي ومعلوماته
+            التفصيلية
           </p>
         </div>
 
         {/* Search Section */}
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="bold-24 text-gray-900 text-center mb-6">البحث عن مدرس</h2>
+            <h2 className="bold-24 text-gray-900 text-center mb-6">
+              البحث عن مدرس
+            </h2>
 
             <form onSubmit={handleSearch} className="space-y-6">
               <div>
-                <label htmlFor="instructorId" className="block bold-16 text-gray-700 mb-3">
+                <label
+                  htmlFor="instructorId"
+                  className="block bold-16 text-gray-700 mb-3"
+                >
                   ID المدرس
                 </label>
                 <div className="relative">
@@ -99,10 +105,8 @@ const Instructors = () => {
                 </div>
               </div>
 
-               {/* Error message */}
-              {error && (
-                <p className="text-red-500 regular-14">{error}</p>
-              )}
+              {/* Error message */}
+              {error && <p className="text-red-500 regular-14">{error}</p>}
 
               <button
                 type="submit"

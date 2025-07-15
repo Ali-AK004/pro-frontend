@@ -38,10 +38,30 @@ const AssignmentManagement = () => {
 
   const fetchLessons = async () => {
     try {
-      // For now, we'll use a placeholder until the lessons endpoint is available
-      setLessons([]);
+      // Get all courses first, then get lessons for each course
+      const coursesResponse = await adminAPI.courses.getAll();
+      const courses =
+        coursesResponse.data?.content || coursesResponse.data || [];
+
+      let allLessons = [];
+      for (const course of courses) {
+        try {
+          const lessonsResponse = await adminAPI.lessons.getByCourse(course.id);
+          const courseLessons =
+            lessonsResponse.data?.content || lessonsResponse.data || [];
+          allLessons = [...allLessons, ...courseLessons];
+        } catch (error) {
+          console.error(
+            `Error fetching lessons for course ${course.id}:`,
+            error
+          );
+        }
+      }
+
+      setLessons(allLessons);
     } catch (error) {
-      console.error("Error fetching lessons:", error);
+      toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
+      setLessons([]);
     }
   };
 
@@ -52,11 +72,13 @@ const AssignmentManagement = () => {
         const response = await adminAPI.assignments.getByLesson(selectedLesson);
         setAssignments(response.data || []);
       } else {
-        const response = await adminAPI.assignments.getAll();
-        setAssignments(response.data || []);
+        // Only fetch all assignments if no lesson is selected
+        // For now, show empty list when no lesson is selected to avoid unnecessary API calls
+        setAssignments([]);
       }
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الواجبات"));
+      setAssignments([]);
     } finally {
       setIsLoading(false);
     }

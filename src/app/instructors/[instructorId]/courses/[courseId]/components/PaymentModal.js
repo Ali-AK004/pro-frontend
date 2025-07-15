@@ -1,30 +1,30 @@
-import React, { useState } from 'react';
-import { 
-  FaTimes, 
-  FaCreditCard, 
-  FaKey, 
+import React, { useState } from "react";
+import {
+  FaTimes,
+  FaCreditCard,
+  FaKey,
   FaShoppingCart,
   FaCheckCircle,
   FaExclamationTriangle,
-  FaSpinner
-} from 'react-icons/fa';
-import { lessonAPI, handleAPIError } from '../services/lessonAPI';
-import { toast } from 'react-toastify';
+  FaSpinner,
+} from "react-icons/fa";
+import { studentAPI, handleAPIError } from "../../../../../services/studentAPI";
+import { toast } from "react-toastify";
 
 const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
-  const [paymentMethod, setPaymentMethod] = useState('');
-  const [accessCode, setAccessCode] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [accessCode, setAccessCode] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentResult, setPaymentResult] = useState(null);
 
   const handlePayment = async () => {
     if (!paymentMethod) {
-      toast.error('يرجى اختيار طريقة الدفع');
+      toast.error("يرجى اختيار طريقة الدفع");
       return;
     }
 
-    if (paymentMethod === 'ACCESS_CODE' && !accessCode.trim()) {
-      toast.error('يرجى إدخال كود الوصول');
+    if (paymentMethod === "ACCESS_CODE" && !accessCode.trim()) {
+      toast.error("يرجى إدخال كود الوصول");
       return;
     }
 
@@ -34,36 +34,38 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
     try {
       let response;
 
-      if (paymentMethod === 'ACCESS_CODE') {
+      if (paymentMethod === "ACCESS_CODE") {
         // Use access code
-        response = await lessonAPI.payment.grantAccess(lesson.id, accessCode.trim());
-      } else if (paymentMethod === 'FAWRY') {
+        response = await lessonAPI.payment.grantAccess(
+          lesson.id,
+          accessCode.trim()
+        );
+      } else if (paymentMethod === "FAWRY") {
         // Pay with Fawry
         response = await lessonAPI.payment.payWithFawry(lesson.id);
       }
 
       setPaymentResult({
         success: true,
-        message: 'تم شراء الدرس بنجاح!',
-        data: response.data
+        message: "تم شراء الدرس بنجاح!",
+        data: response.data,
       });
 
-      toast.success('تم شراء الدرس بنجاح!');
-      
+      toast.success("تم شراء الدرس بنجاح!");
+
       // Call success callback after a short delay
       setTimeout(() => {
         onSuccess();
         handleClose();
       }, 2000);
-
     } catch (error) {
-      console.error('Payment error:', error);
-      const errorMessage = handleAPIError(error, 'حدث خطأ أثناء عملية الدفع');
-      
+      console.error("Payment error:", error);
+      const errorMessage = handleAPIError(error, "حدث خطأ أثناء عملية الدفع");
+
       setPaymentResult({
         success: false,
         message: errorMessage,
-        data: null
+        data: null,
       });
 
       toast.error(errorMessage);
@@ -73,8 +75,8 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
   };
 
   const handleClose = () => {
-    setPaymentMethod('');
-    setAccessCode('');
+    setPaymentMethod("");
+    setAccessCode("");
     setPaymentResult(null);
     setIsProcessing(false);
     onClose();
@@ -100,20 +102,24 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
           <h3 className="bold-18 text-gray-900 mb-2">{lesson.name}</h3>
           <p className="regular-14 text-gray-600 mb-3">
-            {lesson.description || 'وصف الدرس غير متاح'}
+            {lesson.description || "وصف الدرس غير متاح"}
           </p>
           <div className="flex items-center justify-between">
-            <span className="bold-16 text-accent">السعر: {lesson.price} جنيه</span>
+            <span className="bold-16 text-accent">
+              السعر: {lesson.price} جنيه
+            </span>
           </div>
         </div>
 
         {/* Payment Result */}
         {paymentResult && (
-          <div className={`mb-6 p-4 rounded-lg border ${
-            paymentResult.success 
-              ? 'bg-green-50 border-green-200' 
-              : 'bg-red-50 border-red-200'
-          }`}>
+          <div
+            className={`mb-6 p-4 rounded-lg border ${
+              paymentResult.success
+                ? "bg-green-50 border-green-200"
+                : "bg-red-50 border-red-200"
+            }`}
+          >
             <div className="flex items-center gap-3">
               {paymentResult.success ? (
                 <FaCheckCircle className="w-6 h-6 text-green-500" />
@@ -121,14 +127,18 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
                 <FaExclamationTriangle className="w-6 h-6 text-red-500" />
               )}
               <div>
-                <p className={`bold-14 ${
-                  paymentResult.success ? 'text-green-700' : 'text-red-700'
-                }`}>
-                  {paymentResult.success ? 'نجح الدفع!' : 'فشل الدفع'}
+                <p
+                  className={`bold-14 ${
+                    paymentResult.success ? "text-green-700" : "text-red-700"
+                  }`}
+                >
+                  {paymentResult.success ? "نجح الدفع!" : "فشل الدفع"}
                 </p>
-                <p className={`regular-12 ${
-                  paymentResult.success ? 'text-green-600' : 'text-red-600'
-                }`}>
+                <p
+                  className={`regular-12 ${
+                    paymentResult.success ? "text-green-600" : "text-red-600"
+                  }`}
+                >
                   {paymentResult.message}
                 </p>
               </div>
@@ -141,7 +151,7 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
           <>
             <div className="mb-6">
               <h3 className="bold-18 text-gray-900 mb-4">اختر طريقة الدفع</h3>
-              
+
               <div className="space-y-3">
                 {/* Access Code Option */}
                 <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
@@ -149,14 +159,16 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
                     type="radio"
                     name="paymentMethod"
                     value="ACCESS_CODE"
-                    checked={paymentMethod === 'ACCESS_CODE'}
+                    checked={paymentMethod === "ACCESS_CODE"}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="w-4 h-4 text-accent"
                   />
                   <FaKey className="w-5 h-5 text-gray-600" />
                   <div className="flex-1">
                     <p className="bold-14 text-gray-900">كود الوصول</p>
-                    <p className="regular-12 text-gray-600">استخدم كود الوصول للحصول على الدرس</p>
+                    <p className="regular-12 text-gray-600">
+                      استخدم كود الوصول للحصول على الدرس
+                    </p>
                   </div>
                 </label>
 
@@ -166,23 +178,27 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
                     type="radio"
                     name="paymentMethod"
                     value="FAWRY"
-                    checked={paymentMethod === 'FAWRY'}
+                    checked={paymentMethod === "FAWRY"}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="w-4 h-4 text-accent"
                   />
                   <FaCreditCard className="w-5 h-5 text-gray-600" />
                   <div className="flex-1">
                     <p className="bold-14 text-gray-900">الدفع عبر فوري</p>
-                    <p className="regular-12 text-gray-600">ادفع باستخدام خدمة فوري</p>
+                    <p className="regular-12 text-gray-600">
+                      ادفع باستخدام خدمة فوري
+                    </p>
                   </div>
                 </label>
               </div>
             </div>
 
             {/* Access Code Input */}
-            {paymentMethod === 'ACCESS_CODE' && (
+            {paymentMethod === "ACCESS_CODE" && (
               <div className="mb-6">
-                <label className="block bold-14 text-gray-900 mb-2">كود الوصول</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  كود الوصول
+                </label>
                 <input
                   type="text"
                   value={accessCode}
@@ -197,7 +213,7 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
             )}
 
             {/* Fawry Payment Info */}
-            {paymentMethod === 'FAWRY' && (
+            {paymentMethod === "FAWRY" && (
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <FaCreditCard className="w-4 h-4 text-blue-500" />

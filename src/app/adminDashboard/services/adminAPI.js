@@ -1,8 +1,9 @@
 import axios from "axios";
 
 const BASE_URL = "http://localhost:8080/api/admin";
+const API_BASE_URL = "http://localhost:8080/api";
 
-// Create axios instance with default config
+// Create axios instance with default config for admin endpoints
 const apiClient = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
@@ -11,7 +12,16 @@ const apiClient = axios.create({
   },
 });
 
-// Request interceptor for authentication
+// Create axios instance for general API endpoints (exams, assignments)
+const generalApiClient = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Request interceptor for authentication (admin client)
 apiClient.interceptors.request.use(
   (config) => {
     // Add any auth tokens if needed
@@ -22,8 +32,31 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor for error handling
+// Response interceptor for error handling (admin client)
 apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle unauthorized access
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Request interceptor for authentication (general client)
+generalApiClient.interceptors.request.use(
+  (config) => {
+    // Add any auth tokens if needed
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for error handling (general client)
+generalApiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
@@ -47,6 +80,9 @@ export const adminAPI = {
     // Get all students
     getAllStudents: () => apiClient.get("/students"),
 
+    // Get all instructors (we'll need to add this endpoint to backend)
+    getAllInstructors: () => apiClient.get("/instructors"),
+
     // Search students by username
     searchStudents: (usernamePart) =>
       apiClient.post("/search", { usernamePart }),
@@ -54,7 +90,7 @@ export const adminAPI = {
     // Delete user
     deleteUser: (userId) => apiClient.delete(`/users/${userId}`),
 
-    // Update instructor profile
+    // Update instructor profile - Fixed endpoint path
     updateInstructorProfile: (instructorId, data) =>
       apiClient.put(`/instructors/${instructorId}/profile`, data),
   },
@@ -71,8 +107,15 @@ export const adminAPI = {
     // Delete course
     delete: (courseId) => apiClient.delete(`/courses/${courseId}`),
 
-    // Get all courses (if endpoint exists)
-    getAll: () => apiClient.get("/courses"),
+    // Get all courses (paginated)
+    getAll: (page = 0, size = 100) =>
+      apiClient.get(`/courses?page=${page}&size=${size}`),
+
+    // Get courses by instructor (paginated)
+    getByInstructor: (instructorId, page = 0, size = 100) =>
+      apiClient.get(
+        `/instructors/${instructorId}/courses?page=${page}&size=${size}`
+      ),
   },
 
   // Lesson Management
@@ -86,6 +129,10 @@ export const adminAPI = {
     // Delete lesson
     delete: (lessonId) => apiClient.delete(`/lessons/${lessonId}`),
 
+    // Get lessons by course (paginated)
+    getByCourse: (courseId, page = 0, size = 100) =>
+      apiClient.get(`/courses/${courseId}/lessons?page=${page}&size=${size}`),
+
     // Generate access codes
     generateAccessCodes: (lessonId, count) =>
       apiClient.post(`/lessons/${lessonId}/generate-codes?count=${count}`),
@@ -95,59 +142,83 @@ export const adminAPI = {
   exams: {
     // Create exam for a lesson
     create: (lessonId, examData) =>
-      apiClient.post(`/exams/lessons/${lessonId}`, examData),
+      generalApiClient.post(`/exams/lessons/${lessonId}`, examData),
 
     // Get exam details
-    getExam: (examId) => apiClient.get(`/exams/${examId}`),
+    getExam: (examId) => generalApiClient.get(`/exams/${examId}`),
 
     // Update exam
-    update: (examData) => apiClient.put("/exams", examData),
+    update: (examData) => generalApiClient.put("/exams", examData),
 
     // Delete exam
-    delete: (examId) => apiClient.delete(`/exams/${examId}`),
+    delete: (examId) => generalApiClient.delete(`/exams/${examId}`),
 
     // Get exam results
-    getResults: (examId) => apiClient.get(`/exams/${examId}/results`),
+    getResults: (examId) => generalApiClient.get(`/exams/${examId}/results`),
+
+    // Get all exams (admin only)
+    getAll: (page = 0, size = 100) =>
+      generalApiClient.get(`/exams?page=${page}&size=${size}`),
 
     // Get exams by lesson
-    getByLesson: (lessonId) => apiClient.get(`/lessons/${lessonId}/exams`),
+    getByLesson: (lessonId) =>
+      generalApiClient.get(`/exams/lessons/${lessonId}`),
 
-    // Get all exams
-    getAll: () => apiClient.get("/exams"),
+    // Get exams by instructor
+    getByInstructor: (instructorId) =>
+      generalApiClient.get(`/exams/instructors/${instructorId}`),
   },
 
   // Assignment Management
   assignments: {
     // Create assignment for a lesson
     create: (lessonId, assignmentData) =>
-      apiClient.post(`/assignments/lessons/${lessonId}`, assignmentData),
+      generalApiClient.post(`/assignments/lessons/${lessonId}`, assignmentData),
 
     // Get assignment details
     getAssignment: (assignmentId) =>
-      apiClient.get(`/assignments/${assignmentId}`),
+      generalApiClient.get(`/assignments/${assignmentId}`),
 
     // Update assignment
-    update: (assignmentData) => apiClient.put("/assignments", assignmentData),
+    update: (assignmentData) =>
+      generalApiClient.put("/assignments", assignmentData),
 
     // Delete assignment
-    delete: (assignmentId) => apiClient.delete(`/assignments/${assignmentId}`),
+    delete: (assignmentId) =>
+      generalApiClient.delete(`/assignments/${assignmentId}`),
 
     // Grade assignment submission
     grade: (submissionId, grade, feedback = "") =>
-      apiClient.post(`/assignments/submissions/${submissionId}/grade`, null, {
-        params: { grade, feedback },
-      }),
+      generalApiClient.post(
+        `/assignments/submissions/${submissionId}/grade`,
+        null,
+        {
+          params: { grade, feedback },
+        }
+      ),
+
+    // Get all assignments (admin only)
+    getAll: (page = 0, size = 100) =>
+      generalApiClient.get(`/assignments?page=${page}&size=${size}`),
 
     // Get assignments by lesson
     getByLesson: (lessonId) =>
-      apiClient.get(`/lessons/${lessonId}/assignments`),
+      generalApiClient.get(`/assignments/lessons/${lessonId}`),
 
-    // Get all assignments
-    getAll: () => apiClient.get("/assignments"),
+    // Get assignments by instructor
+    getByInstructor: (instructorId) =>
+      generalApiClient.get(`/assignments/instructors/${instructorId}`),
 
     // Get assignment submissions
     getSubmissions: (assignmentId) =>
-      apiClient.get(`/assignments/${assignmentId}/submissions`),
+      generalApiClient.get(`/assignments/${assignmentId}/submissions`),
+  },
+
+  // Access Code Management
+  accessCodes: {
+    // Get all access codes
+    getAll: (page = 0, size = 10) =>
+      apiClient.get(`/access-codes?page=${page}&size=${size}`),
   },
 
   // Statistics and Analytics
@@ -155,16 +226,22 @@ export const adminAPI = {
     // Get dashboard stats
     getDashboardStats: async () => {
       try {
-        const [studentsRes] = await Promise.all([
+        const [studentsRes, instructorsRes, coursesRes] = await Promise.all([
           apiClient.get("/students"),
-          // Add more endpoints as they become available
+          apiClient.get("/instructors"),
+          apiClient.get("/courses?page=0&size=1"), // Just get count
         ]);
 
         return {
           students: studentsRes.data?.length || 0,
-          instructors: 0, // Will be updated when endpoint is available
-          courses: 0, // Will be updated when endpoint is available
-          lessons: 0, // Will be updated when endpoint is available
+          instructors: instructorsRes.data?.length || 0,
+          courses:
+            coursesRes.data?.totalElements ||
+            coursesRes.data?.content?.length ||
+            0,
+          lessons: 0, // Will be calculated from courses if needed
+          totalRevenue: 0, // Will be added when revenue tracking is implemented
+          activeUsers: 0, // Will be added when user activity tracking is implemented
         };
       } catch (error) {
         throw error;

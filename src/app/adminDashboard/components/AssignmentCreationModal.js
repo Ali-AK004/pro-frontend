@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { assignmentAPI } from '../../services/assignmentAPI';
+import React, { useState, useEffect } from "react";
+import { assignmentAPI } from "../../services/assignmentAPI";
 import {
   FiX,
   FiSave,
@@ -7,26 +7,37 @@ import {
   FiCalendar,
   FiAward,
   FiAlignLeft,
-} from 'react-icons/fi';
+} from "react-icons/fi";
 
-const AssignmentCreationModal = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  lessons, 
-  initialData = null, 
-  isLoading = false, 
-  isEdit = false 
+const AssignmentCreationModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  lessons,
+  initialData = null,
+  isLoading = false,
+  isEdit = false,
 }) => {
-  const [assignmentData, setAssignmentData] = useState(assignmentAPI.validation.createDefaultAssignment());
+  const [assignmentData, setAssignmentData] = useState(
+    assignmentAPI.validation.createDefaultAssignment()
+  );
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (initialData && isEdit) {
+      // Ensure all fields have proper default values to avoid controlled/uncontrolled issues
+      const defaultAssignment =
+        assignmentAPI.validation.createDefaultAssignment();
       setAssignmentData({
+        ...defaultAssignment,
         ...initialData,
-        lessonId: initialData.lessonId || '',
-        dueDate: initialData.dueDate ? new Date(initialData.dueDate).toISOString().slice(0, 16) : ''
+        lessonId: initialData.lessonId || "",
+        title: initialData.title || "",
+        description: initialData.description || "",
+        maxPoints: initialData.maxPoints || defaultAssignment.maxPoints,
+        dueDate: initialData.dueDate
+          ? new Date(initialData.dueDate).toISOString().slice(0, 16)
+          : "",
       });
     } else {
       setAssignmentData(assignmentAPI.validation.createDefaultAssignment());
@@ -34,31 +45,33 @@ const AssignmentCreationModal = ({
   }, [initialData, isEdit]);
 
   const handleInputChange = (field, value) => {
-    setAssignmentData(prev => ({
+    setAssignmentData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: null
-      }));
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     // Convert date string back to Date object for validation
     const dataToValidate = {
       ...assignmentData,
-      dueDate: assignmentData.dueDate ? new Date(assignmentData.dueDate) : null
+      dueDate: assignmentData.dueDate ? new Date(assignmentData.dueDate) : null,
     };
-    
-    const validation = assignmentAPI.validation.validateAssignmentData(dataToValidate);
-    
+
+    const validation =
+      assignmentAPI.validation.validateAssignmentData(dataToValidate);
+
     if (!validation.isValid) {
       setErrors(validation.errors);
       return;
@@ -67,7 +80,7 @@ const AssignmentCreationModal = ({
     // Submit with proper date format
     onSubmit({
       ...assignmentData,
-      dueDate: assignmentData.dueDate ? new Date(assignmentData.dueDate) : null
+      dueDate: assignmentData.dueDate ? new Date(assignmentData.dueDate) : null,
     });
   };
 
@@ -79,7 +92,7 @@ const AssignmentCreationModal = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="bold-24 text-gray-900">
-            {isEdit ? 'تعديل الواجب' : 'إنشاء واجب جديد'}
+            {isEdit ? "تعديل الواجب" : "إنشاء واجب جديد"}
           </h2>
           <button
             onClick={onClose}
@@ -101,9 +114,11 @@ const AssignmentCreationModal = ({
                 </label>
                 <select
                   value={assignmentData.lessonId}
-                  onChange={(e) => handleInputChange('lessonId', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("lessonId", e.target.value)
+                  }
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.lessonId ? 'border-red-300' : 'border-gray-300'
+                    errors.lessonId ? "border-red-300" : "border-gray-300"
                   }`}
                   required
                 >
@@ -128,9 +143,9 @@ const AssignmentCreationModal = ({
               <input
                 type="text"
                 value={assignmentData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
+                onChange={(e) => handleInputChange("title", e.target.value)}
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                  errors.title ? 'border-red-300' : 'border-gray-300'
+                  errors.title ? "border-red-300" : "border-gray-300"
                 }`}
                 placeholder="أدخل عنوان الواجب"
                 required
@@ -148,7 +163,9 @@ const AssignmentCreationModal = ({
               </label>
               <textarea
                 value={assignmentData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
                 rows="4"
                 placeholder="أدخل وصف الواجب (اختياري)"
@@ -165,9 +182,9 @@ const AssignmentCreationModal = ({
                 <input
                   type="datetime-local"
                   value={assignmentData.dueDate}
-                  onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                  onChange={(e) => handleInputChange("dueDate", e.target.value)}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.dueDate ? 'border-red-300' : 'border-gray-300'
+                    errors.dueDate ? "border-red-300" : "border-gray-300"
                   }`}
                   min={new Date().toISOString().slice(0, 16)}
                 />
@@ -187,14 +204,22 @@ const AssignmentCreationModal = ({
                   min="0.01"
                   step="0.01"
                   value={assignmentData.maxPoints}
-                  onChange={(e) => handleInputChange('maxPoints', parseFloat(e.target.value))}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    handleInputChange(
+                      "maxPoints",
+                      value === "" ? "" : parseFloat(value) || 0.01
+                    );
+                  }}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.maxPoints ? 'border-red-300' : 'border-gray-300'
+                    errors.maxPoints ? "border-red-300" : "border-gray-300"
                   }`}
                   required
                 />
                 {errors.maxPoints && (
-                  <p className="mt-1 text-sm text-red-600">{errors.maxPoints}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.maxPoints}
+                  </p>
                 )}
               </div>
             </div>
@@ -231,7 +256,7 @@ const AssignmentCreationModal = ({
             ) : (
               <FiSave className="w-4 h-4" />
             )}
-            {isEdit ? 'حفظ التغييرات' : 'إنشاء الواجب'}
+            {isEdit ? "حفظ التغييرات" : "إنشاء الواجب"}
           </button>
         </div>
       </div>

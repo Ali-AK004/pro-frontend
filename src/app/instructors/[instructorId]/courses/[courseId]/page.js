@@ -1,15 +1,15 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { FaBookOpen, FaArrowLeft } from 'react-icons/fa';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+"use client";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { FaBookOpen, FaArrowLeft } from "react-icons/fa";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Import components
-import LessonCard from './components/LessonCard';
-import LessonViewer from './components/LessonViewer';
-import PaymentModal from './components/PaymentModal';
-import { lessonAPI, handleAPIError } from './services/lessonAPI';
+import LessonCard from "./components/LessonCard";
+import LessonViewer from "./components/LessonViewer";
+import PaymentModal from "./components/PaymentModal";
+import { studentAPI, handleAPIError } from "../../../../services/studentAPI";
 
 const CourseDetails = () => {
   const params = useParams();
@@ -32,22 +32,25 @@ const CourseDetails = () => {
       setError(null);
 
       try {
-        const response = await lessonAPI.courses.getInstructorProfile(instructorId);
+        const response =
+          await studentAPI.profile.getInstructorFullProfile(instructorId);
         const instructorData = response.data;
 
         if (instructorData && instructorData.courses) {
-          const foundCourse = instructorData.courses.find(c => c.id === courseId);
+          const foundCourse = instructorData.courses.find(
+            (c) => c.id === courseId
+          );
           if (foundCourse) {
             setCourse(foundCourse);
           } else {
-            setError('لم يتم العثور على الكورس');
+            setError("لم يتم العثور على الكورس");
           }
         } else {
-          setError('لم يتم العثور على الكورس');
+          setError("لم يتم العثور على الكورس");
         }
       } catch (err) {
-        console.error('خطأ في جلب بيانات الكورس:', err);
-        setError(handleAPIError(err, 'حدث خطأ أثناء تحميل بيانات الكورس'));
+        console.error("خطأ في جلب بيانات الكورس:", err);
+        setError(handleAPIError(err, "حدث خطأ أثناء تحميل بيانات الكورس"));
       } finally {
         setIsLoading(false);
       }
@@ -71,13 +74,13 @@ const CourseDetails = () => {
   };
 
   const handlePaymentSuccess = () => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
     setShowPaymentModal(false);
-    toast.success('تم شراء الدرس بنجاح!');
+    toast.success("تم شراء الدرس بنجاح!");
   };
 
   const handleProgressUpdate = () => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const handleBackFromViewer = () => {
@@ -91,7 +94,9 @@ const CourseDetails = () => {
       <div className="min-h-screen bg-main flexCenter">
         <div className="flexCenter flex-col">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-          <p className="mt-4 regular-16 text-gray-600">جاري تحميل بيانات الكورس...</p>
+          <p className="mt-4 regular-16 text-gray-600">
+            جاري تحميل بيانات الكورس...
+          </p>
         </div>
       </div>
     );
@@ -104,7 +109,7 @@ const CourseDetails = () => {
           <FaBookOpen className="w-24 h-24 text-gray-300 mx-auto mb-4" />
           <h2 className="bold-24 text-gray-600 mb-4">{error}</h2>
           <button
-            onClick={() => router.push('/instructors')}
+            onClick={() => router.push("/instructors")}
             className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-colors flexCenter gap-2"
           >
             <FaArrowLeft className="w-4 h-4" />
@@ -136,7 +141,7 @@ const CourseDetails = () => {
       <div className="max-container padding-container">
         {/* Back Button */}
         <button
-          onClick={() => router.push('/instructors')}
+          onClick={() => router.push("/instructors")}
           className="flexCenter gap-2 text-accent hover:text-opacity-80 transition-colors mb-6"
         >
           <FaArrowLeft className="w-4 h-4" />
@@ -154,8 +159,8 @@ const CourseDetails = () => {
                   alt={course.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
                   }}
                 />
               ) : null}
@@ -165,12 +170,16 @@ const CourseDetails = () => {
             {/* Course Info */}
             <div className="flex-1 text-center lg:text-right">
               <h1 className="bold-32 text-gray-900 mb-4">{course.name}</h1>
-              <p className="regular-18 text-gray-600 mb-6 max-w-2xl">{course.description}</p>
+              <p className="regular-18 text-gray-600 mb-6 max-w-2xl">
+                {course.description}
+              </p>
 
               {/* Course Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
                 <div className="text-center">
-                  <div className="bold-20 text-accent">{course.lessons?.length || 0}</div>
+                  <div className="bold-20 text-accent">
+                    {course.lessons?.length || 0}
+                  </div>
                   <div className="regular-14 text-gray-600">حصة</div>
                 </div>
                 <div className="text-center">
@@ -200,7 +209,9 @@ const CourseDetails = () => {
               <div className="text-center py-8">
                 <FaBookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="bold-18 text-gray-600 mb-2">لا توجد حصص</h3>
-                <p className="regular-14 text-gray-500">لم يتم إضافة حصص لهذا الكورس بعد</p>
+                <p className="regular-14 text-gray-500">
+                  لم يتم إضافة حصص لهذا الكورس بعد
+                </p>
               </div>
             )}
           </div>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { adminAPI, handleAPIError } from '../services/adminAPI';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import { adminAPI, handleAPIError } from "../services/adminAPI";
+import { toast } from "react-toastify";
 import {
   FiUsers,
   FiBook,
@@ -10,7 +10,7 @@ import {
   FiActivity,
   FiDollarSign,
   FiEye,
-} from 'react-icons/fi';
+} from "react-icons/fi";
 
 const DashboardOverview = () => {
   const [stats, setStats] = useState({
@@ -31,46 +31,40 @@ const DashboardOverview = () => {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
-      
-      // Fetch basic stats
-      const students = await adminAPI.users.getAllStudents();
-      
-      setStats(prevStats => ({
-        ...prevStats,
-        students: students.data?.length || 0,
-        // Other stats will be updated when more endpoints are available
-      }));
+
+      // Fetch dashboard stats
+      const dashboardStats = await adminAPI.analytics.getDashboardStats();
+      setStats(dashboardStats);
 
       // Mock recent activity for now
       setRecentActivity([
         {
           id: 1,
-          type: 'user_registered',
-          message: 'طالب جديد انضم للمنصة',
-          time: '5 دقائق مضت',
+          type: "user_registered",
+          message: "طالب جديد انضم للمنصة",
+          time: "5 دقائق مضت",
           icon: FiUsers,
-          color: 'text-green-600'
+          color: "text-green-600",
         },
         {
           id: 2,
-          type: 'course_created',
-          message: 'تم إنشاء كورس جديد',
-          time: '15 دقيقة مضت',
+          type: "course_created",
+          message: "تم إنشاء كورس جديد",
+          time: "15 دقيقة مضت",
           icon: FiBook,
-          color: 'text-blue-600'
+          color: "text-blue-600",
         },
         {
           id: 3,
-          type: 'lesson_completed',
-          message: 'تم إكمال درس بواسطة طالب',
-          time: '30 دقيقة مضت',
+          type: "lesson_completed",
+          message: "تم إكمال درس بواسطة طالب",
+          time: "30 دقيقة مضت",
           icon: FiFileText,
-          color: 'text-purple-600'
+          color: "text-purple-600",
         },
       ]);
-
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل بيانات لوحة التحكم'));
+      toast.error(handleAPIError(error, "فشل في تحميل بيانات لوحة التحكم"));
     } finally {
       setIsLoading(false);
     }
@@ -78,44 +72,44 @@ const DashboardOverview = () => {
 
   const statCards = [
     {
-      title: 'إجمالي الطلاب',
+      title: "إجمالي الطلاب",
       value: stats.students,
       icon: FiUsers,
-      color: 'bg-blue-500',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-600',
-      change: '+12%',
-      changeType: 'increase'
+      color: "bg-blue-500",
+      bgColor: "bg-blue-50",
+      textColor: "text-blue-600",
+      change: "+12%",
+      changeType: "increase",
     },
     {
-      title: 'إجمالي المدرسين',
+      title: "إجمالي المدرسين",
       value: stats.instructors,
       icon: FiActivity,
-      color: 'bg-green-500',
-      bgColor: 'bg-green-50',
-      textColor: 'text-green-600',
-      change: '+8%',
-      changeType: 'increase'
+      color: "bg-green-500",
+      bgColor: "bg-green-50",
+      textColor: "text-green-600",
+      change: "+8%",
+      changeType: "increase",
     },
     {
-      title: 'إجمالي الكورسات',
+      title: "إجمالي الكورسات",
       value: stats.courses,
       icon: FiBook,
-      color: 'bg-purple-500',
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-600',
-      change: '+15%',
-      changeType: 'increase'
+      color: "bg-purple-500",
+      bgColor: "bg-purple-50",
+      textColor: "text-purple-600",
+      change: "+15%",
+      changeType: "increase",
     },
     {
-      title: 'إجمالي الدروس',
+      title: "إجمالي الدروس",
       value: stats.lessons,
       icon: FiFileText,
-      color: 'bg-orange-500',
-      bgColor: 'bg-orange-50',
-      textColor: 'text-orange-600',
-      change: '+20%',
-      changeType: 'increase'
+      color: "bg-orange-500",
+      bgColor: "bg-orange-50",
+      textColor: "text-orange-600",
+      change: "+20%",
+      changeType: "increase",
     },
   ];
 
@@ -142,7 +136,9 @@ const DashboardOverview = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="bold-32 text-gray-900 mb-2">لوحة التحكم</h1>
-        <p className="regular-16 text-gray-600">نظرة عامة على أداء المنصة التعليمية</p>
+        <p className="regular-16 text-gray-600">
+          نظرة عامة على أداء المنصة التعليمية
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -158,15 +154,21 @@ const DashboardOverview = () => {
                 <div className={`p-3 rounded-lg ${card.bgColor}`}>
                   <Icon className={`w-6 h-6 ${card.textColor}`} />
                 </div>
-                <div className={`text-sm font-medium ${
-                  card.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-                }`}>
+                <div
+                  className={`text-sm font-medium ${
+                    card.changeType === "increase"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
                   {card.change}
                 </div>
               </div>
               <div className="text-right">
                 <h3 className="regular-14 text-gray-600 mb-1">{card.title}</h3>
-                <p className="bold-24 text-gray-900">{card.value.toLocaleString()}</p>
+                <p className="bold-24 text-gray-900">
+                  {card.value.toLocaleString()}
+                </p>
               </div>
             </div>
           );
@@ -182,12 +184,17 @@ const DashboardOverview = () => {
             {recentActivity.map((activity) => {
               const Icon = activity.icon;
               return (
-                <div key={activity.id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <div
+                  key={activity.id}
+                  className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                >
                   <div className={`p-2 rounded-lg bg-gray-100`}>
                     <Icon className={`w-4 h-4 ${activity.color}`} />
                   </div>
                   <div className="flex-1 text-right">
-                    <p className="regular-14 text-gray-900">{activity.message}</p>
+                    <p className="regular-14 text-gray-900">
+                      {activity.message}
+                    </p>
                     <p className="regular-12 text-gray-500">{activity.time}</p>
                   </div>
                 </div>
