@@ -3,8 +3,6 @@ import {
   FaPlay,
   FaQuestionCircle,
   FaFileAlt,
-  FaCheck,
-  FaTimes,
   FaClock,
   FaArrowLeft,
   FaExclamationTriangle,
@@ -194,135 +192,136 @@ const LessonViewer = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={onBack}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <FaArrowLeft className="w-4 h-4" />
-                العودة للكورس
-              </button>
-              <div>
-                <h1 className="bold-24 text-gray-900">{lesson.name}</h1>
-                <p className="regular-14 text-gray-600">
-                  الحالة: {getProgressText(lessonProgress?.progressStatus)}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    // <div className="min-h-screen bg-gray-50">
+    //   {/* Header */}
+    //   <div className="bg-white shadow-sm border-b">
+    //     <div className="max-w-7xl mx-auto px-4 py-4">
+    //       <div className="flex items-center justify-between">
+    //         <div className="flex items-center gap-4">
+    //           <button
+    //             onClick={onBack}
+    //             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+    //           >
+    //             <FaArrowLeft className="w-4 h-4" />
+    //             العودة للكورس
+    //           </button>
+    //           <div>
+    //             <h1 className="bold-24 text-gray-900">{lesson.name}</h1>
+    //             <p className="regular-14 text-gray-600">
+    //               الحالة: {getProgressText(lessonProgress?.progressStatus)}
+    //             </p>
+    //           </div>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <nav className="flex space-x-8 space-x-reverse">
-            <button
-              onClick={() => setActiveTab("overview")}
-              className={`py-4 px-2 border-b-2 font-medium text-sm ${
-                activeTab === "overview"
-                  ? "border-accent text-accent"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              نظرة عامة
-            </button>
+    //   {/* Navigation Tabs */}
+    //   <div className="bg-white border-b">
+    //     <div className="max-w-7xl mx-auto px-4">
+    //       <nav className="flex space-x-8 space-x-reverse">
+    //         <button
+    //           onClick={() => setActiveTab("overview")}
+    //           className={`py-4 px-2 border-b-2 font-medium text-sm ${
+    //             activeTab === "overview"
+    //               ? "border-accent text-accent"
+    //               : "border-transparent text-gray-500 hover:text-gray-700"
+    //           }`}
+    //         >
+    //           نظرة عامة
+    //         </button>
 
-            {lesson.exam && (
-              <button
-                onClick={() => canAccessTab("exam") && setActiveTab("exam")}
-                disabled={!canAccessTab("exam")}
-                className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                  activeTab === "exam"
-                    ? "border-accent text-accent"
-                    : canAccessTab("exam")
-                      ? "border-transparent text-gray-500 hover:text-gray-700"
-                      : "border-transparent text-gray-300 cursor-not-allowed"
-                }`}
-              >
-                {getTabIcon("exam")}
-                الامتحان
-              </button>
-            )}
+    //         {lesson.exam && (
+    //           <button
+    //             onClick={() => canAccessTab("exam") && setActiveTab("exam")}
+    //             disabled={!canAccessTab("exam")}
+    //             className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
+    //               activeTab === "exam"
+    //                 ? "border-accent text-accent"
+    //                 : canAccessTab("exam")
+    //                   ? "border-transparent text-gray-500 hover:text-gray-700"
+    //                   : "border-transparent text-gray-300 cursor-not-allowed"
+    //             }`}
+    //           >
+    //             {getTabIcon("exam")}
+    //             الامتحان
+    //           </button>
+    //         )}
 
-            <button
-              onClick={() => canAccessTab("video") && setActiveTab("video")}
-              disabled={!canAccessTab("video")}
-              className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                activeTab === "video"
-                  ? "border-accent text-accent"
-                  : canAccessTab("video")
-                    ? "border-transparent text-gray-500 hover:text-gray-700"
-                    : "border-transparent text-gray-300 cursor-not-allowed"
-              }`}
-            >
-              {getTabIcon("video")}
-              الفيديو
-            </button>
+    //         <button
+    //           onClick={() => canAccessTab("video") && setActiveTab("video")}
+    //           disabled={!canAccessTab("video")}
+    //           className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
+    //             activeTab === "video"
+    //               ? "border-accent text-accent"
+    //               : canAccessTab("video")
+    //                 ? "border-transparent text-gray-500 hover:text-gray-700"
+    //                 : "border-transparent text-gray-300 cursor-not-allowed"
+    //           }`}
+    //         >
+    //           {getTabIcon("video")}
+    //           الفيديو
+    //         </button>
 
-            {lesson.assignment && (
-              <button
-                onClick={() =>
-                  canAccessTab("assignment") && setActiveTab("assignment")
-                }
-                disabled={!canAccessTab("assignment")}
-                className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                  activeTab === "assignment"
-                    ? "border-accent text-accent"
-                    : canAccessTab("assignment")
-                      ? "border-transparent text-gray-500 hover:text-gray-700"
-                      : "border-transparent text-gray-300 cursor-not-allowed"
-                }`}
-              >
-                {getTabIcon("assignment")}
-                الواجب
-              </button>
-            )}
-          </nav>
-        </div>
-      </div>
+    //         {lesson.assignment && (
+    //           <button
+    //             onClick={() =>
+    //               canAccessTab("assignment") && setActiveTab("assignment")
+    //             }
+    //             disabled={!canAccessTab("assignment")}
+    //             className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
+    //               activeTab === "assignment"
+    //                 ? "border-accent text-accent"
+    //                 : canAccessTab("assignment")
+    //                   ? "border-transparent text-gray-500 hover:text-gray-700"
+    //                   : "border-transparent text-gray-300 cursor-not-allowed"
+    //             }`}
+    //           >
+    //             {getTabIcon("assignment")}
+    //             الواجب
+    //           </button>
+    //         )}
+    //       </nav>
+    //     </div>
+    //   </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {activeTab === "overview" && (
-          <OverviewTab lesson={lesson} lessonProgress={lessonProgress} />
-        )}
+    //   {/* Content */}
+    //   <div className="max-w-7xl mx-auto px-4 py-8">
+    //     {activeTab === "overview" && (
+    //       <OverviewTab lesson={lesson} lessonProgress={lessonProgress} />
+    //     )}
 
-        {activeTab === "exam" && lesson.exam && (
-          <ExamTab
-            examData={examData}
-            examAnswers={examAnswers}
-            setExamAnswers={setExamAnswers}
-            examResult={examResult}
-            onSubmit={handleExamSubmit}
-            isLoading={isLoading}
-          />
-        )}
+    //     {activeTab === "exam" && lesson.exam && (
+    //       <ExamTab
+    //         examData={examData}
+    //         examAnswers={examAnswers}
+    //         setExamAnswers={setExamAnswers}
+    //         examResult={examResult}
+    //         onSubmit={handleExamSubmit}
+    //         isLoading={isLoading}
+    //       />
+    //     )}
 
-        {activeTab === "video" && (
-          <VideoTab
-            lesson={lesson}
-            onVideoEnd={handleVideoEnd}
-            videoWatched={videoWatched}
-          />
-        )}
+    //     {activeTab === "video" && (
+    //       <VideoTab
+    //         lesson={lesson}
+    //         onVideoEnd={handleVideoEnd}
+    //         videoWatched={videoWatched}
+    //       />
+    //     )}
 
-        {activeTab === "assignment" && lesson.assignment && (
-          <AssignmentTab
-            assignmentData={assignmentData}
-            submission={assignmentSubmission}
-            setSubmission={setAssignmentSubmission}
-            onSubmit={handleAssignmentSubmit}
-            isLoading={isLoading}
-          />
-        )}
-      </div>
-    </div>
+    //     {activeTab === "assignment" && lesson.assignment && (
+    //       <AssignmentTab
+    //         assignmentData={assignmentData}
+    //         submission={assignmentSubmission}
+    //         setSubmission={setAssignmentSubmission}
+    //         onSubmit={handleAssignmentSubmit}
+    //         isLoading={isLoading}
+    //       />
+    //     )}
+    //   </div>
+    // </div>
+    <></>
   );
 };
 

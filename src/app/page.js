@@ -1,19 +1,35 @@
-'use client';
-import React from 'react';
-import Link from 'next/link';
-import { FaGraduationCap, FaUsers, FaBookOpen, FaCertificate, FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaArrowRight, FaPlay } from 'react-icons/fa';
-import Footer from '../../components/footer';
-import NavBar from '../../components/navBar';
-import { useUserData } from '../../models/UserContext';
+"use client";
+import React from "react";
+import Link from "next/link";
+import {
+  FaGraduationCap,
+  FaUsers,
+  FaBookOpen,
+  FaCertificate,
+  FaPhone,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaFacebook,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedin,
+  FaArrowRight,
+  FaPlay,
+} from "react-icons/fa";
+import { useUserData } from "../../models/UserContext";
+import NavBar from "./components/navBar";
+import Footer from "./components/footer";
 
 export default function Home() {
-  const {user, loading} = useUserData();
+  const { user, loading } = useUserData();
   if (loading) {
     return (
       <div className="min-h-screen bg-main flexCenter">
         <div className="flexCenter flex-col">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-          <p className="mt-4 regular-16 text-gray-600">جاري تحميل البيانات...</p>
+          <p className="mt-4 regular-16 text-gray-600">
+            جاري تحميل البيانات...
+          </p>
         </div>
       </div>
     );
@@ -32,39 +48,36 @@ export default function Home() {
                 <span className="text-accent block">الأولى في مصر</span>
               </h1>
               <p className="regular-18 text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0">
-                ابدأ رحلتك التعليمية مع أفضل المدرسين والكورسات التفاعلية.
-                تعلم في أي وقت ومن أي مكان بأحدث التقنيات التعليمية.
+                ابدأ رحلتك التعليمية مع أفضل المدرسين والكورسات التفاعلية. تعلم
+                في أي وقت ومن أي مكان بأحدث التقنيات التعليمية.
               </p>
-              {
-                user ? (
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link
-                  href="/instructors"
-                  className="bg-accent text-white px-8 py-4 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
-                >
-                  ابدأ التعلم الآن
-                  <FaArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-                ) : (
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link
-                  href="/signup"
-                  className="bg-accent text-white px-8 py-4 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
-                >
-                  ابدأ التعلم الآن
-                  <FaArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="/login"
-                  className="border-2 border-secondary text-secondary px-8 py-4 rounded-lg bold-16 hover:bg-[#87ceeb] hover:text-white transition-all duration-300 flexCenter gap-2"
-                >
-                  تسجيل الدخول
-                </Link>
-              </div>
-                )
-              }
-              
+              {user ? (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Link
+                    href="/instructors"
+                    className="bg-accent text-white px-8 py-4 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
+                  >
+                    ابدأ التعلم الآن
+                    <FaArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Link
+                    href="/signup"
+                    className="bg-accent text-white px-8 py-4 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
+                  >
+                    ابدأ التعلم الآن
+                    <FaArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="border-2 border-secondary text-secondary px-8 py-4 rounded-lg bold-16 hover:bg-[#87ceeb] hover:text-white transition-all duration-300 flexCenter gap-2"
+                  >
+                    تسجيل الدخول
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Hero Image/Video */}
@@ -163,9 +176,8 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      {
-        user ? (
-          <section className="py-20 bg-accent">
+      {user ? (
+        <section className="py-20 bg-accent">
           <div className="max-container padding-container">
             <div className="text-center text-white">
               <h2 className="bold-48 mb-4">ابدأ رحلتك التعليمية اليوم</h2>
@@ -181,30 +193,28 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          </section>
-        ) : (
-          <section className="py-20 bg-accent">
-                  <div className="max-container padding-container">
-                    <div className="text-center text-white">
-                      <h2 className="bold-48 mb-4">ابدأ رحلتك التعليمية اليوم</h2>
-                      <p className="regular-18 mb-8 max-w-2xl mx-auto">
-                        انضم إلى آلاف الطلاب الذين حققوا أهدافهم التعليمية معنا
-                      </p>
-                      <Link
-                        href="/signup"
-                        className="bg-white text-accent px-8 py-4 rounded-lg bold-16 hover:bg-gray-100 transition-all duration-300 inline-flex items-center gap-2 shadow-lg"
-                      >
-                        سجل الآن مجاناً
-                        <FaArrowRight className="w-4 h-4" />
-                      </Link>
-                    </div>
-                  </div>
-            </section>
-        )
-      }
-      
+        </section>
+      ) : (
+        <section className="py-20 bg-accent">
+          <div className="max-container padding-container">
+            <div className="text-center text-white">
+              <h2 className="bold-48 mb-4">ابدأ رحلتك التعليمية اليوم</h2>
+              <p className="regular-18 mb-8 max-w-2xl mx-auto">
+                انضم إلى آلاف الطلاب الذين حققوا أهدافهم التعليمية معنا
+              </p>
+              <Link
+                href="/signup"
+                className="bg-white text-accent px-8 py-4 rounded-lg bold-16 hover:bg-gray-100 transition-all duration-300 inline-flex items-center gap-2 shadow-lg"
+              >
+                سجل الآن مجاناً
+                <FaArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
-      <Footer id="footer"/>
+      <Footer id="footer" />
     </div>
   );
 }

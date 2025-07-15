@@ -7,7 +7,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 // Import components
 import LessonCard from "./components/LessonCard";
-import LessonViewer from "./components/LessonViewer";
 import PaymentModal from "./components/PaymentModal";
 import { studentAPI, handleAPIError } from "../../../../services/studentAPI";
 
@@ -20,9 +19,7 @@ const CourseDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
-  const [selectedLessonProgress, setSelectedLessonProgress] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showLessonViewer, setShowLessonViewer] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // جلب بيانات الكورس من API المدرس
@@ -35,6 +32,8 @@ const CourseDetails = () => {
         const response =
           await studentAPI.profile.getInstructorFullProfile(instructorId);
         const instructorData = response.data;
+
+        console.log(instructorData);
 
         if (instructorData && instructorData.courses) {
           const foundCourse = instructorData.courses.find(
@@ -67,26 +66,17 @@ const CourseDetails = () => {
     setShowPaymentModal(true);
   };
 
-  const handleViewLesson = (lesson, lessonProgress) => {
-    setSelectedLesson(lesson);
-    setSelectedLessonProgress(lessonProgress);
-    setShowLessonViewer(true);
+  const handleViewLesson = (lesson) => {
+    // Navigate to the new lesson page
+    router.push(
+      `/instructors/${instructorId}/courses/${courseId}/lessons/${lesson.id}`
+    );
   };
 
   const handlePaymentSuccess = () => {
     setRefreshTrigger((prev) => prev + 1);
     setShowPaymentModal(false);
     toast.success("تم شراء الدرس بنجاح!");
-  };
-
-  const handleProgressUpdate = () => {
-    setRefreshTrigger((prev) => prev + 1);
-  };
-
-  const handleBackFromViewer = () => {
-    setShowLessonViewer(false);
-    setSelectedLesson(null);
-    setSelectedLessonProgress(null);
   };
 
   if (isLoading) {
@@ -122,18 +112,6 @@ const CourseDetails = () => {
 
   if (!course) {
     return null;
-  }
-
-  // Show lesson viewer if a lesson is selected
-  if (showLessonViewer && selectedLesson) {
-    return (
-      <LessonViewer
-        lesson={selectedLesson}
-        lessonProgress={selectedLessonProgress}
-        onBack={handleBackFromViewer}
-        onProgressUpdate={handleProgressUpdate}
-      />
-    );
   }
 
   return (
@@ -195,7 +173,7 @@ const CourseDetails = () => {
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="bold-24 text-gray-900 mb-6">دروس الكورس</h2>
 
-          <div className="flex gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {course.lessons && course.lessons.length > 0 ? (
               course.lessons.map((lesson, index) => (
                 <LessonCard

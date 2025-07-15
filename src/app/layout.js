@@ -1,5 +1,4 @@
 import { UserProvider } from "../../models/UserContext";
-import NavBar from "../../components/navBar";
 import FloatingChatButton from "./components/FloatingChatButton";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

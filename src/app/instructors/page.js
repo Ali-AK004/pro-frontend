@@ -11,8 +11,8 @@ import {
 } from "react-icons/fa";
 import { studentAPI, handleAPIError } from "../services/studentAPI";
 import { toast } from "react-toastify";
-import NavBar from "../../../components/navBar";
 import Link from "next/link";
+import NavBar from "../components/navBar";
 
 const Instructors = () => {
   const [instructorId, setInstructorId] = useState("");

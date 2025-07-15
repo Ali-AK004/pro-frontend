@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import { studentAPI, handleAPIError } from "../../../../../services/studentAPI";
 import { toast } from "react-toastify";
+import { lessonAPI } from "../services/lessonAPI";
 
 const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
   const [paymentMethod, setPaymentMethod] = useState("");

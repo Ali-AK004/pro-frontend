@@ -1,10 +1,18 @@
-'use client';
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { FaGraduationCap, FaBars, FaTimes, FaUser, FaSignOutAlt, FaCog, FaBookOpen } from 'react-icons/fa';
-import { useUserData } from '../models/UserContext';
-import axios from 'axios';
+"use client";
+import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  FaGraduationCap,
+  FaBars,
+  FaTimes,
+  FaUser,
+  FaSignOutAlt,
+  FaCog,
+  FaBookOpen,
+} from "react-icons/fa";
+import axios from "axios";
+import { useUserData } from "../../../models/UserContext";
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,32 +20,33 @@ const NavBar = () => {
   const { user, clearUser } = useUserData();
   const router = useRouter();
 
-const handleLogout = async () => {
-  try {
-    // Clear frontend state immediately
-    clearUser();
-    
-    // Make logout request (don't wait for response)
-    axios.post(
-      'http://localhost:8080/api/auth/signout',
-      {},
-      { 
-        withCredentials: true,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    ).catch(() => {}); // Ignore any errors
-    
-    // Redirect immediately
-    router.push('/');
-    
-    // Force reload to ensure all auth state is cleared
-    setTimeout(() => window.location.reload(), 100);
-    
-  } catch (error) {
-    console.error('Logout failed:', error);
-    router.push('/');
-  }
-}
+  const handleLogout = async () => {
+    try {
+      // Clear frontend state immediately
+      clearUser();
+
+      // Make logout request (don't wait for response)
+      axios
+        .post(
+          "http://localhost:8080/api/auth/signout",
+          {},
+          {
+            withCredentials: true,
+            headers: { "Content-Type": "application/json" },
+          }
+        )
+        .catch(() => {}); // Ignore any errors
+
+      // Redirect immediately
+      router.push("/");
+
+      // Force reload to ensure all auth state is cleared
+      setTimeout(() => window.location.reload(), 100);
+    } catch (error) {
+      console.error("Logout failed:", error);
+      router.push("/");
+    }
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -57,7 +66,10 @@ const handleLogout = async () => {
       <div className="max-container padding-container">
         <div className="flexBetween py-4">
           {/* Logo */}
-          <Link href="/" className="flexCenter gap-2 hover:opacity-80 transition-opacity">
+          <Link
+            href="/"
+            className="flexCenter gap-2 hover:opacity-80 transition-opacity"
+          >
             <FaGraduationCap className="w-8 h-8 text-accent" />
             <span className="bold-24 text-gray-900">أكاديميتنا</span>
           </Link>
@@ -65,22 +77,21 @@ const handleLogout = async () => {
           {/* Desktop Navigation */}
           <ul className="hidden lg:flex items-center lg:gap-10">
             <li>
-                <Link
+              <Link
                 href="/instructors"
                 className="regular-16 hover:font-[700] text-gray-700 hover:text-accent transition-all"
-                >
+              >
                 المدرسين
-                </Link>
+              </Link>
             </li>
             <li>
-                <a
+              <a
                 href="/#footer"
                 className="regular-16 hover:font-[700] text-gray-700 hover:text-accent transition-all"
-                >
+              >
                 تواصل معنا
-                </a>
+              </a>
             </li>
-            
           </ul>
 
           {/* User Actions */}
@@ -95,7 +106,9 @@ const handleLogout = async () => {
                   <div className="w-8 h-8 bg-accent rounded-full flexCenter">
                     <FaUser className="w-4 h-4 text-white" />
                   </div>
-                  <span className="regular-14 text-accent">{user.fullname}</span>
+                  <span className="regular-14 text-accent">
+                    {user.fullname}
+                  </span>
                 </button>
 
                 {/* User Dropdown Menu */}
@@ -182,7 +195,9 @@ const handleLogout = async () => {
                     <div className="w-8 h-8 bg-accent rounded-full flexCenter">
                       <FaUser className="w-4 h-4 text-white" />
                     </div>
-                    <span className="regular-16 text-gray-900">{user.fullname}</span>
+                    <span className="regular-16 text-gray-900">
+                      {user.fullname}
+                    </span>
                   </div>
 
                   <Link

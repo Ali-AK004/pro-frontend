@@ -268,11 +268,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson }) => {
         ) : (
           <button
             onClick={() => {
-              const initialTab = getInitialTab(
-                lessonProgress?.progressStatus,
-                lesson
-              );
-              onViewLesson(lesson, lessonProgress, initialTab);
+              onViewLesson(lesson);
             }}
             className="flex-1 bg-secondary text-white py-3 px-4 rounded-lg bold-16 hover:bg-opacity-90 transition-colors flexCenter gap-2"
           >

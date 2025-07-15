@@ -16,11 +16,12 @@ import {
   FaClock,
   FaAward,
 } from "react-icons/fa";
-import NavBar from "../../../../components/navBar";
+
 import { studentAPI, handleAPIError } from "../../services/studentAPI";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import Image from "next/image";
+import NavBar from "@/app/components/navBar";
 
 const InstructorProfile = () => {
   const params = useParams();
