@@ -23,19 +23,14 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
   const textareaRef = useRef(null);
   const chatContainerRef = useRef(null);
 
-  // Initialize chat session when component mounts
   useEffect(() => {
-    if (isOpen && !sessionId) {
-      initializeChat();
-    }
+    if (isOpen && !sessionId) initializeChat();
   }, [isOpen]);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       chatAPI.utils.autoResizeTextarea(textareaRef.current);
@@ -46,10 +41,8 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
     try {
       setIsLoading(true);
       setError(null);
-
       const response = await chatAPI.sessions.startNewSession();
       const welcomeMessage = response.data;
-
       setSessionId(welcomeMessage.sessionId);
       setMessages([chatAPI.utils.processMessageForDisplay(welcomeMessage)]);
     } catch (error) {
@@ -63,16 +56,8 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
 
   const sendMessage = async () => {
     const validation = chatAPI.utils.validateMessage(inputMessage);
-
-    if (!validation.isValid) {
-      toast.error(validation.errors.message);
-      return;
-    }
-
-    if (!sessionId) {
-      toast.error("لا توجد جلسة محادثة نشطة");
-      return;
-    }
+    if (!validation.isValid) return toast.error(validation.errors.message);
+    if (!sessionId) return toast.error("لا توجد جلسة محادثة نشطة");
 
     const userMessage = {
       sessionId,
@@ -82,7 +67,6 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
       id: chatAPI.utils.generateTempId(),
     };
 
-    // Add user message immediately
     setMessages((prev) => [
       ...prev,
       chatAPI.utils.processMessageForDisplay(userMessage),
@@ -90,7 +74,6 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
     setInputMessage("");
     setIsTyping(true);
 
-    // Add typing indicator
     const typingMessage = chatAPI.utils.createTypingMessage(sessionId);
     setMessages((prev) => [
       ...prev,
@@ -103,8 +86,6 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
         userMessage.message
       );
       const aiMessage = response.data;
-
-      // Remove typing indicator and add AI response
       setMessages((prev) => {
         const withoutTyping = prev.filter((msg) => !msg.isTyping);
         return [
@@ -113,13 +94,9 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
         ];
       });
     } catch (error) {
-      // Remove typing indicator
       setMessages((prev) => prev.filter((msg) => !msg.isTyping));
-
       const errorMessage = handleAPIError(error, "فشل في إرسال الرسالة");
       toast.error(errorMessage);
-
-      // Add error message
       const errorMsg = {
         sessionId,
         message: "عذراً، حدث خطأ في إرسال رسالتك. يرجى المحاولة مرة أخرى.",
@@ -159,19 +136,16 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
 
   return (
     <div
-      className={`flex flex-col h-full bg-white rounded-lg shadow-lg ${className}`}
+      className={`flex flex-col h-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 rounded-lg shadow-lg ${className}`}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flexCenter">
             <FiCpu className="w-5 h-5" />
           </div>
           <div>
             <h3 className="bold-16">المساعد الذكي</h3>
-            <p className="regular-12 opacity-90">
-              {isTyping ? "يكتب..." : "متصل"}
-            </p>
+            <p className="regular-12 opacity-90">{isTyping ? "يكتب..." : "متصل"}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -192,11 +166,10 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
         </div>
       </div>
 
-      {/* Messages Container */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
-        style={{ maxHeight: "400px" }}
+        className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-transparent"
+        style={{ maxHeight: "calc(100dvh - 200px)" }}
       >
         {isLoading && !sessionId ? (
           <div className="flex items-center justify-center py-8">
@@ -224,26 +197,40 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 border-t border-gray-200 bg-white rounded-b-lg">
-        <div className="flex items-end gap-3">
-          <div className="flex-1">
+      <div className="p-2 dark:bg-gray-900 rounded-b-lg shadow-md sticky ">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            sendMessage();
+          }}
+          className="flex items-end gap-1"
+        >
+          <div className="flex-1 relative">
             <textarea
               ref={textareaRef}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
+              onInput={(e) => {
+                e.target.style.height = "auto";
+                e.target.style.height = `${e.target.scrollHeight}px`;
+              }}
               onKeyDown={handleKeyDown}
-              placeholder="اكتب رسالتك هنا..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              rows="1"
-              style={{ minHeight: "44px", maxHeight: "120px" }}
+              placeholder="💬 اكتب رسالتك هنا..."
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all shadow-sm text-sm sm:text-base"
+              rows={1}
+              style={{ minHeight: "44px", maxHeight: "160px", overflowY: "auto" }}
               disabled={isLoading || !sessionId}
+              aria-label="اكتب رسالتك"
+              autoCapitalize="off"
+              autoComplete="off"
+              spellCheck={false}
             />
           </div>
           <button
-            onClick={sendMessage}
+            type="submit"
             disabled={!inputMessage.trim() || isLoading || !sessionId}
-            className="bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flexCenter"
+            className="bg-blue-600 text-white p-3 mb-2 rounded-xl hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            aria-label="إرسال الرسالة"
           >
             {isLoading ? (
               <FiLoader className="w-5 h-5 animate-spin" />
@@ -251,13 +238,12 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
               <FiSend className="w-5 h-5" />
             )}
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );
 };
 
-// Message Bubble Component
 const MessageBubble = ({ message }) => {
   const isUser = message.isFromUser;
   const isTyping = message.isTyping;
@@ -268,56 +254,37 @@ const MessageBubble = ({ message }) => {
       <div
         className={`flex items-start gap-2 max-w-[80%] ${isUser ? "flex-row-reverse" : "flex-row"}`}
       >
-        {/* Avatar */}
         <div
           className={`w-8 h-8 rounded-full flexCenter flex-shrink-0 ${
             isUser
               ? "bg-blue-500 text-white"
               : isError
-                ? "bg-red-500 text-white"
-                : "bg-gray-200 text-gray-600"
+              ? "bg-red-500 text-white"
+              : "bg-gray-200 text-gray-600"
           }`}
         >
-          {isUser ? (
-            <FiUser className="w-4 h-4" />
-          ) : (
-            <FiCpu className="w-4 h-4" />
-          )}
+          {isUser ? <FiUser className="w-4 h-4" /> : <FiCpu className="w-4 h-4" />}
         </div>
-
-        {/* Message Content */}
         <div
           className={`rounded-lg px-4 py-3 ${
             isUser
               ? "bg-blue-500 text-white"
               : isError
-                ? "bg-red-50 border border-red-200 text-red-700"
-                : "bg-white border border-gray-200 text-gray-800"
+              ? "bg-red-50 border border-red-200 text-red-700"
+              : "bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100"
           }`}
         >
           {isTyping ? (
-            <div className="flex items-center gap-1">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: "0.1s" }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: "0.2s" }}
-                ></div>
-              </div>
+            <div className="flex gap-1">
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
+              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
             </div>
           ) : (
             <div>
-              <p className="regular-14 whitespace-pre-wrap">
-                {message.displayText}
-              </p>
+              <p className="regular-14 whitespace-pre-wrap">{message.displayText}</p>
               {message.formattedTime && (
-                <p
-                  className={`regular-10 mt-1 opacity-70 ${isUser ? "text-right" : "text-left"}`}
-                >
+                <p className={`regular-10 mt-1 opacity-70 ${isUser ? "text-right" : "text-left"}`}>
                   {message.formattedTime}
                 </p>
               )}
@@ -329,4 +296,4 @@ const MessageBubble = ({ message }) => {
   );
 };
 
-export default AIChat;
+export default AIChat;

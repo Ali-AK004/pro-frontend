@@ -30,6 +30,8 @@ const AssignmentManagement = () => {
   const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [assignmentSubmissions, setAssignmentSubmissions] = useState([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [assignmentToDelete, setAssignmentToDelete] = useState(null);
 
   useEffect(() => {
     fetchLessons();
@@ -116,20 +118,25 @@ const AssignmentManagement = () => {
     }
   };
 
-  const handleDeleteAssignment = async (assignmentId) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذا الواجب؟")) {
-      return;
-    }
+  const handleDeleteClick = (assignmentId) => {
+    setAssignmentToDelete(assignmentId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!assignmentToDelete) return;
 
     try {
       setIsLoading(true);
-      await adminAPI.assignments.delete(assignmentId);
+      await adminAPI.assignments.delete(assignmentToDelete);
       toast.success("تم حذف الواجب بنجاح");
       fetchAssignments();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف الواجب"));
     } finally {
       setIsLoading(false);
+      setShowDeleteModal(false);
+      setAssignmentToDelete(null);
     }
   };
 
@@ -137,7 +144,7 @@ const AssignmentManagement = () => {
     try {
       setIsLoading(true);
       const response = await adminAPI.assignments.getSubmissions(assignment.id);
-      setAssignmentSubmissions(response.data || []);
+      setAssignmentSubmissions(response.data?.content || []);
       setSelectedAssignment(assignment);
       setShowSubmissionsModal(true);
     } catch (error) {
@@ -253,7 +260,7 @@ const AssignmentManagement = () => {
                 setSelectedAssignment(assignment);
                 setShowEditModal(true);
               }}
-              onDelete={handleDeleteAssignment}
+              onDelete={handleDeleteClick} // Updated to use the new handler
               onViewSubmissions={handleViewSubmissions}
             />
           ))
@@ -301,6 +308,66 @@ const AssignmentManagement = () => {
           onGrade={handleGradeSubmission}
           isLoading={isLoading}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="bold-24 text-gray-900">تأكيد حذف الواجب</h2>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setAssignmentToDelete(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <FiX className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <div className="flexCenter flex-col">
+                <div className="w-16 h-16 bg-red-100 rounded-full flexCenter mb-4">
+                  <FiTrash2 className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="bold-18 text-gray-900 mb-2">
+                  هل أنت متأكد من الحذف؟
+                </h3>
+                <p className="regular-14 text-gray-600 text-center">
+                  سيتم حذف الواجب وجميع التسليمات المرتبطة به بشكل دائم
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setAssignmentToDelete(null);
+                }}
+                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isLoading}
+                className="flex-1 bg-red-600 text-white py-3 rounded-lg bold-16 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 flexCenter gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                    جاري الحذف...
+                  </>
+                ) : (
+                  "حذف الواجب"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

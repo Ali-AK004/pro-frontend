@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import AIChat from './AIChat';
-import { FiMessageCircle, FiX, FiMinimize2, FiMaximize2 } from 'react-icons/fi';
+import React, { useState, useEffect } from "react";
+import AIChat from "./AIChat";
+import { FiMessageCircle, FiX, FiMinimize2, FiMaximize2 } from "react-icons/fi";
 
-const ChatModal = ({ isOpen, onClose, initialPosition = 'bottom-right' }) => {
+const ChatModal = ({ isOpen, onClose, initialPosition = "bottom-right" }) => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
@@ -12,44 +12,44 @@ const ChatModal = ({ isOpen, onClose, initialPosition = 'bottom-right' }) => {
   // Handle escape key to close modal
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
   const getPositionClasses = () => {
     if (isMinimized) {
       switch (position) {
-        case 'bottom-right':
-          return 'bottom-4 right-4';
-        case 'bottom-left':
-          return 'bottom-4 left-4';
-        case 'top-right':
-          return 'top-4 right-4';
-        case 'top-left':
-          return 'top-4 left-4';
+        case "bottom-right":
+          return "bottom-4 right-4";
+        case "bottom-left":
+          return "bottom-4 left-4";
+        case "top-right":
+          return "top-4 right-4";
+        case "top-left":
+          return "top-4 left-4";
         default:
-          return 'bottom-4 right-4';
+          return "bottom-4 right-4";
       }
     }
-    return 'top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2';
+    return "top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2";
   };
 
   const handleMinimize = () => {
@@ -62,7 +62,7 @@ const ChatModal = ({ isOpen, onClose, initialPosition = 'bottom-right' }) => {
       const rect = e.currentTarget.getBoundingClientRect();
       setDragOffset({
         x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+        y: e.clientY - rect.top,
       });
     }
   };
@@ -72,19 +72,19 @@ const ChatModal = ({ isOpen, onClose, initialPosition = 'bottom-right' }) => {
       e.preventDefault();
       const newX = e.clientX - dragOffset.x;
       const newY = e.clientY - dragOffset.y;
-      
+
       // Update position based on where the user drags
       if (newX < window.innerWidth / 2) {
         if (newY < window.innerHeight / 2) {
-          setPosition('top-left');
+          setPosition("top-left");
         } else {
-          setPosition('bottom-left');
+          setPosition("bottom-left");
         }
       } else {
         if (newY < window.innerHeight / 2) {
-          setPosition('top-right');
+          setPosition("top-right");
         } else {
-          setPosition('bottom-right');
+          setPosition("bottom-right");
         }
       }
     }
@@ -96,12 +96,12 @@ const ChatModal = ({ isOpen, onClose, initialPosition = 'bottom-right' }) => {
 
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+
       return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
       };
     }
   }, [isDragging, dragOffset]);
@@ -112,19 +112,21 @@ const ChatModal = ({ isOpen, onClose, initialPosition = 'bottom-right' }) => {
     <>
       {/* Backdrop - only show when not minimized */}
       {!isMinimized && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40"
           onClick={onClose}
         />
       )}
 
       {/* Chat Modal */}
-      <div 
+      <div
         className={`fixed z-50 transition-all duration-300 ${getPositionClasses()} ${
-          isMinimized ? 'w-16 h-16' : 'w-96 h-[600px]'
+          isMinimized ? "w-16 h-16" : "w-96 h-[600px]"
         }`}
         onMouseDown={handleMouseDown}
-        style={{ cursor: isDragging ? 'grabbing' : isMinimized ? 'grab' : 'default' }}
+        style={{
+          cursor: isDragging ? "grabbing" : isMinimized ? "grab" : "default",
+        }}
       >
         {isMinimized ? (
           // Minimized State
@@ -139,34 +141,10 @@ const ChatModal = ({ isOpen, onClose, initialPosition = 'bottom-right' }) => {
         ) : (
           // Full Chat Interface
           <div className="bg-white rounded-lg shadow-2xl overflow-hidden h-full flex flex-col">
-            {/* Custom Header with Controls */}
-            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-              <div className="flex items-center gap-2">
-                <FiMessageCircle className="w-5 h-5" />
-                <h3 className="bold-16">المساعد الذكي</h3>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={handleMinimize}
-                  className="p-1.5 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
-                  title="تصغير"
-                >
-                  <FiMinimize2 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={onClose}
-                  className="p-1.5 hover:bg-white hover:bg-opacity-20 rounded transition-colors"
-                  title="إغلاق"
-                >
-                  <FiX className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
             {/* Chat Content */}
             <div className="flex-1 overflow-hidden">
-              <AIChat 
-                isOpen={true} 
+              <AIChat
+                isOpen={true}
                 onClose={onClose}
                 className="h-full border-0 rounded-none"
               />

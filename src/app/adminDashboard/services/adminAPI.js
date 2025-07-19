@@ -80,8 +80,11 @@ export const adminAPI = {
     // Get all students
     getAllStudents: () => apiClient.get("/students"),
 
-    // Get all instructors (we'll need to add this endpoint to backend)
+    // Get all instructors
     getAllInstructors: () => apiClient.get("/instructors"),
+
+    // Get all assistants
+    getAllAssistants: () => apiClient.get("/Assistants"),
 
     // Search students by username
     searchStudents: (usernamePart) =>
@@ -89,6 +92,9 @@ export const adminAPI = {
 
     // Delete user
     deleteUser: (userId) => apiClient.delete(`/users/${userId}`),
+
+    // Update user (student, instructor, or assistant)
+    updateUser: (userId, data) => apiClient.put(`/users/${userId}`, data),
 
     // Update instructor profile - Fixed endpoint path
     updateInstructorProfile: (instructorId, data) =>
@@ -219,29 +225,40 @@ export const adminAPI = {
     // Get all access codes
     getAll: (page = 0, size = 10) =>
       apiClient.get(`/access-codes?page=${page}&size=${size}`),
+
+    // Get access codes by lesson ID
+    getByLesson: (lessonId, page = 0, size = 10) =>
+      apiClient.get(
+        `/lessons/${lessonId}/access-codes?page=${page}&size=${size}`
+      ),
+
+      delete: (codeId) => apiClient.delete(`/access-codes/${codeId}`),
   },
 
-  // Statistics and Analytics
   analytics: {
-    // Get dashboard stats
     getDashboardStats: async () => {
       try {
         const [studentsRes, instructorsRes, coursesRes] = await Promise.all([
           apiClient.get("/students"),
           apiClient.get("/instructors"),
-          apiClient.get("/courses?page=0&size=1"), // Just get count
+          apiClient.get("/courses"), // Fetch all courses to get lesson counts
         ]);
+
+        // Calculate total lessons by summing lessonCount from each course
+        const courses = coursesRes.data.content || [];
+
+        const totalLessons = courses?.reduce(
+          (sum, course) => sum + (course.lessonCount || 0),
+          0
+        );
 
         return {
           students: studentsRes.data?.length || 0,
           instructors: instructorsRes.data?.length || 0,
-          courses:
-            coursesRes.data?.totalElements ||
-            coursesRes.data?.content?.length ||
-            0,
-          lessons: 0, // Will be calculated from courses if needed
-          totalRevenue: 0, // Will be added when revenue tracking is implemented
-          activeUsers: 0, // Will be added when user activity tracking is implemented
+          courses: courses.length,
+          lessons: totalLessons, // This will be the sum of all course.lessonCount
+          totalRevenue: 0,
+          activeUsers: 0,
         };
       } catch (error) {
         throw error;

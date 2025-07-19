@@ -18,12 +18,16 @@ const UserManagement = () => {
   const [activeUserType, setActiveUserType] = useState("students");
   const [users, setUsers] = useState([]);
   const [instructors, setInstructors] = useState([]);
+  const [assistants, setAssistants] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [createUserType, setCreateUserType] = useState("instructor");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
   // Form states
   const [instructorForm, setInstructorForm] = useState({
@@ -49,9 +53,17 @@ const UserManagement = () => {
     instructorId: "",
   });
 
+  const [editForm, setEditForm] = useState({
+    username: "",
+    fullname: "",
+    phoneNumber: "",
+    password: "",
+  });
+
   useEffect(() => {
     fetchUsers();
     fetchInstructors();
+    fetchAssistants();
   }, [activeUserType]);
 
   const fetchUsers = async () => {
@@ -60,10 +72,18 @@ const UserManagement = () => {
       if (activeUserType === "students") {
         const response = await adminAPI.users.getAllStudents();
         setUsers(response.data || []);
+      } else if (activeUserType === "instructors") {
+        const response = await adminAPI.users.getAllInstructors();
+        // Handle both paginated and non-paginated responses
+        setUsers(response.data?.content || response.data || []);
+      } else if (activeUserType === "assistants") {
+        const response = await adminAPI.users.getAllAssistants();
+        setUsers(response.data?.content || response.data || []);
       }
-      // Add more user types when endpoints are available
     } catch (error) {
+      console.error("Error fetching users:", error);
       toast.error(handleAPIError(error, "فشل في تحميل المستخدمين"));
+      setUsers([]);
     } finally {
       setIsLoading(false);
     }
@@ -80,22 +100,118 @@ const UserManagement = () => {
     }
   };
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      fetchUsers();
-      return;
-    }
-
+  const fetchAssistants = async () => {
     try {
-      setIsLoading(true);
-      const response = await adminAPI.users.searchStudents(searchTerm);
-      setUsers(response.data || []);
+      const response = await adminAPI.users.getAllAssistants();
+      // Handle both paginated and non-paginated responses
+      setAssistants(response.data?.content || response.data || []);
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في البحث"));
-    } finally {
-      setIsLoading(false);
+      console.error("Error fetching assistants:", error);
+      toast.error(handleAPIError(error, "فشل في تحميل المساعدين"));
+      setAssistants([]);
     }
   };
+
+  // Add this at the top of your component
+  const [searchTimeout, setSearchTimeout] = useState(null);
+
+  // Then modify handleSearch to use debouncing
+  const handleSearch = () => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    setSearchTimeout(
+      setTimeout(() => {
+        if (!searchTerm.trim()) {
+          fetchUsers();
+          return;
+        }
+
+        try {
+          setIsLoading(true);
+          const searchLower = searchTerm.toLowerCase();
+          const filteredUsers = users.filter(
+            (user) =>
+              user.fullname?.toLowerCase().includes(searchLower) ||
+              user.username?.toLowerCase().includes(searchLower) ||
+              user.email?.toLowerCase().includes(searchLower) ||
+              user.phoneNumber?.includes(searchTerm) ||
+              user.government?.toLowerCase().includes(searchLower)
+          );
+          setUsers(filteredUsers);
+        } catch (error) {
+          console.error("Search error:", error);
+          toast.error("حدث خطأ أثناء البحث");
+        } finally {
+          setIsLoading(false);
+        }
+      }, 300)
+    ); // 300ms delay
+  };
+
+  // Don't forget to clear the timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+    };
+  }, [searchTimeout]);
+
+  // const handleSearch = async () => {
+  //   if (!searchTerm.trim()) {
+  //     fetchUsers();
+  //     return;
+  //   }
+
+  //   try {
+  //     setIsLoading(true);
+  //     if (activeUserType === "students") {
+  //       const response = await adminAPI.users.searchStudents(searchTerm);
+  //       setUsers(response.data || []);
+  //     } else if (activeUserType === "instructors") {
+  //       // Filter instructors locally for now
+  //       const allInstructors = await adminAPI.users.getAllInstructors();
+  //       const instructorsList =
+  //         allInstructors.data?.content || allInstructors.data || [];
+  //       const filteredInstructors = instructorsList.filter(
+  //         (instructor) =>
+  //           instructor.fullname
+  //             ?.toLowerCase()
+  //             .includes(searchTerm.toLowerCase()) ||
+  //           instructor.username
+  //             ?.toLowerCase()
+  //             .includes(searchTerm.toLowerCase()) ||
+  //           instructor.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  //       );
+  //       setUsers(filteredInstructors);
+  //     } else if (activeUserType === "assistants") {
+  //       // Filter assistants locally for now
+  //       const allAssistants = await adminAPI.users.getAllAssistants();
+  //       const assistantsList =
+  //         allAssistants.data?.content || allAssistants.data || [];
+  //       const filteredAssistants = assistantsList.filter(
+  //         (assistant) =>
+  //           assistant.fullname
+  //             ?.toLowerCase()
+  //             .includes(searchTerm.toLowerCase()) ||
+  //           assistant.username
+  //             ?.toLowerCase()
+  //             .includes(searchTerm.toLowerCase()) ||
+  //           assistant.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  //       );
+  //       setUsers(filteredAssistants);
+  //     } else {
+  //       setUsers([]);
+  //     }
+  //   } catch (error) {
+  //     console.error("Search error:", error);
+  //     toast.error(handleAPIError(error, "فشل في البحث"));
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handleCreateInstructor = async (e) => {
     e.preventDefault();
@@ -151,27 +267,157 @@ const UserManagement = () => {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذا المستخدم؟")) {
-      return;
-    }
+  const handleDeleteClick = (userId) => {
+    setUserToDelete(userId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
 
     try {
       setIsLoading(true);
-      await adminAPI.users.deleteUser(userId);
+      await adminAPI.users.deleteUser(userToDelete);
       toast.success("تم حذف المستخدم بنجاح");
       fetchUsers();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف المستخدم"));
     } finally {
       setIsLoading(false);
+      setShowDeleteModal(false);
+      setUserToDelete(null);
+    }
+  };
+  const handleEditUser = (user) => {
+    setSelectedUser(user);
+
+    // تحديد نوع المستخدم بناءً على البيانات المتاحة
+    const userType = user.instructorId
+      ? "assistant"
+      : user.bio
+        ? "instructor"
+        : "student";
+
+    // إعداد بيانات النموذج حسب نوع المستخدم
+    const baseForm = {
+      username: user.username || "",
+      fullname: user.fullname || "",
+      phoneNumber: user.phoneNumber || "",
+      password: "", // Always empty for security
+      government: user.government || "",
+      nationalId: user.nationalId || "",
+    };
+
+    if (userType === "instructor") {
+      baseForm.bio = user.bio || "";
+      baseForm.photoUrl = user.photoUrl || "";
+    } else if (userType === "assistant") {
+      baseForm.instructorId = user.instructorId || "";
+    }
+
+    setEditForm(baseForm);
+    setShowEditModal(true);
+    setCreateUserType(userType); // لتحديد نوع المستخدم في النموذج
+  };
+
+  const handleUpdateUser = async () => {
+    if (!selectedUser) return;
+
+    try {
+      setIsLoading(true);
+
+      // تحضير البيانات الأساسية
+      const updateData = {
+        username: editForm.username,
+        fullname: editForm.fullname,
+        phoneNumber: editForm.phoneNumber,
+        government: editForm.government,
+        nationalId: editForm.nationalId,
+      };
+
+      // إضافة حقول إضافية حسب نوع المستخدم
+      if (createUserType === "instructor") {
+        updateData.bio = editForm.bio;
+        updateData.photoUrl = editForm.photoUrl;
+      } else if (createUserType === "assistant") {
+        updateData.instructorId = editForm.instructorId;
+      }
+
+      // إضافة كلمة المرور فقط إذا تم تقديمها
+      if (editForm.password.trim()) {
+        updateData.password = editForm.password;
+      }
+
+      await adminAPI.users.updateUser(selectedUser.id, updateData);
+      toast.success("تم تحديث بيانات المستخدم بنجاح");
+      setShowEditModal(false);
+      setSelectedUser(null);
+      setEditForm({
+        username: "",
+        fullname: "",
+        phoneNumber: "",
+        password: "",
+        government: "",
+        nationalId: "",
+        bio: "",
+        photoUrl: "",
+        instructorId: "",
+      });
+      fetchUsers();
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تحديث بيانات المستخدم"));
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const userTypes = [
-    { id: "students", label: "الطلاب", count: users.length },
-    { id: "instructors", label: "المدرسين", count: instructors.length },
-    { id: "assistants", label: "المساعدين", count: 0 },
+    {
+      id: "students",
+      label: "الطلاب",
+      count: activeUserType === "students" ? users.length : 0,
+    },
+    {
+      id: "instructors",
+      label: "المدرسين",
+      count:
+        activeUserType === "instructors" ? users.length : instructors.length,
+    },
+    {
+      id: "assistants",
+      label: "المساعدين",
+      count: activeUserType === "assistants" ? users.length : assistants.length,
+    },
+  ];
+
+  const EGYPTIAN_GOVERNORATES = [
+    "القاهرة",
+    "الإسكندرية",
+    "بورسعيد",
+    "السويس",
+    "دمياط",
+    "الدقهلية",
+    "الشرقية",
+    "القليوبية",
+    "كفر الشيخ",
+    "الغربية",
+    "المنوفية",
+    "البحيرة",
+    "الإسماعيلية",
+    "الجيزة",
+    "بني سويف",
+    "الفيوم",
+    "المنيا",
+    "أسيوط",
+    "سوهاج",
+    "قنا",
+    "الأقصر",
+    "أسوان",
+    "البحر الأحمر",
+    "الوادي الجديد",
+    "مطروح",
+    "شمال سيناء",
+    "جنوب سيناء",
   ];
 
   return (
@@ -199,13 +445,13 @@ const UserManagement = () => {
           <button
             key={type.id}
             onClick={() => setActiveUserType(type.id)}
-            className={`px-6 py-3 rounded-lg bold-16 transition-all duration-300 ${
+            className={`px-6 py-3 cursor-pointer rounded-lg bold-16 transition-all duration-300 ${
               activeUserType === type.id
                 ? "bg-accent text-white shadow-lg"
                 : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
             }`}
           >
-            {type.label} ({type.count})
+            {type.label}
           </button>
         ))}
       </div>
@@ -221,7 +467,6 @@ const UserManagement = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             />
           </div>
           <button
@@ -301,13 +546,22 @@ const UserManagement = () => {
                             setSelectedUser(user);
                             setShowViewModal(true);
                           }}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-blue-600 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors"
+                          title="عرض التفاصيل"
                         >
                           <FiEye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          onClick={() => handleEditUser(user)}
+                          className="p-2 text-green-600 hover:bg-green-50 cursor-pointer rounded-lg transition-colors"
+                          title="تعديل البيانات"
+                        >
+                          <FiEdit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(user.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
+                          title="حذف المستخدم"
                         >
                           <FiTrash2 className="w-4 h-4" />
                         </button>
@@ -444,6 +698,7 @@ const UserManagement = () => {
                     <input
                       type="tel"
                       required
+                      maxLength={11}
                       value={instructorForm.phoneNumber}
                       onChange={(e) =>
                         setInstructorForm({
@@ -461,6 +716,7 @@ const UserManagement = () => {
                     <input
                       type="text"
                       required
+                      maxLength={14}
                       value={instructorForm.nationalId}
                       onChange={(e) =>
                         setInstructorForm({
@@ -621,6 +877,7 @@ const UserManagement = () => {
                     <input
                       type="tel"
                       required
+                      maxLength={11}
                       value={assistantForm.phoneNumber}
                       onChange={(e) =>
                         setAssistantForm({
@@ -637,6 +894,7 @@ const UserManagement = () => {
                     </label>
                     <input
                       type="text"
+                      maxLength={14}
                       required
                       value={assistantForm.nationalId}
                       onChange={(e) =>
@@ -787,6 +1045,265 @@ const UserManagement = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="bold-24 text-gray-900">تعديل بيانات المستخدم</h2>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <FiX className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleUpdateUser();
+              }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* الحقول الأساسية لجميع المستخدمين */}
+                <div>
+                  <label className="block bold-14 text-gray-900 mb-2">
+                    اسم المستخدم *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.username}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, username: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block bold-14 text-gray-900 mb-2">
+                    الاسم الكامل *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.fullname}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, fullname: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block bold-14 text-gray-900 mb-2">
+                    رقم الهاتف *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={editForm.phoneNumber}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, phoneNumber: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block bold-14 text-gray-900 mb-2">
+                    الرقم القومي *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={14}
+                    value={editForm.nationalId}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, nationalId: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block bold-14 text-gray-900 mb-2">
+                    المحافظة *
+                  </label>
+                  <select
+                    required
+                    value={editForm.government}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, government: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  >
+                    <option value="">اختر المحافظة</option>
+                    {EGYPTIAN_GOVERNORATES.map((gov) => (
+                      <option key={gov} value={gov}>
+                        {gov}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block bold-14 text-gray-900 mb-2">
+                    كلمة المرور الجديدة (اختياري)
+                  </label>
+                  <input
+                    type="password"
+                    value={editForm.password}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, password: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  />
+                </div>
+
+                {/* حقول إضافية للمدرسين */}
+                {createUserType === "instructor" && (
+                  <>
+                    <div className="md:col-span-2">
+                      <label className="block bold-14 text-gray-900 mb-2">
+                        النبذة التعريفية
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={editForm.bio}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, bio: e.target.value })
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block bold-14 text-gray-900 mb-2">
+                        رابط الصورة
+                      </label>
+                      <input
+                        type="url"
+                        value={editForm.photoUrl}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, photoUrl: e.target.value })
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* حقول إضافية للمساعدين */}
+                {createUserType === "assistant" && (
+                  <div className="md:col-span-2">
+                    <label className="block bold-14 text-gray-900 mb-2">
+                      المدرس المسؤول *
+                    </label>
+                    <select
+                      required
+                      value={editForm.instructorId}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          instructorId: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                    >
+                      <option value="">اختر المدرس</option>
+                      {instructors.map((instructor) => (
+                        <option key={instructor.id} value={instructor.id}>
+                          {instructor.fullname || instructor.username}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-4 pt-6">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                >
+                  {isLoading ? "جاري التحديث..." : "حفظ التعديلات"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="bold-24 text-gray-900">تأكيد الحذف</h2>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setUserToDelete(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <FiX className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <div className="flexCenter flex-col">
+                <div className="w-16 h-16 bg-red-100 rounded-full flexCenter mb-4">
+                  <FiTrash2 className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="bold-18 text-gray-900 mb-2">
+                  هل أنت متأكد من الحذف؟
+                </h3>
+                <p className="regular-14 text-gray-600 text-center">
+                  سيتم حذف المستخدم بشكل دائم ولن تتمكن من استعادة بياناته
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setUserToDelete(null);
+                }}
+                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isLoading}
+                className="flex-1 bg-red-600 text-white py-3 rounded-lg bold-16 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 flexCenter gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                    جاري الحذف...
+                  </>
+                ) : (
+                  "حذف المستخدم"
+                )}
+              </button>
             </div>
           </div>
         </div>

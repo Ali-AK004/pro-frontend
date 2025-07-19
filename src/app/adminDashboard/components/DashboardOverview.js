@@ -12,7 +12,7 @@ import {
   FiEye,
 } from "react-icons/fi";
 
-const DashboardOverview = () => {
+const DashboardOverview = ({setActiveTab}) => {
   const [stats, setStats] = useState({
     students: 0,
     instructors: 0,
@@ -22,7 +22,6 @@ const DashboardOverview = () => {
     activeUsers: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [recentActivity, setRecentActivity] = useState([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -35,34 +34,6 @@ const DashboardOverview = () => {
       // Fetch dashboard stats
       const dashboardStats = await adminAPI.analytics.getDashboardStats();
       setStats(dashboardStats);
-
-      // Mock recent activity for now
-      setRecentActivity([
-        {
-          id: 1,
-          type: "user_registered",
-          message: "طالب جديد انضم للمنصة",
-          time: "5 دقائق مضت",
-          icon: FiUsers,
-          color: "text-green-600",
-        },
-        {
-          id: 2,
-          type: "course_created",
-          message: "تم إنشاء كورس جديد",
-          time: "15 دقيقة مضت",
-          icon: FiBook,
-          color: "text-blue-600",
-        },
-        {
-          id: 3,
-          type: "lesson_completed",
-          message: "تم إكمال درس بواسطة طالب",
-          time: "30 دقيقة مضت",
-          icon: FiFileText,
-          color: "text-purple-600",
-        },
-      ]);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل بيانات لوحة التحكم"));
     } finally {
@@ -78,7 +49,6 @@ const DashboardOverview = () => {
       color: "bg-blue-500",
       bgColor: "bg-blue-50",
       textColor: "text-blue-600",
-      change: "+12%",
       changeType: "increase",
     },
     {
@@ -88,7 +58,6 @@ const DashboardOverview = () => {
       color: "bg-green-500",
       bgColor: "bg-green-50",
       textColor: "text-green-600",
-      change: "+8%",
       changeType: "increase",
     },
     {
@@ -98,7 +67,6 @@ const DashboardOverview = () => {
       color: "bg-purple-500",
       bgColor: "bg-purple-50",
       textColor: "text-purple-600",
-      change: "+15%",
       changeType: "increase",
     },
     {
@@ -108,10 +76,13 @@ const DashboardOverview = () => {
       color: "bg-orange-500",
       bgColor: "bg-orange-50",
       textColor: "text-orange-600",
-      change: "+20%",
       changeType: "increase",
     },
   ];
+
+  const navigateToTab = (tabId) => {
+    setActiveTab(tabId);
+  };
 
   if (isLoading) {
     return (
@@ -176,54 +147,37 @@ const DashboardOverview = () => {
       </div>
 
       {/* Charts and Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Activity */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="bold-20 text-gray-900 mb-4">النشاط الأخير</h3>
-          <div className="space-y-4">
-            {recentActivity.map((activity) => {
-              const Icon = activity.icon;
-              return (
-                <div
-                  key={activity.id}
-                  className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <div className={`p-2 rounded-lg bg-gray-100`}>
-                    <Icon className={`w-4 h-4 ${activity.color}`} />
-                  </div>
-                  <div className="flex-1 text-right">
-                    <p className="regular-14 text-gray-900">
-                      {activity.message}
-                    </p>
-                    <p className="regular-12 text-gray-500">{activity.time}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="bold-20 text-gray-900 mb-4">إجراءات سريعة</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <button className="p-4 bg-accent bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group">
-              <FiUsers className="w-6 h-6 text-accent mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <p className="regular-14 text-accent">إضافة مدرس</p>
-            </button>
-            <button className="p-4 bg-secondary bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group">
-              <FiBook className="w-6 h-6 text-secondary mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <p className="regular-14 text-secondary">إنشاء كورس</p>
-            </button>
-            <button className="p-4 bg-green-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group">
-              <FiFileText className="w-6 h-6 text-green-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <p className="regular-14 text-green-600">إضافة درس</p>
-            </button>
-            <button className="p-4 bg-purple-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group">
-              <FiCode className="w-6 h-6 text-purple-600 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <p className="regular-14 text-purple-600">إنشاء كود</p>
-            </button>
-          </div>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <h3 className="bold-20 text-gray-900 mb-4">إجراءات سريعة</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            onClick={() => navigateToTab("users")}
+            className="p-4 bg-accent cursor-pointer bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
+          >
+            <FiUsers className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
+            <p className="regular-14 text-white">إضافة مدرس</p>
+          </button>
+          <button
+            onClick={() => navigateToTab("courses")}
+            className="p-4 bg-secondary cursor-pointer bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
+          >
+            <FiBook className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
+            <p className="regular-14 text-white">إنشاء كورس</p>
+          </button>
+          <button
+            onClick={() => navigateToTab("lessons")}
+            className="p-4 bg-green-500 cursor-pointer bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
+          >
+            <FiFileText className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
+            <p className="regular-14 text-white">إضافة درس</p>
+          </button>
+          <button
+            onClick={() => navigateToTab("access-codes")}
+            className="p-4 bg-purple-500 cursor-pointer bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
+          >
+            <FiCode className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
+            <p className="regular-14 text-white">إنشاء كود</p>
+          </button>
         </div>
       </div>
     </div>

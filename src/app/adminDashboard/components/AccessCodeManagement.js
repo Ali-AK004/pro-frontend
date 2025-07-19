@@ -12,19 +12,18 @@ import {
   FiFileText,
   FiCalendar,
   FiCheck,
+  FiTrash2,
 } from "react-icons/fi";
 
 const AccessCodeManagement = () => {
   const [accessCodes, setAccessCodes] = useState([]);
   const [lessons, setLessons] = useState([]);
-  const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLesson, setSelectedLesson] = useState("");
-  const [selectedCourse, setSelectedCourse] = useState("");
   const [showGenerateModal, setShowGenerateModal] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [selectedCodes, setSelectedCodes] = useState([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [codeToDelete, setCodeToDelete] = useState(null);
 
   // Form states
   const [generateForm, setGenerateForm] = useState({
@@ -35,16 +34,21 @@ const AccessCodeManagement = () => {
   useEffect(() => {
     fetchAccessCodes();
     fetchLessons();
-    fetchCourses();
-  }, [selectedLesson, selectedCourse]);
+  }, [selectedLesson]);
 
   const fetchAccessCodes = async () => {
     try {
       setIsLoading(true);
-      const response = await adminAPI.accessCodes.getAll();
+      let response;
+      if (selectedLesson) {
+        response = await adminAPI.accessCodes.getByLesson(selectedLesson);
+      } else {
+        response = await adminAPI.accessCodes.getAll();
+      }
       setAccessCodes(response.data?.content || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل أكواد الوصول"));
+      console.error(error);
       setAccessCodes([]);
     } finally {
       setIsLoading(false);
@@ -53,28 +57,28 @@ const AccessCodeManagement = () => {
 
   const fetchLessons = async () => {
     try {
-      if (selectedCourse) {
-        const response = await adminAPI.lessons.getByCourse(selectedCourse);
-        // Handle paginated response
-        setLessons(response.data?.content || response.data || []);
-      } else {
-        // For now, if no course is selected, show empty list
-        setLessons([]);
+      const coursesResponse = await adminAPI.courses.getAll(0, 100);
+      const courses = coursesResponse.data?.content || coursesResponse.data || [];
+
+      let allLessons = [];
+      for (const course of courses) {
+        try {
+          const lessonsResponse = await adminAPI.lessons.getByCourse(
+            course.id,
+            0,
+            100
+          );
+          const courseLessons = lessonsResponse.data?.content || lessonsResponse.data || [];
+          allLessons = [...allLessons, ...courseLessons];
+        } catch (error) {
+          console.error(`Error fetching lessons for course ${course.id}:`, error);
+        }
       }
+
+      setLessons(allLessons);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
       setLessons([]);
-    }
-  };
-
-  const fetchCourses = async () => {
-    try {
-      const response = await adminAPI.courses.getAll();
-      // Handle paginated response
-      setCourses(response.data?.content || response.data || []);
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
-      setCourses([]);
     }
   };
 
@@ -92,6 +96,7 @@ const AccessCodeManagement = () => {
       fetchAccessCodes();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء أكواد الوصول"));
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -130,12 +135,12 @@ const AccessCodeManagement = () => {
   };
 
   const handleSearch = () => {
-    if (!searchTerm.trim() && !selectedLesson && !selectedCourse) {
+    if (!searchTerm.trim() && !selectedLesson) {
       fetchAccessCodes();
       return;
     }
 
-    let filteredCodes = accessCodes;
+    let filteredCodes = [...accessCodes];
 
     if (searchTerm.trim()) {
       filteredCodes = filteredCodes.filter(
@@ -151,18 +156,31 @@ const AccessCodeManagement = () => {
       );
     }
 
-    if (selectedCourse) {
-      filteredCodes = filteredCodes.filter(
-        (item) => item.course.id === selectedCourse
-      );
-    }
-
     setAccessCodes(filteredCodes);
   };
 
-  const filteredLessons = selectedCourse
-    ? lessons.filter((lesson) => lesson.course.id === selectedCourse)
-    : lessons;
+  const handleDeleteCode = (codeId) => {
+    setCodeToDelete(codeId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!codeToDelete) return;
+    
+    try {
+      setIsLoading(true);
+      await adminAPI.accessCodes.delete(codeToDelete);
+      toast.success("تم حذف كود الوصول بنجاح");
+      fetchAccessCodes();
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في حذف كود الوصول"));
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+      setShowDeleteModal(false);
+      setCodeToDelete(null);
+    }
+  };
 
   return (
     <div className="p-8">
@@ -201,7 +219,7 @@ const AccessCodeManagement = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -214,27 +232,12 @@ const AccessCodeManagement = () => {
             />
           </div>
           <select
-            value={selectedCourse}
-            onChange={(e) => {
-              setSelectedCourse(e.target.value);
-              setSelectedLesson(""); // Reset lesson when course changes
-            }}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-          >
-            <option value="">جميع الكورسات</option>
-            {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.name}
-              </option>
-            ))}
-          </select>
-          <select
             value={selectedLesson}
             onChange={(e) => setSelectedLesson(e.target.value)}
             className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
           >
             <option value="">جميع الدروس</option>
-            {filteredLessons.map((lesson) => (
+            {lessons.map((lesson) => (
               <option key={lesson.id} value={lesson.id}>
                 {lesson.name}
               </option>
@@ -279,7 +282,7 @@ const AccessCodeManagement = () => {
                     الدرس
                   </th>
                   <th className="px-6 py-4 text-right bold-14 text-gray-900">
-                    الكورس
+                    المنشئ
                   </th>
                   <th className="px-6 py-4 text-right bold-14 text-gray-900">
                     الحالة
@@ -300,29 +303,23 @@ const AccessCodeManagement = () => {
                         <code className="bg-gray-100 px-3 py-1 rounded font-mono text-sm">
                           {item.code}
                         </code>
-                        <button
-                          onClick={() => handleCopyCode(item.code)}
-                          className="p-1 text-gray-500 hover:text-accent transition-colors"
-                        >
-                          <FiCopy className="w-4 h-4" />
-                        </button>
                       </div>
                     </td>
                     <td className="px-6 py-4 regular-14 text-gray-900">
-                      {item.lesson?.name || "غير محدد"}
+                      {item.lessonName || "غير محدد"}
                     </td>
                     <td className="px-6 py-4 regular-14 text-gray-900">
-                      {item.course?.name || "غير محدد"}
+                      {item.creatorName || "غير محدد"}
                     </td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm ${
-                          item.isUsed
+                          item.used
                             ? "bg-red-100 text-red-800"
                             : "bg-green-100 text-green-800"
                         }`}
                       >
-                        {item.isUsed ? (
+                        {item.used ? (
                           <>
                             <FiX className="w-3 h-3" />
                             مستخدم
@@ -340,13 +337,16 @@ const AccessCodeManagement = () => {
                     </td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={() => {
-                          setSelectedCodes([item]);
-                          setShowViewModal(true);
-                        }}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        onClick={() => handleCopyCode(item.code)}
+                        className="p-1 text-gray-500 cursor-pointer hover:text-accent transition-colors"
                       >
-                        <FiEye className="w-4 h-4" />
+                        <FiCopy className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCode(item.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <FiTrash2 className="w-4 h-4 cursor-pointer" />
                       </button>
                     </td>
                   </tr>
@@ -390,7 +390,7 @@ const AccessCodeManagement = () => {
                   <option value="">اختر الدرس</option>
                   {lessons.map((lesson) => (
                     <option key={lesson.id} value={lesson.id}>
-                      {lesson.name} - {lesson.course.name}
+                      {lesson.name} ({lesson.course?.name || "غير محدد"})
                     </option>
                   ))}
                 </select>
@@ -441,111 +441,62 @@ const AccessCodeManagement = () => {
         </div>
       )}
 
-      {/* View Access Code Details Modal */}
-      {showViewModal && selectedCodes.length > 0 && (
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-24 text-gray-900">تفاصيل كود الوصول</h2>
+              <h2 className="bold-24 text-gray-900">تأكيد حذف كود الوصول</h2>
               <button
-                onClick={() => setShowViewModal(false)}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setCodeToDelete(null);
+                }}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
               </button>
             </div>
 
-            {selectedCodes.map((item) => (
-              <div key={item.id} className="space-y-6">
-                {/* Code Display */}
-                <div className="text-center p-6 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-center gap-3 mb-4">
-                    <code className="bg-white px-6 py-3 rounded-lg font-mono text-xl bold-20 border-2 border-accent">
-                      {item.code}
-                    </code>
-                    <button
-                      onClick={() => handleCopyCode(item.code)}
-                      className="p-3 bg-accent text-white rounded-lg hover:bg-opacity-90 transition-colors"
-                    >
-                      <FiCopy className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <p className="regular-14 text-gray-600">
-                    انقر على أيقونة النسخ لنسخ الكود
-                  </p>
+            <div className="mb-6">
+              <div className="flexCenter flex-col">
+                <div className="w-16 h-16 bg-red-100 rounded-full flexCenter mb-4">
+                  <FiTrash2 className="w-8 h-8 text-red-600" />
                 </div>
-
-                {/* Code Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FiFileText className="w-5 h-5 text-gray-500" />
-                      <p className="regular-12 text-gray-500">الدرس</p>
-                    </div>
-                    <p className="bold-14 text-gray-900">{item.lesson.name}</p>
-                  </div>
-
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FiCode className="w-5 h-5 text-gray-500" />
-                      <p className="regular-12 text-gray-500">الكورس</p>
-                    </div>
-                    <p className="bold-14 text-gray-900">{item.course.name}</p>
-                  </div>
-
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FiCalendar className="w-5 h-5 text-gray-500" />
-                      <p className="regular-12 text-gray-500">تاريخ الإنشاء</p>
-                    </div>
-                    <p className="bold-14 text-gray-900">
-                      {new Date(item.createdAt).toLocaleDateString("ar-EG")}
-                    </p>
-                  </div>
-
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      {item.isUsed ? (
-                        <FiX className="w-5 h-5 text-red-500" />
-                      ) : (
-                        <FiCheck className="w-5 h-5 text-green-500" />
-                      )}
-                      <p className="regular-12 text-gray-500">الحالة</p>
-                    </div>
-                    <p
-                      className={`bold-14 ${item.isUsed ? "text-red-600" : "text-green-600"}`}
-                    >
-                      {item.isUsed ? "مستخدم" : "متاح للاستخدام"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Usage Details */}
-                {item.isUsed && item.usedBy && (
-                  <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                    <h4 className="bold-16 text-red-800 mb-3">
-                      تفاصيل الاستخدام
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="regular-12 text-red-600 mb-1">المستخدم</p>
-                        <p className="bold-14 text-red-800">
-                          {item.usedBy.fullname} (@{item.usedBy.username})
-                        </p>
-                      </div>
-                      <div>
-                        <p className="regular-12 text-red-600 mb-1">
-                          تاريخ الاستخدام
-                        </p>
-                        <p className="bold-14 text-red-800">
-                          {new Date(item.usedAt).toLocaleDateString("ar-EG")}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                <h3 className="bold-18 text-gray-900 mb-2">
+                  هل أنت متأكد من الحذف؟
+                </h3>
+                <p className="regular-14 text-gray-600 text-center">
+                  سيتم حذف كود الوصول بشكل دائم ولن يتمكن الطلاب من استخدامه
+                </p>
               </div>
-            ))}
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setCodeToDelete(null);
+                }}
+                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={isLoading}
+                className="flex-1 bg-red-600 text-white py-3 rounded-lg bold-16 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 flexCenter gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                    جاري الحذف...
+                  </>
+                ) : (
+                  "حذف الكود"
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

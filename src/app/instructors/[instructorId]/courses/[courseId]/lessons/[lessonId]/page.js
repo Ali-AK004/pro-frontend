@@ -25,6 +25,7 @@ import { studentAPI } from "@/app/services/studentAPI";
 import examAPI, { handleAPIError } from "@/app/services/examAPI";
 import assignmentAPI from "@/app/services/assignmentAPI";
 import { useUserData } from "../../../../../../../../models/UserContext";
+import CustomVideoPlayer from "../../components/CustomVideoPlayer";
 
 const LessonPage = () => {
   const params = useParams();
@@ -132,6 +133,7 @@ const LessonPage = () => {
       toast.success("تم تسليم الواجب بنجاح");
       // Refresh lesson data
       await fetchLessonData();
+      setActiveTab("overview");
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تسليم الواجب"));
     } finally {
@@ -213,6 +215,7 @@ const LessonPage = () => {
     canAccessAssignment,
     progressStatus,
     accessError,
+    videoUrl,
   } = lessonData;
 
   return (
@@ -336,6 +339,7 @@ const LessonPage = () => {
         {activeTab === "video" && (
           <VideoTab
             lesson={lesson}
+            videoUrl={videoUrl}
             onVideoComplete={handleVideoComplete}
             canAccess={canAccessVideo}
             accessError={accessError}
@@ -744,7 +748,13 @@ const ExamTab = ({
 };
 
 // Video Tab Component
-const VideoTab = ({ lesson, onVideoComplete, canAccess, accessError }) => {
+const VideoTab = ({
+  lesson,
+  onVideoComplete,
+  canAccess,
+  accessError,
+  videoUrl,
+}) => {
   if (!canAccess) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -760,34 +770,31 @@ const VideoTab = ({ lesson, onVideoComplete, canAccess, accessError }) => {
     );
   }
 
-  if (!lesson.videoUrl) {
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="text-center">
-          <FaExclamationTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
-          <h3 className="bold-18 text-gray-600 mb-2">الفيديو غير متاح</h3>
-          <p className="regular-14 text-gray-500">
-            لم يتم رفع فيديو لهذا الدرس بعد
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // if (!lesson.videoUrl) {
+  //   return (
+  //     <div className="bg-white rounded-lg shadow-sm p-6">
+  //       <div className="text-center">
+  //         <FaExclamationTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+  //         <h3 className="bold-18 text-gray-600 mb-2">الفيديو غير متاح</h3>
+  //         <p className="regular-14 text-gray-500">
+  //           لم يتم رفع فيديو لهذا الدرس بعد
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <h2 className="bold-24 text-gray-900 mb-6">فيديو الدرس</h2>
 
-      <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4">
-        <video
-          src={lesson.videoUrl}
-          controls
-          className="w-full h-full"
+      <div className="aspect-video rounded-lg w-full max-w-4xl mx-auto mb-4">
+        <CustomVideoPlayer
+          videoUrl={videoUrl || lesson?.videoUrl}
           onEnded={onVideoComplete}
-          poster={lesson.photoUrl}
-        >
-          متصفحك لا يدعم تشغيل الفيديو
-        </video>
+          poster={lesson?.photoUrl}
+          className="w-full h-full"
+        />
       </div>
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

@@ -475,7 +475,7 @@ const Profile = () => {
 
                             <div className="flex space-x-2 gap-2 flex-col md:flex-row md:justify-end space-x-reverse">
                               <Link
-                                href={`/instructor/${lesson.instructorId}/courses/${lesson.courseId}/lessons/${lesson.id}`}
+                                href={`/instructors/${lesson.instructorId}/courses/${lesson.courseId}/lessons/${lesson.id}`}
                                 className={`px-4 py-2 rounded-md regular-12 transition-colors flexCenter gap-2 ${
                                   lesson.expired
                                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"

@@ -73,12 +73,6 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       description: "إنشاء وإدارة أكواد الوصول",
     },
     {
-      id: "analytics",
-      label: "التحليلات",
-      icon: FiBarChart,
-      description: "إحصائيات ومقاييس الأداء",
-    },
-    {
       id: "ai-chat",
       label: "المساعد الذكي",
       icon: FiMessageCircle,
