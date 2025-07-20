@@ -1,4 +1,5 @@
 import axios from "axios";
+import { sanitizeInput, validateSearchTerm } from '../../utils/security';
 
 const BASE_URL = "http://localhost:8080/api/instructors";
 const API_BASE_URL = "http://localhost:8080/api";
@@ -88,6 +89,15 @@ export const instructorAPI = {
     // Delete course
     delete: (instructorId, courseId) =>
       apiClient.delete(`/${instructorId}/courses/${courseId}`),
+
+    search: (searchTerm) => {
+      try {
+        const sanitizedTerm = validateSearchTerm(searchTerm);
+        return apiClient.get(`/courses/search?q=${encodeURIComponent(sanitizedTerm)}`);
+      } catch (error) {
+        throw new Error('Invalid search parameters');
+      }
+    },
   },
 
   // Lesson Management
@@ -107,6 +117,15 @@ export const instructorAPI = {
     // Generate access codes for lesson
     generateAccessCodes: (lessonId, count) =>
       apiClient.post(`/lessons/${lessonId}/generate-codes?count=${count}`),
+
+    search: (courseId, searchTerm) => {
+      try {
+        const sanitizedTerm = validateSearchTerm(searchTerm);
+        return apiClient.get(`/courses/${courseId}/lessons/search?q=${encodeURIComponent(sanitizedTerm)}`);
+      } catch (error) {
+        throw new Error('Invalid search parameters');
+      }
+    },
   },
 
   // Access Codes Management
@@ -156,6 +175,15 @@ export const instructorAPI = {
     // Get all exams for instructor
     getByInstructor: (instructorId) =>
       generalApiClient.get(`/exams/instructors/${instructorId}`),
+
+    search: (searchTerm) => {
+      try {
+        const sanitizedTerm = validateSearchTerm(searchTerm);
+        return apiClient.get(`/exams/search?q=${encodeURIComponent(sanitizedTerm)}`);
+      } catch (error) {
+        throw new Error('Invalid search parameters');
+      }
+    },
   },
 
   // Assignment Management
@@ -197,6 +225,15 @@ export const instructorAPI = {
     // Get assignment submissions
     getSubmissions: (assignmentId) =>
       generalApiClient.get(`/assignments/${assignmentId}/submissions`),
+
+    search: (searchTerm) => {
+      try {
+        const sanitizedTerm = validateSearchTerm(searchTerm);
+        return apiClient.get(`/assignments/search?q=${encodeURIComponent(sanitizedTerm)}`);
+      } catch (error) {
+        throw new Error('Invalid search parameters');
+      }
+    },
   },
 
   // Analytics and Statistics

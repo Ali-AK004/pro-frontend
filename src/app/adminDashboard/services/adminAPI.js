@@ -1,4 +1,5 @@
 import axios from "axios";
+import { sanitizeInput, validateSearchTerm } from '../../utils/security';
 
 const BASE_URL = "http://localhost:8080/api/admin";
 const API_BASE_URL = "http://localhost:8080/api";
@@ -87,8 +88,14 @@ export const adminAPI = {
     getAllAssistants: () => apiClient.get("/Assistants"),
 
     // Search students by username
-    searchStudents: (usernamePart) =>
-      apiClient.post("/search", { usernamePart }),
+    searchStudents: (usernamePart) => {
+      try {
+        const sanitizedTerm = validateSearchTerm(usernamePart);
+        return apiClient.post("/search", { usernamePart: sanitizedTerm });
+      } catch (error) {
+        throw new Error('Invalid search parameters');
+      }
+    },
 
     // Delete user
     deleteUser: (userId) => apiClient.delete(`/users/${userId}`),
@@ -233,6 +240,8 @@ export const adminAPI = {
       ),
 
       delete: (codeId) => apiClient.delete(`/access-codes/${codeId}`),
+
+        deleteUsed: () => apiClient.delete("/access-codes/used"),
   },
 
   analytics: {

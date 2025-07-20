@@ -1,9 +1,11 @@
-"use client";
+'use client';
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserData } from "../../../models/UserContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import GlobalSearch from "./components/GlobalSearch";
+import { canAccessInstructorDashboard } from "../utils/roleHelpers";
 
 // Import components
 import InstructorSidebar from "./components/InstructorSidebar";
@@ -21,7 +23,13 @@ const InstructorDashboard = () => {
   const { user, loading } = useUserData();
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  // Check if user is instructor
+  const handleGlobalSearch = (searchTerm) => {
+    // Implement global search logic across all instructor data
+    console.log('Searching across all instructor data:', searchTerm);
+    // You can search across courses, lessons, students, etc.
+  };
+
+  // Check if user can access instructor dashboard
   useEffect(() => {
     if (loading) return;
 
@@ -30,11 +38,11 @@ const InstructorDashboard = () => {
       return;
     }
 
-    // if (user.role !== 'INSTRUCTOR') {
-    //   toast.error('غير مصرح لك بالوصول لهذه الصفحة');
-    //   router.push('/');
-    //   return;
-    // }
+    if (!canAccessInstructorDashboard(user)) {
+      toast.error('غير مصرح لك بالوصول لهذه الصفحة');
+      router.push('/');
+      return;
+    }
   }, [user, loading, router]);
 
   // Loading state
@@ -98,6 +106,14 @@ const InstructorDashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 lg:mr-80 mr-0">
+        {/* Optional: Add global search bar at the top */}
+        <div className="bg-white shadow-sm border-b border-gray-200 p-4">
+          <GlobalSearch 
+            onSearch={handleGlobalSearch}
+            className="mx-auto"
+          />
+        </div>
+        
         <div className="pt-16 lg:pt-0">{renderContent()}</div>
       </div>
     </div>

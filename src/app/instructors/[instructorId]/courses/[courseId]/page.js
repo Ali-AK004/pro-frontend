@@ -177,8 +177,9 @@ const CourseDetails = () => {
             {course.lessons && course.lessons.length > 0 ? (
               course.lessons.map((lesson, index) => (
                 <LessonCard
-                  key={lesson.id || index}
+                  key={lesson.id}
                   lesson={lesson}
+                  instructorId={instructorId}
                   onPurchase={handlePurchaseLesson}
                   onViewLesson={handleViewLesson}
                 />

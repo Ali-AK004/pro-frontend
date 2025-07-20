@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { adminAPI, handleAPIError } from "../services/adminAPI";
 import { toast } from "react-toastify";
 import {
@@ -12,6 +12,7 @@ import {
   FiX,
   FiImage,
 } from "react-icons/fi";
+import { sanitizeInput, validateSearchTerm, debounce } from '../../utils/security';
 
 const CourseManagement = () => {
   const [courses, setCourses] = useState([]);
@@ -124,18 +125,35 @@ const CourseManagement = () => {
     }
   };
 
-  const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      fetchCourses();
-      return;
-    }
+  const handleSecureSearch = useCallback(
+    debounce(() => {
+      try {
+        const sanitizedTerm = validateSearchTerm(searchTerm);
+        
+        if (!sanitizedTerm.trim()) {
+          fetchCourses();
+          return;
+        }
 
-    const filteredCourses = courses.filter(
-      (course) =>
-        course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setCourses(filteredCourses);
+        const filteredCourses = courses.filter(course =>
+          course.name.toLowerCase().includes(sanitizedTerm.toLowerCase()) ||
+          course.description?.toLowerCase().includes(sanitizedTerm.toLowerCase())
+        );
+        setCourses(filteredCourses);
+      } catch (error) {
+        toast.error('خطأ في البحث');
+      }
+    }, 300),
+    [searchTerm, courses]
+  );
+
+  const handleSearchInput = (e) => {
+    try {
+      const sanitizedValue = sanitizeInput(e.target.value);
+      setSearchTerm(sanitizedValue);
+    } catch (error) {
+      toast.error('مصطلح البحث غير صالح');
+    }
   };
 
   const openEditModal = (course) => {
@@ -176,13 +194,13 @@ const CourseManagement = () => {
               type="text"
               placeholder="البحث في الكورسات..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchInput}
               className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+              onKeyPress={(e) => e.key === "Enter" && handleSecureSearch()}
             />
           </div>
           <button
-            onClick={handleSearch}
+            onClick={handleSecureSearch}
             className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
           >
             بحث

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { instructorAPI, handleAPIError } from '../services/instructorAPI';
 import { useUserData } from '../../../../models/UserContext';
@@ -11,34 +13,32 @@ import {
   FiCode,
 } from 'react-icons/fi';
 import Link from 'next/link';
+import { getInstructorId } from '../../utils/roleHelpers';
 
 const InstructorDashboardOverview = ({ setActiveTab }) => {
   const { user } = useUserData();
-  const [stats, setStats] = useState({
-    courses: 0,
-    lessons: 0,
-    students: 0,
-    revenue: 0,
-  });
-  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({});
   const [recentCourses, setRecentCourses] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const instructorId = getInstructorId(user);
 
   useEffect(() => {
-    if (user?.id) {
+    if (instructorId) {
       fetchDashboardData();
     }
-  }, [user]);
+  }, [instructorId]);
 
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
       
-      // Fetch dashboard stats
-      const dashboardStats = await instructorAPI.analytics.getDashboardStats(user.id);
+      // Fetch dashboard stats using the appropriate instructor ID
+      const dashboardStats = await instructorAPI.analytics.getDashboardStats(instructorId);
       setStats(dashboardStats);
 
       // Fetch recent courses
-      const coursesResponse = await instructorAPI.courses.getByInstructor(user.id);
+      const coursesResponse = await instructorAPI.courses.getByInstructor(instructorId);
       const courses = coursesResponse.data || [];
       setRecentCourses(courses.slice(0, 5));
 
@@ -99,8 +99,15 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
       {/* Header */}
       <div className="mb-8 flexBetween flex flex-col-reverse gap-6 md:gap-0 md:flex-row">
         <div>
-          <h1 className="bold-32 text-gray-900 mb-2">مرحباً، {user?.fullname || user?.username}</h1>
-          <p className="regular-16 text-gray-600">نظرة عامة على أداء كورساتك ودروسك</p>
+          <h1 className="bold-32 text-gray-900 mb-2">
+            مرحباً، {user?.fullname}
+          </h1>
+          <p className="text-gray-600">
+            {user?.role === 'INSTRUCTOR' 
+              ? 'إليك نظرة عامة على أنشطتك التعليمية' 
+              : `مساعد للمدرس ${user?.instructorName} - إليك نظرة عامة على الأنشطة`
+            }
+          </p>
         </div>
         <Link href={'/'} className="flex items-center border rounded-md px-5 py-1 gap-3 border-secondary text-secondary hover:text-white hover:bg-[#87ceeb] transition duration-300">
           <FaArrowLeftLong /> العودة للرئيسية

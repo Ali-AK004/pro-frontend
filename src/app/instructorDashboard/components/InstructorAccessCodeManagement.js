@@ -28,16 +28,19 @@ const InstructorAccessCodeManagement = () => {
   const [showGenerateModal, setShowGenerateModal] = useState(false);
 
   const [generateForm, setGenerateForm] = useState({
-    lessonId: selectedLesson || '', // Initialize with selectedLesson if available
+    lessonId: selectedLesson || '',
     count: 5
   });
 
+  // Get instructor ID from user object
+  const instructorId = user?.instructorId || user?.id;
+
   useEffect(() => {
-    if (user?.id) {
+    if (instructorId) {
       fetchCourses();
       fetchAccessCodes();
     }
-  }, [user]);
+  }, [instructorId]);
 
   useEffect(() => {
     if (courses.length > 0) {
@@ -45,15 +48,9 @@ const InstructorAccessCodeManagement = () => {
     }
   }, [courses]);
 
-  // useEffect(() => {
-  //   if (selectedCourse) {
-  //     fetchLessonsForCourse(selectedCourse);
-  //   }
-  // }, [selectedCourse]);
-
   const fetchCourses = async () => {
     try {
-      const response = await instructorAPI.courses.getByInstructor(user.id);
+      const response = await instructorAPI.courses.getByInstructor(instructorId);
       setCourses(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, 'فشل في تحميل الكورسات'));
@@ -98,7 +95,7 @@ const fetchAllLessons = async () => {
   const fetchAccessCodes = async () => {
     try {
       setIsLoading(true);
-      const response = await instructorAPI.accessCodes.getByInstructor(user.id);
+      const response = await instructorAPI.accessCodes.getByInstructor(instructorId);
       setAccessCodes(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, 'فشل في تحميل أكواد الوصول'));

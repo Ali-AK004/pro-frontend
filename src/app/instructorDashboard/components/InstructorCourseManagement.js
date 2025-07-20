@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { instructorAPI, handleAPIError } from '../services/instructorAPI';
 import { useUserData } from '../../../../models/UserContext';
@@ -16,6 +18,7 @@ import {
   FiDelete,
 } from 'react-icons/fi';
 import Link from 'next/link';
+import { getInstructorId, getRolePermissions } from '../../utils/roleHelpers';
 
 const InstructorCourseManagement = () => {
   const { user } = useUserData();
@@ -28,6 +31,14 @@ const InstructorCourseManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [courseToDelete, setCourseToDelete] = useState(null);
+
+  const instructorId = getInstructorId(user);
+  const permissions = getRolePermissions(user?.role);
+
+  // Add this check to ensure assistants have proper restrictions
+  const canCreateCourse = permissions.canCreateCourse && user?.role !== 'ASSISTANT';
+  const canEditCourse = permissions.canEditCourse && user?.role !== 'ASSISTANT';
+  const canDeleteCourse = permissions.canDeleteCourse && user?.role !== 'ASSISTANT';
 
   // Form states
   const [courseForm, setCourseForm] = useState({
@@ -43,15 +54,15 @@ const InstructorCourseManagement = () => {
   });
 
   useEffect(() => {
-    if (user?.id) {
+    if (instructorId) {
       fetchCourses();
     }
-  }, [user]);
+  }, [instructorId]);
 
   const fetchCourses = async () => {
     try {
       setIsLoading(true);
-      const response = await instructorAPI.courses.getByInstructor(user.id);
+      const response = await instructorAPI.courses.getByInstructor(instructorId);
       setCourses(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, 'فشل في تحميل الكورسات'));
@@ -62,16 +73,18 @@ const InstructorCourseManagement = () => {
 
   const handleCreateCourse = async (e) => {
     e.preventDefault();
+    
+    if (!permissions.canCreateCourse) {
+      toast.error('ليس لديك صلاحية لإنشاء كورس جديد');
+      return;
+    }
+
     try {
       setIsLoading(true);
-      await instructorAPI.courses.create(user.id, courseForm);
+      await instructorAPI.courses.create(instructorId, courseForm);
       toast.success('تم إنشاء الكورس بنجاح');
       setShowCreateModal(false);
-      setCourseForm({
-        name: '',
-        description: '',
-        photoUrl: ''
-      });
+      setCourseForm({ name: '', description: '', photoUrl: '' });
       fetchCourses();
     } catch (error) {
       toast.error(handleAPIError(error, 'فشل في إنشاء الكورس'));
@@ -82,9 +95,15 @@ const InstructorCourseManagement = () => {
 
   const handleUpdateCourse = async (e) => {
     e.preventDefault();
+    
+    if (!permissions.canEditCourse) {
+      toast.error('ليس لديك صلاحية لتعديل الكورس');
+      return;
+    }
+
     try {
       setIsLoading(true);
-      await instructorAPI.courses.update(user.id, selectedCourse.id, editForm);
+      await instructorAPI.courses.update(instructorId, selectedCourse.id, editForm);
       toast.success('تم تحديث الكورس بنجاح');
       setShowEditModal(false);
       fetchCourses();
@@ -126,9 +145,14 @@ const InstructorCourseManagement = () => {
   const confirmDeleteCourse = async () => {
     if (!courseToDelete) return;
 
+    if (!permissions.canDeleteCourse) {
+      toast.error('ليس لديك صلاحية لحذف الكورس');
+      return;
+    }
+
     try {
       setIsLoading(true);
-      await instructorAPI.courses.delete(user.id, courseToDelete.id);
+      await instructorAPI.courses.delete(instructorId, courseToDelete.id);
       toast.success('تم حذف الكورس بنجاح');
       fetchCourses();
       setShowDeleteModal(false);
@@ -165,16 +189,18 @@ const InstructorCourseManagement = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="bold-32 text-gray-900 mb-2">إدارة الكورسات</h1>
+          <h1 className="bold-32 text-gray-900 mb-2">إدارة الكورسات {user?.role === 'ASSISTANT' && `- مساعد ${user.instructorName}`}</h1>
           <p className="regular-16 text-gray-600">إنشاء وتعديل وإدارة كورساتك التعليمية</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="cursor-pointer bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
-        >
-          <FiPlus className="w-5 h-5" />
-          إنشاء كورس جديد
-        </button>
+        {canCreateCourse && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
+          >
+            <FiPlus className="w-5 h-5" />
+            إنشاء كورس جديد
+          </button>
+        )}
       </div>
 
       {/* Search Bar */}
@@ -265,28 +291,31 @@ const InstructorCourseManagement = () => {
 
                 {/* Actions */}
                 <div className="flex items-end justify-end gap-2">
-                  <Link
-                    href={`/instructors/${user.id}/courses/${course.id}`}
-                    target="_blank"
-                    className="cursor-pointer flex-1 bg-blue-50 text-blue-600 py-2 px-4 rounded-lg border border-blue-300 hover:bg-blue-100 transition-colors flexCenter gap-2"
+                  <button
+                    onClick={() => openViewModal(course)}
+                    className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
                   >
                     <FiEye className="w-4 h-4" />
                     عرض
-                  </Link>
-                  <button
-                    onClick={() => openEditModal(course)}
-                    className="cursor-pointer flex-1 bg-green-50 text-green-600 border border-green-300 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2"
-                  >
-                    <FiEdit className="w-4 h-4" />
-                    تعديل
                   </button>
-                  <button
-                    onClick={() => handleDeleteCourse(course)}
-                    className="cursor-pointer flex-1 bg-red-50 text-red-400 py-2 border border-red-300 px-4 rounded-lg hover:bg-red-100 transition-colors flexCenter gap-2"
-                  >
-                    <MdDeleteForever  className="w-5 h-5" />
-                    حذف
-                  </button>
+                  {canEditCourse && (
+                    <button
+                      onClick={() => openEditModal(course)}
+                      className="cursor-pointer flex-1 bg-green-50 text-green-600 border border-green-300 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2"
+                    >
+                      <FiEdit className="w-4 h-4" />
+                      تعديل
+                    </button>
+                  )}
+                  {canDeleteCourse && (
+                    <button
+                      onClick={() => handleDeleteCourse(course)}
+                      className="cursor-pointer flex-1 bg-red-50 text-red-400 py-2 border border-red-300 px-4 rounded-lg hover:bg-red-100 transition-colors flexCenter gap-2"
+                    >
+                      <MdDeleteForever className="w-5 h-5" />
+                      حذف
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -506,23 +535,23 @@ const InstructorCourseManagement = () => {
                 هل أنت متأكد من حذف كورس "{courseToDelete.name}"؟
               </p>
               <p className="regular-14 text-red-600 mb-6">
-                سيتم حذف جميع الدروس والمحتوى المرتبط بهذا الكورس نهائياً ولا يمكن التراجع عن هذا الإجراء.
+                سيتم حذف جميع الدروس والمحتوى المرتبط بهذا الكورس نهائ ولا يمكن التراجع عن هذا الإجراء.
               </p>
 
               {/* Action Buttons */}
               <div className="flex gap-3">
                 <button
-                  onClick={cancelDeleteCourse}
-                  className="cursor-pointer flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  إلغاء
-                </button>
-                <button
                   onClick={confirmDeleteCourse}
                   disabled={isLoading}
-                  className="cursor-pointer flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="cursor-pointer flex-1 bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                 >
-                  {isLoading ? 'جاري الحذف...' : 'حذف نهائياً'}
+                  {isLoading ? "جاري الحذف..." : "تأكيد الحذف"}
+                </button>
+                <button
+                  onClick={cancelDeleteCourse}
+                  className="cursor-pointer flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  إلغاء
                 </button>
               </div>
             </div>

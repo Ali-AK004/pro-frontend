@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { instructorAPI, handleAPIError } from "../services/instructorAPI";
 import { useUserData } from "../../../../models/UserContext";
 import { Slide } from "react-toastify";
@@ -17,11 +19,12 @@ import {
 } from "react-icons/fi";
 import Image from "next/image";
 import { MdDeleteForever } from "react-icons/md";
+import { getInstructorId, getRolePermissions } from '../../utils/roleHelpers';
 
 const InstructorLessonManagement = () => {
   const { user } = useUserData();
-  const [lessons, setLessons] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [lessons, setLessons] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -31,6 +34,9 @@ const InstructorLessonManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [lessonToDelete, setLessonToDelete] = useState(null);
+  
+  const instructorId = getInstructorId(user);
+  const permissions = getRolePermissions(user?.role);
 
   // Form states
   const [lessonForm, setLessonForm] = useState({
@@ -51,10 +57,10 @@ const InstructorLessonManagement = () => {
   });
 
   useEffect(() => {
-    if (user?.id) {
+    if (instructorId) {
       fetchCourses();
     }
-  }, [user]);
+  }, [instructorId]);
 
   useEffect(() => {
     if (selectedCourse) {
@@ -64,7 +70,7 @@ const InstructorLessonManagement = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await instructorAPI.courses.getByInstructor(user.id);
+      const response = await instructorAPI.courses.getByInstructor(instructorId);
       setCourses(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
@@ -85,24 +91,24 @@ const InstructorLessonManagement = () => {
 
   const handleCreateLesson = async (e) => {
     e.preventDefault();
+    
+    if (!permissions.canCreateLesson) {
+      toast.error('ليس لديك صلاحية لإنشاء درس جديد');
+      return;
+    }
+
     try {
       setIsLoading(true);
       await instructorAPI.lessons.create(lessonForm.courseId, lessonForm);
-      toast.success("تم إنشاء الدرس بنجاح");
+      toast.success('تم إنشاء الدرس بنجاح');
       setShowCreateModal(false);
       setLessonForm({
-        name: "",
-        description: "",
-        photoUrl: "",
-        price: "",
-        videoUrl: "",
-        courseId: "",
+        name: "", description: "", photoUrl: "", 
+        price: "", videoUrl: "", courseId: ""
       });
-      if (selectedCourse) {
-        fetchLessons();
-      }
+      fetchLessons();
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في إنشاء الدرس"));
+      toast.error(handleAPIError(error, 'فشل في إنشاء الدرس'));
     } finally {
       setIsLoading(false);
     }
@@ -110,14 +116,20 @@ const InstructorLessonManagement = () => {
 
   const handleUpdateLesson = async (e) => {
     e.preventDefault();
+    
+    if (!permissions.canEditLesson) {
+      toast.error('ليس لديك صلاحية لتعديل الدرس');
+      return;
+    }
+
     try {
       setIsLoading(true);
-      await instructorAPI.lessons.update(user.id, selectedLesson.id, editForm);
-      toast.success("تم تحديث الدرس بنجاح");
+      await instructorAPI.lessons.update(instructorId, selectedLesson.id, editForm);
+      toast.success('تم تحديث الدرس بنجاح');
       setShowEditModal(false);
       fetchLessons();
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
+      toast.error(handleAPIError(error, 'فشل في تحديث الدرس'));
     } finally {
       setIsLoading(false);
     }
@@ -157,16 +169,20 @@ const InstructorLessonManagement = () => {
   const confirmDeleteLesson = async () => {
     if (!lessonToDelete) return;
 
+    if (!permissions.canDeleteLesson) {
+      toast.error('ليس لديك صلاحية لحذف الدرس');
+      return;
+    }
+
     try {
       setIsLoading(true);
-      await instructorAPI.lessons.delete(user.id, lessonToDelete.id);
-      toast.success("تم حذف الدرس بنجاح");
+      await instructorAPI.lessons.delete(instructorId, lessonToDelete.id);
+      toast.success('تم حذف الدرس بنجاح');
       fetchLessons();
       setShowDeleteModal(false);
       setLessonToDelete(null);
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في حذف الدرس"));
-      console.error(error);
+      toast.error(handleAPIError(error, 'فشل في حذف الدرس'));
     } finally {
       setIsLoading(false);
     }
@@ -196,18 +212,20 @@ const InstructorLessonManagement = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="bold-32 text-gray-900 mb-2">إدارة الدروس</h1>
+          <h1 className="bold-32 text-gray-900 mb-2">إدارة الدروس {user?.role === 'ASSISTANT' && `- مساعد ${user.instructorName}`}</h1>
           <p className="regular-16 text-gray-600">
             إنشاء وتعديل وإدارة دروسك التعليمية
           </p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="cursor-pointer bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
-        >
-          <FiPlus className="w-5 h-5" />
-          إنشاء درس جديد
-        </button>
+        {permissions.canCreateLesson && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="cursor-pointer bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
+          >
+            <FiPlus className="w-5 h-5" />
+            إنشاء درس جديد
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -318,7 +336,7 @@ const InstructorLessonManagement = () => {
                     <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
                       <div className="flex items-center gap-1">
                         <FiBook className="w-4 h-4" />
-                        <span>{lesson.course?.name || "غير محدد"}</span>
+                        <span>{lesson.courseName || "غير محدد"}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <FiDollarSign className="w-4 h-4" />
@@ -794,23 +812,23 @@ const InstructorLessonManagement = () => {
               </p>
               <p className="regular-14 text-red-600 mb-6">
                 سيتم حذف جميع المحتوى المرتبط بهذا الدرس (الفيديو، الامتحان،
-                الواجب) نهائياً ولا يمكن التراجع عن هذا الإجراء.
+                الواجب) نهائ ولا يمكن التراجع عن هذا الإجراء.
               </p>
 
               {/* Action Buttons */}
               <div className="flex gap-3">
                 <button
-                  onClick={cancelDeleteLesson}
-                  className="cursor-pointer flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  إلغاء
-                </button>
-                <button
                   onClick={confirmDeleteLesson}
                   disabled={isLoading}
-                  className="cursor-pointer flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="cursor-pointer flex-1 bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                 >
-                  {isLoading ? "جاري الحذف..." : "حذف نهائياً"}
+                  {isLoading ? "جاري الحذف..." : "تأكيد الحذف"}
+                </button>
+                <button
+                  onClick={cancelDeleteLesson}
+                  className="cursor-pointer flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  إلغاء
                 </button>
               </div>
             </div>

@@ -14,6 +14,7 @@ import {
   FiBarChart,
 } from "react-icons/fi";
 import ExamCreationModal from "./ExamCreationModal";
+import SecureSearchInput from '../../components/SecureSearchInput';
 
 const ExamManagement = () => {
   const [exams, setExams] = useState([]);
@@ -169,12 +170,10 @@ const ExamManagement = () => {
           {/* Search */}
           <div className="relative">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
+            <SecureSearchInput
               placeholder="البحث في الامتحانات..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+              onSearch={(term) => setSearchTerm(term)}
+              className="focus:ring-accent"
             />
           </div>
 

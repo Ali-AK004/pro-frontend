@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { instructorAPI, handleAPIError } from '../services/instructorAPI';
 import { assignmentAPI } from '../../services/assignmentAPI';
@@ -19,6 +21,7 @@ import {
   FiAlertCircle,
 } from 'react-icons/fi';
 import AssignmentCreationModal from '../../adminDashboard/components/AssignmentCreationModal';
+import { getInstructorId, getRolePermissions } from '../../utils/roleHelpers';
 
 const InstructorAssignmentManagement = () => {
   const { user } = useUserData();
@@ -35,11 +38,14 @@ const InstructorAssignmentManagement = () => {
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [assignmentSubmissions, setAssignmentSubmissions] = useState([]);
 
+  const instructorId = getInstructorId(user);
+  const permissions = getRolePermissions(user?.role);
+
   useEffect(() => {
-    if (user?.id) {
+    if (instructorId) {
       fetchCourses();
     }
-  }, [user]);
+  }, [instructorId]);
 
   useEffect(() => {
     if (selectedCourse) {
@@ -56,7 +62,7 @@ const InstructorAssignmentManagement = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await instructorAPI.courses.getByInstructor(user.id);
+      const response = await instructorAPI.courses.getByInstructor(instructorId);
       setCourses(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, 'فشل في تحميل الكورسات'));
@@ -78,8 +84,8 @@ const InstructorAssignmentManagement = () => {
       if (selectedLesson) {
         const response = await instructorAPI.assignments.getByLesson(selectedLesson);
         setAssignments(response.data || []);
-      } else if (user?.id) {
-        const response = await instructorAPI.assignments.getByInstructor(user.id);
+      } else if (instructorId) {
+        const response = await instructorAPI.assignments.getByInstructor(instructorId);
         setAssignments(response.data || []);
       }
     } catch (error) {
@@ -330,6 +336,11 @@ const AssignmentCard = ({ assignment, onEdit, onDelete, onViewSubmissions }) => 
         <p className="regular-14 text-gray-600 mb-4 line-clamp-2">
           {assignment.description || 'لا يوجد وصف'}
         </p>
+
+    <p className="regular-14 text-gray-600 mb-4 line-clamp-2">
+          {assignment.lessonName || 'لا يوجد اسم درس'}
+        </p>
+
 
         {/* Assignment Stats */}
         <div className="grid grid-cols-2 gap-4 mb-4">

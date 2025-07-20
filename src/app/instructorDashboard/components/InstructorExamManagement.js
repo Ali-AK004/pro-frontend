@@ -32,11 +32,14 @@ const InstructorExamManagement = () => {
   const [selectedExam, setSelectedExam] = useState(null);
   const [examResults, setExamResults] = useState(null);
 
+  // Get instructor ID from user object
+  const instructorId = user?.instructorId || user?.id;
+
   useEffect(() => {
-    if (user?.id) {
+    if (instructorId) {
       fetchCourses();
     }
-  }, [user]);
+  }, [instructorId]);
 
   useEffect(() => {
     if (selectedCourse) {
@@ -49,11 +52,11 @@ const InstructorExamManagement = () => {
 
   useEffect(() => {
     fetchExams();
-  }, [selectedLesson]);
+  }, [selectedLesson, instructorId]);
 
   const fetchCourses = async () => {
     try {
-      const response = await instructorAPI.courses.getByInstructor(user.id);
+      const response = await instructorAPI.courses.getByInstructor(instructorId);
       setCourses(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
@@ -75,8 +78,8 @@ const InstructorExamManagement = () => {
       if (selectedLesson) {
         const response = await instructorAPI.exams.getByLesson(selectedLesson);
         setExams(response.data || []);
-      } else if (user?.id) {
-        const response = await instructorAPI.exams.getByInstructor(user.id);
+      } else if (instructorId) {
+        const response = await instructorAPI.exams.getByInstructor(instructorId);
         setExams(response.data || []);
       }
     } catch (error) {

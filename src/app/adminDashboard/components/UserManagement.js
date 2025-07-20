@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { adminAPI, handleAPIError } from "../services/adminAPI";
 import { toast } from "react-toastify";
 import {
@@ -13,6 +13,7 @@ import {
   FiEye,
   FiX,
 } from "react-icons/fi";
+import { sanitizeInput, validateSearchTerm, debounce } from '../../utils/security';
 
 const UserManagement = () => {
   const [activeUserType, setActiveUserType] = useState("students");
@@ -116,102 +117,53 @@ const UserManagement = () => {
   const [searchTimeout, setSearchTimeout] = useState(null);
 
   // Then modify handleSearch to use debouncing
-  const handleSearch = () => {
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
-    }
-
-    setSearchTimeout(
-      setTimeout(() => {
-        if (!searchTerm.trim()) {
+  const handleSecureSearch = useCallback(
+    debounce(async (term) => {
+      try {
+        const sanitizedTerm = validateSearchTerm(term);
+        
+        if (!sanitizedTerm.trim()) {
           fetchUsers();
           return;
         }
 
-        try {
-          setIsLoading(true);
-          const searchLower = searchTerm.toLowerCase();
-          const filteredUsers = users.filter(
-            (user) =>
-              user.fullname?.toLowerCase().includes(searchLower) ||
-              user.username?.toLowerCase().includes(searchLower) ||
-              user.email?.toLowerCase().includes(searchLower) ||
-              user.phoneNumber?.includes(searchTerm) ||
-              user.government?.toLowerCase().includes(searchLower)
+        setIsLoading(true);
+        
+        if (activeUserType === 'students') {
+          const response = await adminAPI.users.searchStudents(sanitizedTerm);
+          setUsers(response.data || []);
+        } else {
+          // Client-side filtering with sanitized term
+          const searchLower = sanitizedTerm.toLowerCase();
+          const filteredUsers = users.filter(user =>
+            user.fullname?.toLowerCase().includes(searchLower) ||
+            user.username?.toLowerCase().includes(searchLower) ||
+            user.email?.toLowerCase().includes(searchLower)
           );
           setUsers(filteredUsers);
-        } catch (error) {
-          console.error("Search error:", error);
-          toast.error("حدث خطأ أثناء البحث");
-        } finally {
-          setIsLoading(false);
         }
-      }, 300)
-    ); // 300ms delay
-  };
-
-  // Don't forget to clear the timeout on component unmount
-  useEffect(() => {
-    return () => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
+      } catch (error) {
+        console.error('Search error:', error);
+        toast.error('خطأ في البحث');
+        setUsers([]);
+      } finally {
+        setIsLoading(false);
       }
-    };
-  }, [searchTimeout]);
+    }, 300),
+    [activeUserType, users]
+  );
 
-  // const handleSearch = async () => {
-  //   if (!searchTerm.trim()) {
-  //     fetchUsers();
-  //     return;
-  //   }
-
-  //   try {
-  //     setIsLoading(true);
-  //     if (activeUserType === "students") {
-  //       const response = await adminAPI.users.searchStudents(searchTerm);
-  //       setUsers(response.data || []);
-  //     } else if (activeUserType === "instructors") {
-  //       // Filter instructors locally for now
-  //       const allInstructors = await adminAPI.users.getAllInstructors();
-  //       const instructorsList =
-  //         allInstructors.data?.content || allInstructors.data || [];
-  //       const filteredInstructors = instructorsList.filter(
-  //         (instructor) =>
-  //           instructor.fullname
-  //             ?.toLowerCase()
-  //             .includes(searchTerm.toLowerCase()) ||
-  //           instructor.username
-  //             ?.toLowerCase()
-  //             .includes(searchTerm.toLowerCase()) ||
-  //           instructor.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  //       );
-  //       setUsers(filteredInstructors);
-  //     } else if (activeUserType === "assistants") {
-  //       // Filter assistants locally for now
-  //       const allAssistants = await adminAPI.users.getAllAssistants();
-  //       const assistantsList =
-  //         allAssistants.data?.content || allAssistants.data || [];
-  //       const filteredAssistants = assistantsList.filter(
-  //         (assistant) =>
-  //           assistant.fullname
-  //             ?.toLowerCase()
-  //             .includes(searchTerm.toLowerCase()) ||
-  //           assistant.username
-  //             ?.toLowerCase()
-  //             .includes(searchTerm.toLowerCase()) ||
-  //           assistant.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  //       );
-  //       setUsers(filteredAssistants);
-  //     } else {
-  //       setUsers([]);
-  //     }
-  //   } catch (error) {
-  //     console.error("Search error:", error);
-  //     toast.error(handleAPIError(error, "فشل في البحث"));
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+  // Secure input handler
+  const handleSearchInput = (e) => {
+    const rawValue = e.target.value;
+    try {
+      const sanitizedValue = sanitizeInput(rawValue);
+      setSearchTerm(sanitizedValue);
+      handleSecureSearch(sanitizedValue);
+    } catch (error) {
+      toast.error('مصطلح البحث غير صالح');
+    }
+  };
 
   const handleCreateInstructor = async (e) => {
     e.preventDefault();
@@ -465,12 +417,12 @@ const UserManagement = () => {
               type="text"
               placeholder="البحث بالاسم أو البريد الإلكتروني..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchInput}
               className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
             />
           </div>
           <button
-            onClick={handleSearch}
+            onClick={() => handleSecureSearch(searchTerm)}
             className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
           >
             بحث
