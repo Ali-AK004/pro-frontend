@@ -95,7 +95,9 @@ const AdminDashboard = () => {
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Content */}
-      <div className="flex-1 mr-80">{renderContent()}</div>
+      <div className="flex-1 md:mr-80 mr-0">
+        <div className="pt-16 md:pt-0">{renderContent()}</div>
+      </div>
     </div>
   );
 };

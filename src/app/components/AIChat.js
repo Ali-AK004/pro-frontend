@@ -9,6 +9,7 @@ import {
   FiRefreshCw,
   FiMessageCircle,
   FiCpu,
+  FiX,
 } from "react-icons/fi";
 
 const AIChat = ({ isOpen, onClose, className = "" }) => {
@@ -140,28 +141,30 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
     >
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flexCenter">
-            <FiCpu className="w-5 h-5" />
-          </div>
+            <div className="w-8 h-8 bg-white/20 rounded-full flexCenter">
+              <FiCpu className="w-5 h-5" />
+            </div>
           <div>
             <h3 className="bold-16">المساعد الذكي</h3>
-            <p className="regular-12 opacity-90">{isTyping ? "يكتب..." : "متصل"}</p>
+            <p className="regular-12 opacity-90">
+              {isTyping ? "يكتب..." : "متصل"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={resetChat}
-            className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/20 rounded-sm transition-colors cursor-pointer"
             title="بدء محادثة جديدة"
           >
             <FiRefreshCw className="w-4 h-4" />
           </button>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+            className="px-3 py-2 hover:bg-white/20 rounded-sm transition-colors cursor-pointer"
             title="إغلاق"
           >
-            ×
+            <FiX className="w-4 h-4"/>
           </button>
         </div>
       </div>
@@ -184,7 +187,7 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
             </div>
             <button
               onClick={resetChat}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors cursor-pointer"
             >
               إعادة المحاولة
             </button>
@@ -216,9 +219,7 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
               }}
               onKeyDown={handleKeyDown}
               placeholder="💬 اكتب رسالتك هنا..."
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all shadow-sm text-sm sm:text-base"
-              rows={1}
-              style={{ minHeight: "44px", maxHeight: "160px", overflowY: "auto" }}
+              className="w-full px-4 py-3 borderborder-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:border-transparent focus:ring-transparent focus:outline-none overflow-hidden resize-none transition-all shadow-sm text-sm sm:text-base"
               disabled={isLoading || !sessionId}
               aria-label="اكتب رسالتك"
               autoCapitalize="off"
@@ -229,7 +230,7 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
           <button
             type="submit"
             disabled={!inputMessage.trim() || isLoading || !sessionId}
-            className="bg-blue-600 text-white p-3 mb-2 rounded-xl hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="bg-blue-600 text-white p-3 mb-2 rounded-xl hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
             aria-label="إرسال الرسالة"
           >
             {isLoading ? (
@@ -259,19 +260,23 @@ const MessageBubble = ({ message }) => {
             isUser
               ? "bg-blue-500 text-white"
               : isError
-              ? "bg-red-500 text-white"
-              : "bg-gray-200 text-gray-600"
+                ? "bg-red-500 text-white"
+                : "bg-gray-200 text-gray-600"
           }`}
         >
-          {isUser ? <FiUser className="w-4 h-4" /> : <FiCpu className="w-4 h-4" />}
+          {isUser ? (
+            <FiUser className="w-4 h-4" />
+          ) : (
+            <FiCpu className="w-4 h-4" />
+          )}
         </div>
         <div
-          className={`rounded-lg px-4 py-3 ${
+          className={`rounded-sm px-4 py-3 ${
             isUser
               ? "bg-blue-500 text-white"
               : isError
-              ? "bg-red-50 border border-red-200 text-red-700"
-              : "bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100"
+                ? "bg-red-50 border border-red-200 text-red-700"
+                : "bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100"
           }`}
         >
           {isTyping ? (
@@ -282,9 +287,13 @@ const MessageBubble = ({ message }) => {
             </div>
           ) : (
             <div>
-              <p className="regular-14 whitespace-pre-wrap">{message.displayText}</p>
+              <p className="regular-14 whitespace-pre-wrap">
+                {message.displayText}
+              </p>
               {message.formattedTime && (
-                <p className={`regular-10 mt-1 opacity-70 ${isUser ? "text-right" : "text-left"}`}>
+                <p
+                  className={`regular-12 mt-1 opacity-70 ${isUser ? "text-right" : "text-left"}`}
+                >
                   {message.formattedTime}
                 </p>
               )}
@@ -296,4 +305,4 @@ const MessageBubble = ({ message }) => {
   );
 };
 
-export default AIChat;
+export default AIChat;

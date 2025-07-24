@@ -1,5 +1,5 @@
 import axios from "axios";
-import { sanitizeInput, validateSearchTerm } from '../../utils/security';
+import { sanitizeInput, validateSearchTerm } from "../../utils/security";
 
 const BASE_URL = "http://localhost:8080/api/admin";
 const API_BASE_URL = "http://localhost:8080/api";
@@ -93,7 +93,7 @@ export const adminAPI = {
         const sanitizedTerm = validateSearchTerm(usernamePart);
         return apiClient.post("/search", { usernamePart: sanitizedTerm });
       } catch (error) {
-        throw new Error('Invalid search parameters');
+        throw new Error("Invalid search parameters");
       }
     },
 
@@ -230,8 +230,13 @@ export const adminAPI = {
   // Access Code Management
   accessCodes: {
     // Get all access codes
-    getAll: (page = 0, size = 10) =>
-      apiClient.get(`/access-codes?page=${page}&size=${size}`),
+    getAll: (lessonId = null, page = 0, size = 10) => {
+      const params = { page, size };
+      if (lessonId) {
+        params.lessonId = lessonId;
+      }
+      return apiClient.get("/access-codes", { params });
+    },
 
     // Get access codes by lesson ID
     getByLesson: (lessonId, page = 0, size = 10) =>
@@ -239,9 +244,9 @@ export const adminAPI = {
         `/lessons/${lessonId}/access-codes?page=${page}&size=${size}`
       ),
 
-      delete: (codeId) => apiClient.delete(`/access-codes/${codeId}`),
+    delete: (codeId) => apiClient.delete(`/access-codes/${codeId}`),
 
-        deleteUsed: () => apiClient.delete("/access-codes/used"),
+    deleteUsed: () => apiClient.delete("/access-codes/used"),
   },
 
   analytics: {

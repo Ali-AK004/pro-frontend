@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { assignmentAPI } from "../../services/assignmentAPI";
+import { assignmentAPI } from "../../../services/assignmentAPI";
 import {
   FiX,
   FiSave,
@@ -242,14 +242,14 @@ const AssignmentCreationModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
           >
             إلغاء
           </button>
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2 disabled:opacity-50"
+            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

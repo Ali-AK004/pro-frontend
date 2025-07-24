@@ -31,7 +31,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   const checkLessonAccess = async () => {
     try {
       setIsLoading(true);
-      
+
       // Check if user has enhanced access (admin, instructor, assistant)
       if (hasEnhancedAccess()) {
         setAccessStatus({ hasAccess: true, isEnhancedAccess: true });
@@ -51,7 +51,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
       }
     } catch (error) {
       // If error, assume no access for students
-      if (user?.role === 'STUDENT') {
+      if (user?.role === "STUDENT") {
         setAccessStatus({ hasAccess: false });
       } else {
         // For other roles, might be access denied, so no access
@@ -64,28 +64,28 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
   const hasEnhancedAccess = () => {
     if (!user) return false;
-    
+
     // ADMIN has access to any lesson
-    if (user.role === 'ADMIN') {
+    if (user.role === "ADMIN") {
       return true;
     }
-    
+
     // INSTRUCTOR/ASSISTANT can access their own lessons only
-    if (user.role === 'INSTRUCTOR' || user.role === 'ASSISTANT') {
+    if (user.role === "INSTRUCTOR" || user.role === "ASSISTANT") {
       // Check if this lesson belongs to the current instructor
       const currentInstructorId = user.instructorId || user.id;
       return currentInstructorId === instructorId;
     }
-    
+
     return false;
   };
 
   const shouldShowPurchaseButton = () => {
     // Only students should see purchase button
-    if (user?.role !== 'STUDENT') {
+    if (user?.role !== "STUDENT") {
       return false;
     }
-    
+
     // Show purchase button if student doesn't have access
     return !accessStatus?.hasAccess;
   };
@@ -314,32 +314,35 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
             شراء الدرس
           </button>
         )}
-        
+
         {shouldShowViewButton() && (
           <button
             onClick={() => {
               onViewLesson(lesson);
             }}
-            className="flex-1 bg-secondary text-white py-3 px-4 rounded-lg bold-16 hover:bg-opacity-90 transition-colors flexCenter gap-2"
+            className="flex-1 bg-secondary text-white py-3 px-4 rounded-lg bold-16 hover:bg-opacity-90 transition-colors flexCenter gap-2 cursor-pointer"
           >
             <FaEye className="w-4 h-4" />
-            {accessStatus?.isEnhancedAccess ? 'إدارة الدرس' : 'عرض الدرس'}
+            {accessStatus?.isEnhancedAccess ? "إدارة الدرس" : "عرض الدرس"}
           </button>
         )}
-        
-        {!shouldShowPurchaseButton() && !shouldShowViewButton() && user?.role === 'STUDENT' && (
-          <div className="flex-1 bg-gray-100 text-gray-500 py-3 px-4 rounded-lg bold-16 flexCenter gap-2">
-            <FaLock className="w-4 h-4" />
-            غير متاح
-          </div>
-        )}
-        
-        {(user?.role === 'INSTRUCTOR' || user?.role === 'ASSISTANT') && !shouldShowViewButton() && (
-          <div className="flex-1 bg-gray-100 text-gray-500 py-3 px-4 rounded-lg bold-16 flexCenter gap-2">
-            <FaLock className="w-4 h-4" />
-            ليس من دروسك
-          </div>
-        )}
+
+        {!shouldShowPurchaseButton() &&
+          !shouldShowViewButton() &&
+          user?.role === "STUDENT" && (
+            <div className="flex-1 bg-gray-100 text-gray-500 py-3 px-4 rounded-lg bold-16 flexCenter gap-2">
+              <FaLock className="w-4 h-4" />
+              غير متاح
+            </div>
+          )}
+
+        {(user?.role === "INSTRUCTOR" || user?.role === "ASSISTANT") &&
+          !shouldShowViewButton() && (
+            <div className="flex-1 bg-gray-100 text-gray-500 py-3 px-4 rounded-lg bold-16 flexCenter gap-2">
+              <FaLock className="w-4 h-4" />
+              ليس من دروسك
+            </div>
+          )}
       </div>
 
       {/* Access Expiry Info */}

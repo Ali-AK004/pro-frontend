@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { instructorAPI, handleAPIError } from '../services/instructorAPI';
-import { useUserData } from '../../../../models/UserContext';
-import { Slide } from 'react-toastify';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useState, useEffect } from "react";
+import { instructorAPI, handleAPIError } from "../services/instructorAPI";
+import { useUserData } from "../../../../models/UserContext";
+import { Slide } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   FiCode,
   FiPlus,
@@ -14,7 +14,7 @@ import {
   FiCheck,
   FiClock,
   FiFileText,
-} from 'react-icons/fi';
+} from "react-icons/fi";
 
 const InstructorAccessCodeManagement = () => {
   const { user } = useUserData();
@@ -22,14 +22,14 @@ const InstructorAccessCodeManagement = () => {
   const [courses, setCourses] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [selectedLesson, setSelectedLesson] = useState('');
+  const [selectedLesson, setSelectedLesson] = useState("");
   const [showGenerateModal, setShowGenerateModal] = useState(false);
 
   const [generateForm, setGenerateForm] = useState({
-    lessonId: selectedLesson || '',
-    count: 5
+    lessonId: selectedLesson || "",
+    count: 5,
   });
 
   // Get instructor ID from user object
@@ -50,56 +50,61 @@ const InstructorAccessCodeManagement = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await instructorAPI.courses.getByInstructor(instructorId);
+      const response =
+        await instructorAPI.courses.getByInstructor(instructorId);
       setCourses(response.data || []);
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل الكورسات'));
+      toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
     }
   };
 
-const fetchLessonsForCourse = async (courseId) => {
-  try {
-    const response = await instructorAPI.courses.getLessons(courseId);
-    setLessons(prev => {
-      // Remove old lessons for this course
-      const filtered = prev.filter(l => l.course?.id !== courseId);
-      // Add new lessons with course association
-      const newLessons = response.data.map(lesson => ({
-        ...lesson,
-        course: { id: courseId, name: courses.find(c => c.id === courseId)?.name || '' }
-      }));
-      return [...filtered, ...newLessons];
-    });
-  } catch (error) {
-    toast.error(handleAPIError(error, 'فشل في تحميل الدروس'));
-  }
-};
-
-const fetchAllLessons = async () => {
-  try {
-    const allLessons = [];
-    for (const course of courses) {
-      const response = await instructorAPI.courses.getLessons(course.id);
-      const courseLessons = response.data.map(lesson => ({
-        ...lesson,
-        course: { id: course.id, name: course.name }
-      }));
-      allLessons.push(...courseLessons);
+  const fetchLessonsForCourse = async (courseId) => {
+    try {
+      const response = await instructorAPI.courses.getLessons(courseId);
+      setLessons((prev) => {
+        // Remove old lessons for this course
+        const filtered = prev.filter((l) => l.course?.id !== courseId);
+        // Add new lessons with course association
+        const newLessons = response.data.map((lesson) => ({
+          ...lesson,
+          course: {
+            id: courseId,
+            name: courses.find((c) => c.id === courseId)?.name || "",
+          },
+        }));
+        return [...filtered, ...newLessons];
+      });
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
     }
-    setLessons(allLessons);
-  } catch (error) {
-    toast.error(handleAPIError(error, 'فشل في تحميل الدروس'));
-  }
-};
+  };
+
+  const fetchAllLessons = async () => {
+    try {
+      const allLessons = [];
+      for (const course of courses) {
+        const response = await instructorAPI.courses.getLessons(course.id);
+        const courseLessons = response.data.map((lesson) => ({
+          ...lesson,
+          course: { id: course.id, name: course.name },
+        }));
+        allLessons.push(...courseLessons);
+      }
+      setLessons(allLessons);
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
+    }
+  };
 
   const fetchAccessCodes = async () => {
     try {
       setIsLoading(true);
-      const response = await instructorAPI.accessCodes.getByInstructor(instructorId);
+      const response =
+        await instructorAPI.accessCodes.getByInstructor(instructorId);
       setAccessCodes(response.data || []);
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل أكواد الوصول'));
-      console.error('Error fetching access codes:', error);
+      toast.error(handleAPIError(error, "فشل في تحميل أكواد الوصول"));
+      console.error("Error fetching access codes:", error);
     } finally {
       setIsLoading(false);
     }
@@ -116,51 +121,54 @@ const fetchAllLessons = async () => {
 
       toast.success(`تم إنشاء ${generateForm.count} كود وصول بنجاح`);
       setShowGenerateModal(false);
-      setGenerateForm({ lessonId: '', count: 5 });
+      setGenerateForm({ lessonId: "", count: 5 });
 
       // Refresh the access codes list
       await fetchAccessCodes();
-
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في إنشاء أكواد الوصول'));
+      toast.error(handleAPIError(error, "فشل في إنشاء أكواد الوصول"));
     } finally {
       setIsLoading(false);
     }
   };
 
   const copyToClipboard = (code) => {
-    navigator.clipboard.writeText(code).then(() => {
-      toast.success('تم نسخ الكود بنجاح');
-    }).catch(() => {
-      toast.error('فشل في نسخ الكود');
-    });
+    navigator.clipboard
+      .writeText(code)
+      .then(() => {
+        toast.success("تم نسخ الكود بنجاح");
+      })
+      .catch(() => {
+        toast.error("فشل في نسخ الكود");
+      });
   };
 
   const downloadCodes = () => {
     const codesText = accessCodes
-      .filter(code => !code.used)
-      .map(code => `${code.code} - ${code.lessonName}`)
-      .join('\n');
-    
-    const blob = new Blob([codesText], { type: 'text/plain' });
+      .filter((code) => !code.used)
+      .map((code) => `${code.code} - ${code.lessonName}`)
+      .join("\n");
+
+    const blob = new Blob([codesText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'access-codes.txt';
+    a.download = "access-codes.txt";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
-    toast.success('تم تحميل الأكواد بنجاح');
+
+    toast.success("تم تحميل الأكواد بنجاح");
   };
 
-  const filteredCodes = accessCodes.filter(code => {
+  const filteredCodes = accessCodes.filter((code) => {
     // Safety checks for data structure
     if (!code) return false;
 
-    const matchesSearch = code.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         code.lessonName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      code.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      code.lessonName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLesson = !selectedLesson || code.lessonId === selectedLesson;
 
     return matchesSearch && matchesLesson;
@@ -186,7 +194,9 @@ const fetchAllLessons = async () => {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">إدارة أكواد الوصول</h1>
-          <p className="regular-16 text-gray-600">إنشاء وإدارة أكواد الوصول لدروسك</p>
+          <p className="regular-16 text-gray-600">
+            إنشاء وإدارة أكواد الوصول لدروسك
+          </p>
         </div>
         <div className="flex gap-3">
           <button
@@ -208,8 +218,8 @@ const fetchAllLessons = async () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="relative">
+        <div className="flex items-center flex-wrap gap-4">
+          <div className="relative flex-1/2">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -219,13 +229,13 @@ const fetchAllLessons = async () => {
               className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
             />
           </div>
-          
+
           <select
             value={selectedLesson}
             onChange={(e) => setSelectedLesson(e.target.value)}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+            className="px-4 py-3 border flex-1/4 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
-            <option value="">جميع الدروس</option>
+            <option value="">اختر الدرس</option>
             {lessons.map((lesson) => (
               <option key={lesson.id} value={lesson.id}>
                 {lesson.name}
@@ -239,8 +249,8 @@ const fetchAllLessons = async () => {
             </button>
             <button
               onClick={() => {
-                setSearchTerm('');
-                setSelectedLesson('');
+                setSearchTerm("");
+                setSelectedLesson("");
               }}
               className="cursor-pointer px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
@@ -271,7 +281,9 @@ const fetchAllLessons = async () => {
             </div>
             <div>
               <p className="regular-12 text-gray-500">أكواد مستخدمة</p>
-              <p className="bold-20 text-gray-900">{accessCodes.filter(c => c.used).length}</p>
+              <p className="bold-20 text-gray-900">
+                {accessCodes.filter((c) => c.used).length}
+              </p>
             </div>
           </div>
         </div>
@@ -283,7 +295,9 @@ const fetchAllLessons = async () => {
             </div>
             <div>
               <p className="regular-12 text-gray-500">أكواد متاحة</p>
-              <p className="bold-20 text-gray-900">{accessCodes.filter(c => !c.used).length}</p>
+              <p className="bold-20 text-gray-900">
+                {accessCodes.filter((c) => !c.used).length}
+              </p>
             </div>
           </div>
         </div>
@@ -296,9 +310,14 @@ const fetchAllLessons = async () => {
             <div>
               <p className="regular-12 text-gray-500">معدل الاستخدام</p>
               <p className="bold-20 text-gray-900">
-                {accessCodes.length > 0 
-                  ? Math.round((accessCodes.filter(c => c.isUsed).length / accessCodes.length) * 100)
-                  : 0}%
+                {accessCodes.length > 0
+                  ? Math.round(
+                      (accessCodes.filter((c) => c.isUsed).length /
+                        accessCodes.length) *
+                        100
+                    )
+                  : 0}
+                %
               </p>
             </div>
           </div>
@@ -335,19 +354,33 @@ const fetchAllLessons = async () => {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, index) => (
                   <tr key={index} className="animate-pulse">
-                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded"></div></td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                    </td>
                   </tr>
                 ))
               ) : filteredCodes.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center">
                     <FiCode className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="regular-14 text-gray-600 mb-4">لا توجد أكواد وصول للعرض</p>
+                    <p className="regular-14 text-gray-600 mb-4">
+                      لا توجد أكواد وصول للعرض
+                    </p>
                     <button
                       onClick={() => setShowGenerateModal(true)}
                       className="cursor-pointer bg-secondary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
@@ -358,7 +391,10 @@ const fetchAllLessons = async () => {
                 </tr>
               ) : (
                 filteredCodes.map((code) => (
-                  <tr key={code.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={code.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <code className="bg-gray-100 px-3 py-1 rounded font-mono text-sm">
@@ -367,10 +403,14 @@ const fetchAllLessons = async () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="regular-14 text-gray-900">{code.lessonName || 'غير محدد'}</p>
+                      <p className="regular-14 text-gray-900">
+                        {code.lessonName || "غير محدد"}
+                      </p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="regular-14 text-gray-600">{code.creatorName || 'غير محدد'}</p>
+                      <p className="regular-14 text-gray-600">
+                        {code.creatorName || "غير محدد"}
+                      </p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {code.used ? (
@@ -387,7 +427,9 @@ const fetchAllLessons = async () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <p className="regular-12 text-gray-500">
-                        {code.createdAt ? new Date(code.createdAt).toLocaleDateString('ar-EG') : 'غير محدد'}
+                        {code.createdAt
+                          ? new Date(code.createdAt).toLocaleDateString("ar-EG")
+                          : "غير محدد"}
                       </p>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -425,16 +467,25 @@ const fetchAllLessons = async () => {
 
             <form onSubmit={handleGenerateAccessCodes} className="space-y-6">
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">اختر الدرس *</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  اختر الدرس *
+                </label>
                 <select
                   required
                   value={generateForm.lessonId}
-                  onChange={(e) => setGenerateForm({...generateForm, lessonId: e.target.value})}
+                  onChange={(e) =>
+                    setGenerateForm({
+                      ...generateForm,
+                      lessonId: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                 >
                   <option value="">اختر الدرس</option>
                   {courses.map((course) => {
-                    const courseLessons = lessons.filter(lesson => lesson.course?.id === course.id);
+                    const courseLessons = lessons.filter(
+                      (lesson) => lesson.course?.id === course.id
+                    );
                     if (courseLessons.length === 0) return null;
 
                     return (
@@ -451,18 +502,27 @@ const fetchAllLessons = async () => {
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">عدد الأكواد *</label>
+                <label className="block bold-14 text-gray-900 mb-2">
+                  عدد الأكواد *
+                </label>
                 <input
                   type="number"
                   required
                   min="1"
                   max="100"
                   value={generateForm.count}
-                  onChange={(e) => setGenerateForm({...generateForm, count: parseInt(e.target.value)})}
+                  onChange={(e) =>
+                    setGenerateForm({
+                      ...generateForm,
+                      count: parseInt(e.target.value),
+                    })
+                  }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                   placeholder="5"
                 />
-                <p className="regular-12 text-gray-500 mt-1">يمكنك إنشاء من 1 إلى 100 كود في المرة الواحدة</p>
+                <p className="regular-12 text-gray-500 mt-1">
+                  يمكنك إنشاء من 1 إلى 100 كود في المرة الواحدة
+                </p>
               </div>
 
               <div className="flex gap-4 pt-4">
@@ -471,7 +531,7 @@ const fetchAllLessons = async () => {
                   disabled={isLoading}
                   className="cursor-pointer flex-1 bg-secondary text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
                 >
-                  {isLoading ? 'جاري الإنشاء...' : 'إنشاء الأكواد'}
+                  {isLoading ? "جاري الإنشاء..." : "إنشاء الأكواد"}
                 </button>
                 <button
                   type="button"

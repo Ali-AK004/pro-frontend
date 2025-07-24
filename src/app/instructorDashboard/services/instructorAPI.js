@@ -1,5 +1,5 @@
 import axios from "axios";
-import { sanitizeInput, validateSearchTerm } from '../../utils/security';
+import { sanitizeInput, validateSearchTerm } from "../../utils/security";
 
 const BASE_URL = "http://localhost:8080/api/instructors";
 const API_BASE_URL = "http://localhost:8080/api";
@@ -93,9 +93,11 @@ export const instructorAPI = {
     search: (searchTerm) => {
       try {
         const sanitizedTerm = validateSearchTerm(searchTerm);
-        return apiClient.get(`/courses/search?q=${encodeURIComponent(sanitizedTerm)}`);
+        return apiClient.get(
+          `/courses/search?q=${encodeURIComponent(sanitizedTerm)}`
+        );
       } catch (error) {
-        throw new Error('Invalid search parameters');
+        throw new Error("Invalid search parameters");
       }
     },
   },
@@ -121,9 +123,11 @@ export const instructorAPI = {
     search: (courseId, searchTerm) => {
       try {
         const sanitizedTerm = validateSearchTerm(searchTerm);
-        return apiClient.get(`/courses/${courseId}/lessons/search?q=${encodeURIComponent(sanitizedTerm)}`);
+        return apiClient.get(
+          `/courses/${courseId}/lessons/search?q=${encodeURIComponent(sanitizedTerm)}`
+        );
       } catch (error) {
-        throw new Error('Invalid search parameters');
+        throw new Error("Invalid search parameters");
       }
     },
   },
@@ -145,6 +149,10 @@ export const instructorAPI = {
 
   // Profile Management
   profile: {
+    // Get instructor profile by ID (for assistants to view instructor data)
+    getById: (instructorId) =>
+      generalApiClient.get(`/instructors/${instructorId}/details`),
+
     // Update instructor's own profile
     update: (instructorId, data) =>
       apiClient.put(`/${instructorId}/profile`, data),
@@ -179,9 +187,11 @@ export const instructorAPI = {
     search: (searchTerm) => {
       try {
         const sanitizedTerm = validateSearchTerm(searchTerm);
-        return apiClient.get(`/exams/search?q=${encodeURIComponent(sanitizedTerm)}`);
+        return apiClient.get(
+          `/exams/search?q=${encodeURIComponent(sanitizedTerm)}`
+        );
       } catch (error) {
-        throw new Error('Invalid search parameters');
+        throw new Error("Invalid search parameters");
       }
     },
   },
@@ -229,9 +239,11 @@ export const instructorAPI = {
     search: (searchTerm) => {
       try {
         const sanitizedTerm = validateSearchTerm(searchTerm);
-        return apiClient.get(`/assignments/search?q=${encodeURIComponent(sanitizedTerm)}`);
+        return apiClient.get(
+          `/assignments/search?q=${encodeURIComponent(sanitizedTerm)}`
+        );
       } catch (error) {
-        throw new Error('Invalid search parameters');
+        throw new Error("Invalid search parameters");
       }
     },
   },

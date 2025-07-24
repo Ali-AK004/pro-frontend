@@ -34,6 +34,7 @@ const AccessCodeManagement = () => {
     page: 0,
     size: 10,
     totalElements: 0,
+    totalPages: 0,
     hasMore: true,
   });
 
@@ -56,28 +57,28 @@ const AccessCodeManagement = () => {
       const page = loadMore ? pagination.page + 1 : 0;
       const size = pagination.size;
 
-      let response;
-      if (selectedLesson) {
-        response = await adminAPI.accessCodes.getByLesson(
-          selectedLesson,
-          page,
-          size
-        );
-      } else {
-        response = await adminAPI.accessCodes.getAll(page, size);
-      }
+      const response = await adminAPI.accessCodes.getAll(
+        selectedLesson === "" ? null : selectedLesson,
+        page,
+        size
+      );
 
       const newAccessCodes = response.data?.content || [];
-      const totalElements = response.data?.totalElements || 0;
+      const pageInfo = response.data?.page || {};
+      const totalElements = pageInfo.totalElements || 0;
+      const totalPages = pageInfo.totalPages || 0;
+      const currentPage = pageInfo.number || 0;
 
       setAccessCodes((prev) =>
         loadMore ? [...prev, ...newAccessCodes] : newAccessCodes
       );
+
       setPagination((prev) => ({
         ...prev,
         page,
         totalElements,
-        hasMore: (page + 1) * size < totalElements,
+        totalPages,
+        hasMore: newAccessCodes.length > 0 && currentPage + 1 < totalPages,
       }));
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل أكواد الوصول"));
@@ -155,52 +156,39 @@ const AccessCodeManagement = () => {
     toast.success("تم نسخ جميع الأكواد بنجاح");
   };
 
-const handleDownloadCodes = () => {
-  const codes = accessCodes
-    .map(
-      (item) =>
-        `${item.code} - ${item.lesson?.name || 'غير محدد'} - ${
-          item.used ? "مستخدم" : "غير مستخدم"
-        }`
-    )
-    .join("\n");
+  const handleDownloadCodes = () => {
+    const codes = accessCodes
+      .map(
+        (item) =>
+          `${item.code} - ${item.lessonName || "غير محدد"} - ${
+            item.used ? "مستخدم" : "غير مستخدم"
+          }`
+      )
+      .join("\n");
 
-  const blob = new Blob([codes], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "access-codes.txt";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+    const blob = new Blob([codes], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "access-codes.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
-  toast.success("تم تحميل الأكواد بنجاح");
-};
+    toast.success("تم تحميل الأكواد بنجاح");
+  };
 
   const handleSearch = () => {
-    if (!searchTerm.trim() && !selectedLesson) {
-      fetchAccessCodes();
-      return;
-    }
+    // Reset pagination when searching
+    setPagination((prev) => ({
+      ...prev,
+      page: 0,
+      hasMore: true,
+    }));
 
-    let filteredCodes = [...accessCodes];
-
-    if (searchTerm.trim()) {
-      filteredCodes = filteredCodes.filter(
-        (item) =>
-          item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.lesson.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (selectedLesson) {
-      filteredCodes = filteredCodes.filter(
-        (item) => item.lesson.id === selectedLesson
-      );
-    }
-
-    setAccessCodes(filteredCodes);
+    // Fetch fresh data with new filters
+    fetchAccessCodes();
   };
 
   const handleDeleteCode = (codeId) => {
@@ -259,28 +247,28 @@ const handleDownloadCodes = () => {
         <div className="flex gap-3">
           <button
             onClick={handleCopyAllCodes}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-300 flexCenter gap-2"
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-300 flexCenter gap-2 cursor-pointer"
           >
             <FiCopy className="w-4 h-4" />
             نسخ الكل
           </button>
           <button
             onClick={handleDownloadCodes}
-            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-300 flexCenter gap-2"
+            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-300 flexCenter gap-2 cursor-pointer"
           >
             <FiDownload className="w-4 h-4" />
             تحميل
           </button>
           <button
             onClick={handleDeleteUsedCodes}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-300 flexCenter gap-2"
+            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-300 flexCenter gap-2 cursor-pointer"
           >
             <FiTrash2 className="w-4 h-4" />
             حذف المستخدمة
           </button>
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
+            className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
           >
             <FiPlus className="w-5 h-5" />
             إنشاء أكواد جديدة
@@ -316,7 +304,7 @@ const handleDownloadCodes = () => {
           </select>
           <button
             onClick={handleSearch}
-            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
+            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
           >
             بحث
           </button>
@@ -336,7 +324,7 @@ const handleDownloadCodes = () => {
             <p className="regular-16 text-gray-600">لا توجد أكواد وصول للعرض</p>
             <button
               onClick={() => setShowGenerateModal(true)}
-              className="mt-4 bg-accent text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
+              className="mt-4 bg-accent text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
             >
               إنشاء أول مجموعة أكواد
             </button>
@@ -433,7 +421,7 @@ const handleDownloadCodes = () => {
                 <button
                   onClick={() => fetchAccessCodes(true)}
                   disabled={isLoadingMore}
-                  className="bg-white text-accent px-6 py-2 rounded-lg border border-accent hover:bg-accent hover:text-white transition-all duration-300 flex items-center gap-2 disabled:opacity-50"
+                  className="bg-white text-accent px-6 py-2 rounded-lg border border-accent hover:bg-accent hover:text-white transition-all duration-300 flex items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {isLoadingMore ? (
                     <>
@@ -461,7 +449,7 @@ const handleDownloadCodes = () => {
               <h2 className="bold-24 text-gray-900">إنشاء أكواد وصول جديدة</h2>
               <button
                 onClick={() => setShowGenerateModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
               </button>
@@ -486,7 +474,7 @@ const handleDownloadCodes = () => {
                   <option value="">اختر الدرس</option>
                   {lessons.map((lesson) => (
                     <option key={lesson.id} value={lesson.id}>
-                      {lesson.name} ({lesson.course?.name || "غير محدد"})
+                      {lesson.name} ({lesson.courseName || "غير محدد"})
                     </option>
                   ))}
                 </select>
@@ -520,14 +508,14 @@ const handleDownloadCodes = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                  className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {isLoading ? "جاري الإنشاء..." : "إنشاء الأكواد"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowGenerateModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
                 >
                   إلغاء
                 </button>
@@ -548,7 +536,7 @@ const handleDownloadCodes = () => {
                   setShowDeleteModal(false);
                   setCodeToDelete(null);
                 }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
               </button>
@@ -574,14 +562,14 @@ const handleDownloadCodes = () => {
                   setShowDeleteModal(false);
                   setCodeToDelete(null);
                 }}
-                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
               >
                 إلغاء
               </button>
               <button
                 onClick={confirmDelete}
                 disabled={isLoading}
-                className="flex-1 bg-red-600 text-white py-3 rounded-lg bold-16 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 flexCenter gap-2"
+                className="flex-1 bg-red-600 text-white py-3 rounded-lg bold-16 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 flexCenter gap-2 cursor-pointer disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>
@@ -607,7 +595,7 @@ const handleDownloadCodes = () => {
               </h2>
               <button
                 onClick={() => setShowDeleteUsedModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
               </button>
@@ -630,14 +618,14 @@ const handleDownloadCodes = () => {
             <div className="flex gap-4">
               <button
                 onClick={() => setShowDeleteUsedModal(false)}
-                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
               >
                 إلغاء
               </button>
               <button
                 onClick={confirmDeleteUsedCodes}
                 disabled={isDeletingUsed}
-                className="flex-1 bg-red-600 text-white py-3 rounded-lg bold-16 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 flexCenter gap-2"
+                className="flex-1 bg-red-600 text-white py-3 rounded-lg bold-16 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 flexCenter gap-2 cursor-pointer disabled:cursor-not-allowed"
               >
                 {isDeletingUsed ? (
                   <>

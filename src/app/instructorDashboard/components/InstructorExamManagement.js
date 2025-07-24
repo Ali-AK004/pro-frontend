@@ -7,7 +7,6 @@ import {
   FiSearch,
   FiEdit,
   FiTrash2,
-  FiEye,
   FiX,
   FiBook,
   FiClock,
@@ -15,7 +14,7 @@ import {
   FiUsers,
   FiBarChart,
 } from "react-icons/fi";
-import ExamCreationModal from "../../adminDashboard/components/ExamCreationModal";
+import ExamCreationModal from "../../adminDashboard/components/Modal/ExamCreationModal";
 
 const InstructorExamManagement = () => {
   const { user } = useUserData();
@@ -29,8 +28,10 @@ const InstructorExamManagement = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showResultsModal, setShowResultsModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedExam, setSelectedExam] = useState(null);
   const [examResults, setExamResults] = useState(null);
+  const [examToDelete, setExamToDelete] = useState(null);
 
   // Get instructor ID from user object
   const instructorId = user?.instructorId || user?.id;
@@ -56,7 +57,8 @@ const InstructorExamManagement = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await instructorAPI.courses.getByInstructor(instructorId);
+      const response =
+        await instructorAPI.courses.getByInstructor(instructorId);
       setCourses(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
@@ -79,7 +81,8 @@ const InstructorExamManagement = () => {
         const response = await instructorAPI.exams.getByLesson(selectedLesson);
         setExams(response.data || []);
       } else if (instructorId) {
-        const response = await instructorAPI.exams.getByInstructor(instructorId);
+        const response =
+          await instructorAPI.exams.getByInstructor(instructorId);
         setExams(response.data || []);
       }
     } catch (error) {
@@ -118,15 +121,15 @@ const InstructorExamManagement = () => {
     }
   };
 
-  const handleDeleteExam = async (examId) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذا الامتحان؟")) {
-      return;
-    }
+  const handleDeleteExam = async () => {
+    if (!examToDelete) return;
 
     try {
       setIsLoading(true);
-      await instructorAPI.exams.delete(examId);
+      await instructorAPI.exams.delete(examToDelete.id);
       toast.success("تم حذف الامتحان بنجاح");
+      setShowDeleteModal(false);
+      setExamToDelete(null);
       fetchExams();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف الامتحان"));
@@ -135,11 +138,17 @@ const InstructorExamManagement = () => {
     }
   };
 
+  const openDeleteModal = (exam) => {
+    setExamToDelete(exam);
+    setShowDeleteModal(true);
+  };
+
   const handleViewResults = async (exam) => {
     try {
       setIsLoading(true);
       const response = await instructorAPI.exams.getResults(exam.id);
       setExamResults(response.data);
+      console.log(response.data);
       setSelectedExam(exam);
       setShowResultsModal(true);
     } catch (error) {
@@ -176,7 +185,7 @@ const InstructorExamManagement = () => {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
+          className="bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
         >
           <FiPlus className="w-5 h-5" />
           إنشاء امتحان جديد
@@ -204,7 +213,7 @@ const InstructorExamManagement = () => {
             onChange={(e) => setSelectedCourse(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
-            <option value="">جميع الكورسات</option>
+            <option value="">اختر كورس</option>
             {courses.map((course) => (
               <option key={course.id} value={course.id}>
                 {course.name}
@@ -218,7 +227,7 @@ const InstructorExamManagement = () => {
             onChange={(e) => setSelectedLesson(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
-            <option value="">جميع الدروس</option>
+            <option value="">اختر درس</option>
             {lessons.map((lesson) => (
               <option key={lesson.id} value={lesson.id}>
                 {lesson.name}
@@ -252,7 +261,7 @@ const InstructorExamManagement = () => {
             <p className="regular-16 text-gray-600">لا توجد امتحانات للعرض</p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="mt-4 bg-secondary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
+              className="mt-4 bg-secondary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
             >
               إنشاء أول امتحان
             </button>
@@ -302,7 +311,7 @@ const InstructorExamManagement = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleViewResults(exam)}
-                    className="flex-1 bg-blue-50 text-blue-600 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
+                    className="flex-1 bg-blue-50 text-blue-600 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2 cursor-pointer"
                   >
                     <FiBarChart className="w-4 h-4" />
                     النتائج
@@ -312,14 +321,14 @@ const InstructorExamManagement = () => {
                       setSelectedExam(exam);
                       setShowEditModal(true);
                     }}
-                    className="flex-1 bg-green-50 text-green-600 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2"
+                    className="flex-1 bg-green-50 text-green-600 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2 cursor-pointer"
                   >
                     <FiEdit className="w-4 h-4" />
                     تعديل
                   </button>
                   <button
-                    onClick={() => handleDeleteExam(exam.id)}
-                    className="bg-red-50 text-red-600 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors"
+                    onClick={() => openDeleteModal(exam)}
+                    className="bg-red-50 text-red-600 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
                   >
                     <FiTrash2 className="w-4 h-4" />
                   </button>
@@ -370,6 +379,52 @@ const InstructorExamManagement = () => {
           results={examResults}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && examToDelete && (
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="text-center">
+              {/* Warning Icon */}
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <FiTrash2 className="h-6 w-6 text-red-600" />
+              </div>
+
+              {/* Title */}
+              <h3 className="bold-18 text-gray-900 mb-2">تأكيد حذف الامتحان</h3>
+
+              {/* Message */}
+              <p className="regular-14 text-gray-600 mb-6">
+                هل أنت متأكد من حذف امتحان "{examToDelete.title}"؟
+                <br />
+                <span className="text-red-600 bold-14">
+                  سيتم حذف جميع النتائج والإجابات المرتبطة به نهائياً.
+                </span>
+              </p>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setExamToDelete(null);
+                  }}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg bold-14 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={handleDeleteExam}
+                  disabled={isLoading}
+                  className="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg bold-14 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {isLoading ? "جاري الحذف..." : "حذف نهائياً"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -379,7 +434,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+    <div className="fixed inset-0 bg-black/20 flexCenter z-50">
       <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -388,7 +443,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results }) => {
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
           >
             <FiX className="w-6 h-6 text-gray-500" />
           </button>
@@ -475,7 +530,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results }) => {
         <div className="flex items-center justify-end p-6 border-t border-gray-200">
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
           >
             إغلاق
           </button>

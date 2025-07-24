@@ -6,10 +6,7 @@ import {
   FiBook,
   FiFileText,
   FiCode,
-  FiTrendingUp,
   FiActivity,
-  FiDollarSign,
-  FiEye,
 } from "react-icons/fi";
 
 const DashboardOverview = ({setActiveTab}) => {
@@ -58,7 +55,6 @@ const DashboardOverview = ({setActiveTab}) => {
       color: "bg-green-500",
       bgColor: "bg-green-50",
       textColor: "text-green-600",
-      changeType: "increase",
     },
     {
       title: "إجمالي الكورسات",
@@ -67,7 +63,6 @@ const DashboardOverview = ({setActiveTab}) => {
       color: "bg-purple-500",
       bgColor: "bg-purple-50",
       textColor: "text-purple-600",
-      changeType: "increase",
     },
     {
       title: "إجمالي الدروس",
@@ -76,7 +71,6 @@ const DashboardOverview = ({setActiveTab}) => {
       color: "bg-orange-500",
       bgColor: "bg-orange-50",
       textColor: "text-orange-600",
-      changeType: "increase",
     },
   ];
 
@@ -103,7 +97,7 @@ const DashboardOverview = ({setActiveTab}) => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="bold-32 text-gray-900 mb-2">لوحة التحكم</h1>
@@ -119,26 +113,17 @@ const DashboardOverview = ({setActiveTab}) => {
           return (
             <div
               key={index}
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
+              className="bg-white flex items-center justify-between flex-col md:flex-row p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 rounded-lg ${card.bgColor}`}>
                   <Icon className={`w-6 h-6 ${card.textColor}`} />
                 </div>
-                <div
-                  className={`text-sm font-medium ${
-                    card.changeType === "increase"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {card.change}
-                </div>
               </div>
-              <div className="text-right">
+              <div className="text-center">
                 <h3 className="regular-14 text-gray-600 mb-1">{card.title}</h3>
                 <p className="bold-24 text-gray-900">
-                  {card.value.toLocaleString()}
+                  ({card.value.toLocaleString()})
                 </p>
               </div>
             </div>
@@ -147,9 +132,9 @@ const DashboardOverview = ({setActiveTab}) => {
       </div>
 
       {/* Charts and Activity */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div className="bg-white p-6 rounded-xl shadow-sm text-center md:text-right border border-gray-100">
         <h3 className="bold-20 text-gray-900 mb-4">إجراءات سريعة</h3>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={() => navigateToTab("users")}
             className="p-4 bg-accent cursor-pointer bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"

@@ -247,7 +247,7 @@ const InstructorLessonManagement = () => {
             onChange={(e) => setSelectedCourse(e.target.value)}
             className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
-            <option value="">جميع الكورسات</option>
+            <option value="">اختر كورس</option>
             {courses.map((course) => (
               <option key={course.id} value={course.id}>
                 {course.name}
@@ -302,17 +302,17 @@ const InstructorLessonManagement = () => {
           lessons.map((lesson) => (
             <div
               key={lesson.id}
-              className="bg-white flex flex-col md:flex-row rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"
+              className="bg-white flex flex-col md:flex-row rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 overflow-hidden"
             >
               {/* Lesson Image/Video Thumbnail */}
-              <div className="h-52">
+              <div className=''>
                 {lesson.photoUrl ? (
                   <Image
                     src={lesson.photoUrl}
-                    width={192}
-                    height={192}
+                    width={150}
+                    height={150}
                     alt={lesson.name}
-                    className="w-full h-full object-contain"
+                    className="h-full w-full object-contain"
                   />
                 ) : (
                   <div className="w-full h-full flexCenter">
@@ -339,7 +339,7 @@ const InstructorLessonManagement = () => {
                         <span>{lesson.courseName || "غير محدد"}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <FiDollarSign className="w-4 h-4" />
+                        <FiDollarSign className="w-3 h-3" />
                         <span>{lesson.price || "مجاني"}</span>
                       </div>
                     </div>
@@ -474,13 +474,13 @@ const InstructorLessonManagement = () => {
                     type="number"
                     required
                     min="0"
-                    step="0.01"
+                    step="5"
                     value={lessonForm.price}
                     onChange={(e) =>
                       setLessonForm({ ...lessonForm, price: e.target.value })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                    placeholder="0.00"
+                    placeholder="0"
                   />
                 </div>
                 <div>
@@ -559,7 +559,7 @@ const InstructorLessonManagement = () => {
 
       {/* Edit Lesson Modal */}
       {showEditModal && selectedLesson && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">تعديل الدرس</h2>
@@ -670,7 +670,7 @@ const InstructorLessonManagement = () => {
 
       {/* View Lesson Modal */}
       {showViewModal && selectedLesson && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">تفاصيل الدرس</h2>
@@ -719,7 +719,7 @@ const InstructorLessonManagement = () => {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="regular-12 text-gray-500 mb-1">الكورس</p>
                     <p className="bold-14 text-gray-900">
-                      {selectedLesson.course?.name || "غير محدد"}
+                      {selectedLesson.courseName || "غير محدد"}
                     </p>
                   </div>
                 </div>

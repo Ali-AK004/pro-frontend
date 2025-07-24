@@ -140,13 +140,13 @@ const NavBar = () => {
               <div className="flex items-center gap-3">
                 <Link
                   href="/login"
-                  className="bold-16 border border-[#088395] rounded-lg text-gray-700 text-accent transition-all duration-300 px-4 py-2"
+                  className="bold-16 border border-[#088395] rounded-lg text-gray-700 text-accent transition-all duration-300 px-4 py-2 cursor-pointer"
                 >
                   تسجيل الدخول
                 </Link>
                 <Link
                   href="/signup"
-                  className="bg-accent text-white px-6 py-2 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 shadow-md hover:shadow-lg"
+                  className="bg-accent text-white px-6 py-2 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer"
                 >
                   إنشاء حساب
                 </Link>
@@ -221,14 +221,14 @@ const NavBar = () => {
                 <div className="flex flex-col space-y-3">
                   <Link
                     href="/login"
-                    className="text-center py-3 border border-red-500 text-accent rounded-lg regular-16 hover:bg-accent hover:text-white transition-all duration-300"
+                    className="text-center py-3 border border-red-500 text-accent rounded-lg regular-16 hover:bg-accent hover:text-white transition-all duration-300 cursor-pointer"
                     onClick={closeMenus}
                   >
                     تسجيل الدخول
                   </Link>
                   <Link
                     href="/signup"
-                    className="text-center py-3 bg-accent text-white rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300"
+                    className="text-center py-3 bg-accent text-white rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
                     onClick={closeMenus}
                   >
                     إنشاء حساب

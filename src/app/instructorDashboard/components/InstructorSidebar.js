@@ -127,7 +127,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
             {/* Close button for mobile */}
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="lg:hidden mr-auto p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+              className="lg:hidden mr-auto p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors cursor-pointer"
             >
               <FiX className="w-5 h-5" />
             </button>

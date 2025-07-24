@@ -10,9 +10,12 @@ import {
   FiUser,
   FiEye,
   FiX,
-  FiImage,
 } from "react-icons/fi";
-import { sanitizeInput, validateSearchTerm, debounce } from '../../utils/security';
+import {
+  sanitizeInput,
+  validateSearchTerm,
+  debounce,
+} from "../../utils/security";
 
 const CourseManagement = () => {
   const [courses, setCourses] = useState([]);
@@ -22,7 +25,9 @@ const CourseManagement = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [courseToDelete, setCourseToDelete] = useState(null);
 
   // Form states
   const [courseForm, setCourseForm] = useState({
@@ -104,19 +109,15 @@ const CourseManagement = () => {
     }
   };
 
-  const handleDeleteCourse = async (courseId) => {
-    if (
-      !window.confirm(
-        "هل أنت متأكد من حذف هذا الكورس؟ سيتم حذف جميع الدروس المرتبطة به."
-      )
-    ) {
-      return;
-    }
+  const handleDeleteCourse = async () => {
+    if (!courseToDelete) return;
 
     try {
       setIsLoading(true);
-      await adminAPI.courses.delete(courseId);
+      await adminAPI.courses.delete(courseToDelete.id);
       toast.success("تم حذف الكورس بنجاح");
+      setShowDeleteModal(false);
+      setCourseToDelete(null);
       fetchCourses();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف الكورس"));
@@ -125,23 +126,31 @@ const CourseManagement = () => {
     }
   };
 
+  const openDeleteModal = (course) => {
+    setCourseToDelete(course);
+    setShowDeleteModal(true);
+  };
+
   const handleSecureSearch = useCallback(
     debounce(() => {
       try {
         const sanitizedTerm = validateSearchTerm(searchTerm);
-        
+
         if (!sanitizedTerm.trim()) {
           fetchCourses();
           return;
         }
 
-        const filteredCourses = courses.filter(course =>
-          course.name.toLowerCase().includes(sanitizedTerm.toLowerCase()) ||
-          course.description?.toLowerCase().includes(sanitizedTerm.toLowerCase())
+        const filteredCourses = courses.filter(
+          (course) =>
+            course.name.toLowerCase().includes(sanitizedTerm.toLowerCase()) ||
+            course.description
+              ?.toLowerCase()
+              .includes(sanitizedTerm.toLowerCase())
         );
         setCourses(filteredCourses);
       } catch (error) {
-        toast.error('خطأ في البحث');
+        toast.error("خطأ في البحث");
       }
     }, 300),
     [searchTerm, courses]
@@ -152,7 +161,7 @@ const CourseManagement = () => {
       const sanitizedValue = sanitizeInput(e.target.value);
       setSearchTerm(sanitizedValue);
     } catch (error) {
-      toast.error('مصطلح البحث غير صالح');
+      toast.error("مصطلح البحث غير صالح");
     }
   };
 
@@ -167,9 +176,9 @@ const CourseManagement = () => {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between gap-4 flex-col md:flex-row mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">إدارة الكورسات</h1>
           <p className="regular-16 text-gray-600">
@@ -178,7 +187,7 @@ const CourseManagement = () => {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
+          className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
         >
           <FiPlus className="w-5 h-5" />
           إنشاء كورس جديد
@@ -201,7 +210,7 @@ const CourseManagement = () => {
           </div>
           <button
             onClick={handleSecureSearch}
-            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
+            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
           >
             بحث
           </button>
@@ -241,7 +250,7 @@ const CourseManagement = () => {
           courses.map((course) => (
             <div
               key={course.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
+              className="bg-white rounded-lg flex flex-col shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
             >
               {/* Course Image */}
               <div className="h-48 bg-gradient-to-br from-accent to-secondary relative">
@@ -259,48 +268,53 @@ const CourseManagement = () => {
               </div>
 
               {/* Course Content */}
-              <div className="p-6">
-                <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">
-                  {course.name}
-                </h3>
-                <p className="regular-14 text-gray-600 mb-4 line-clamp-3">
-                  {course.description || "لا يوجد وصف متاح"}
-                </p>
-
-                {/* Course Stats */}
-                <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <FiUser className="w-4 h-4" />
-                    <span>{course.instructor?.fullname || "غير محدد"}</span>
+              <div className="p-5 flex-1 flex flex-col">
+                <div className="flexBetween flex-1">
+                  <div className="flex flex-col">
+                    <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">
+                      {course.name}
+                    </h3>
+                    <p className="regular-14 text-gray-600 max-w-[250px] mb-4 line-clamp-3">
+                      {course.description || "لا يوجد وصف متاح"}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <FiBook className="w-4 h-4" />
-                    <span>{course.lessonCount || 0} درس</span>
+                  {/* Course Stats */}
+                  <div className="text-sm min-w-[80px] text-gray-500">
+                    <div className="flex items-center gap-1 mb-2">
+                      <FiUser className="w-4 h-4" />
+                      <span>{course.instructorName || "غير محدد"}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <FiBook className="w-4 h-4" />
+                      <span>{course.lessonCount || 0} درس</span>
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Actions */}
+              {/* Actions - Moved to bottom */}
+              <div className="p-4 pt-0 border-t border-gray-100">
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
                       setSelectedCourse(course);
                       setShowViewModal(true);
                     }}
-                    className="flex-1 bg-blue-50 text-blue-600 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
+                    className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
                   >
                     <FiEye className="w-4 h-4" />
                     عرض
                   </button>
                   <button
                     onClick={() => openEditModal(course)}
-                    className="flex-1 bg-green-50 text-green-600 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2"
+                    className="cursor-pointer flex-1 bg-green-50 text-green-600 border border-green-300 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2"
                   >
                     <FiEdit className="w-4 h-4" />
                     تعديل
                   </button>
                   <button
-                    onClick={() => handleDeleteCourse(course.id)}
-                    className="bg-red-50 text-red-600 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors"
+                    onClick={() => openDeleteModal(course)}
+                    className="cursor-pointer flex-1 bg-red-50 text-red-400 py-2 border border-red-300 px-4 rounded-lg hover:bg-red-100 transition-colors flexCenter gap-2"
                   >
                     <FiTrash2 className="w-4 h-4" />
                   </button>
@@ -313,13 +327,13 @@ const CourseManagement = () => {
 
       {/* Create Course Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">إنشاء كورس جديد</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
               </button>
@@ -403,14 +417,14 @@ const CourseManagement = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                  className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {isLoading ? "جاري الإنشاء..." : "إنشاء الكورس"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
                 >
                   إلغاء
                 </button>
@@ -422,13 +436,13 @@ const CourseManagement = () => {
 
       {/* Edit Course Modal */}
       {showEditModal && selectedCourse && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">تعديل الكورس</h2>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
               </button>
@@ -501,13 +515,13 @@ const CourseManagement = () => {
 
       {/* View Course Modal */}
       {showViewModal && selectedCourse && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">تفاصيل الكورس</h2>
               <button
                 onClick={() => setShowViewModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
               </button>
@@ -544,7 +558,7 @@ const CourseManagement = () => {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="regular-12 text-gray-500 mb-1">المدرس</p>
                     <p className="bold-14 text-gray-900">
-                      {selectedCourse.instructor?.fullname || "غير محدد"}
+                      {selectedCourse.instructorName || "غير محدد"}
                     </p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
@@ -554,6 +568,52 @@ const CourseManagement = () => {
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && courseToDelete && (
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="text-center">
+              {/* Warning Icon */}
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <FiTrash2 className="h-6 w-6 text-red-600" />
+              </div>
+
+              {/* Title */}
+              <h3 className="bold-18 text-gray-900 mb-2">تأكيد حذف الكورس</h3>
+
+              {/* Message */}
+              <p className="regular-14 text-gray-600 mb-6">
+                هل أنت متأكد من حذف كورس "{courseToDelete.name}"؟
+                <br />
+                <span className="text-red-600 bold-14">
+                  سيتم حذف جميع الدروس المرتبطة به نهائياً.
+                </span>
+              </p>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setCourseToDelete(null);
+                  }}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg bold-14 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={handleDeleteCourse}
+                  disabled={isLoading}
+                  className="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg bold-14 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {isLoading ? "جاري الحذف..." : "حذف نهائياً"}
+                </button>
               </div>
             </div>
           </div>

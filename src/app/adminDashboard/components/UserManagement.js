@@ -13,7 +13,11 @@ import {
   FiEye,
   FiX,
 } from "react-icons/fi";
-import { sanitizeInput, validateSearchTerm, debounce } from '../../utils/security';
+import {
+  sanitizeInput,
+  validateSearchTerm,
+  debounce,
+} from "../../utils/security";
 
 const UserManagement = () => {
   const [activeUserType, setActiveUserType] = useState("students");
@@ -121,30 +125,31 @@ const UserManagement = () => {
     debounce(async (term) => {
       try {
         const sanitizedTerm = validateSearchTerm(term);
-        
+
         if (!sanitizedTerm.trim()) {
           fetchUsers();
           return;
         }
 
         setIsLoading(true);
-        
-        if (activeUserType === 'students') {
+
+        if (activeUserType === "students") {
           const response = await adminAPI.users.searchStudents(sanitizedTerm);
           setUsers(response.data || []);
         } else {
           // Client-side filtering with sanitized term
           const searchLower = sanitizedTerm.toLowerCase();
-          const filteredUsers = users.filter(user =>
-            user.fullname?.toLowerCase().includes(searchLower) ||
-            user.username?.toLowerCase().includes(searchLower) ||
-            user.email?.toLowerCase().includes(searchLower)
+          const filteredUsers = users.filter(
+            (user) =>
+              user.fullname?.toLowerCase().includes(searchLower) ||
+              user.username?.toLowerCase().includes(searchLower) ||
+              user.email?.toLowerCase().includes(searchLower)
           );
           setUsers(filteredUsers);
         }
       } catch (error) {
-        console.error('Search error:', error);
-        toast.error('خطأ في البحث');
+        console.error("Search error:", error);
+        toast.error("خطأ في البحث");
         setUsers([]);
       } finally {
         setIsLoading(false);
@@ -161,7 +166,7 @@ const UserManagement = () => {
       setSearchTerm(sanitizedValue);
       handleSecureSearch(sanitizedValue);
     } catch (error) {
-      toast.error('مصطلح البحث غير صالح');
+      toast.error("مصطلح البحث غير صالح");
     }
   };
 
@@ -384,7 +389,7 @@ const UserManagement = () => {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
+          className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
         >
           <FiPlus className="w-5 h-5" />
           إضافة مستخدم
@@ -423,7 +428,7 @@ const UserManagement = () => {
           </div>
           <button
             onClick={() => handleSecureSearch(searchTerm)}
-            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
+            className="bg-accent text-white px-6 cursor-pointer py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
           >
             بحث
           </button>
@@ -459,7 +464,7 @@ const UserManagement = () => {
                   <th className="px-6 py-4 text-right bold-14 text-gray-900">
                     المحافظة
                   </th>
-                  <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                  <th className="px-6 py-4 text-center bold-14 text-gray-900">
                     الإجراءات
                   </th>
                 </tr>
@@ -492,7 +497,7 @@ const UserManagement = () => {
                       {user.government || "-"}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => {
                             setSelectedUser(user);
@@ -529,13 +534,13 @@ const UserManagement = () => {
 
       {/* Create User Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">إضافة مستخدم جديد</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
               </button>
@@ -549,7 +554,7 @@ const UserManagement = () => {
               <div className="flex gap-4">
                 <button
                   onClick={() => setCreateUserType("instructor")}
-                  className={`px-4 py-2 rounded-lg bold-14 transition-all ${
+                  className={`px-4 py-2 rounded-lg cursor-pointer bold-14 transition-all ${
                     createUserType === "instructor"
                       ? "bg-accent text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -559,7 +564,7 @@ const UserManagement = () => {
                 </button>
                 <button
                   onClick={() => setCreateUserType("assistant")}
-                  className={`px-4 py-2 rounded-lg bold-14 transition-all ${
+                  className={`px-4 py-2 rounded-lg cursor-pointer bold-14 transition-all ${
                     createUserType === "assistant"
                       ? "bg-accent text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -734,14 +739,14 @@ const UserManagement = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                    className="flex-1 bg-accent cursor-pointer text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
                   >
                     {isLoading ? "جاري الإنشاء..." : "إنشاء المدرس"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+                    className="flex-1 bg-gray-200 cursor-pointer text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
                   >
                     إلغاء
                   </button>
@@ -903,14 +908,14 @@ const UserManagement = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                    className="flex-1 bg-accent cursor-pointer text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
                   >
                     {isLoading ? "جاري الإنشاء..." : "إنشاء المساعد"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+                    className="flex-1 bg-gray-200 cursor-pointer text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
                   >
                     إلغاء
                   </button>
@@ -923,13 +928,13 @@ const UserManagement = () => {
 
       {/* View User Modal */}
       {showViewModal && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-lg">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">تفاصيل المستخدم</h2>
               <button
                 onClick={() => setShowViewModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
               </button>
@@ -948,7 +953,7 @@ const UserManagement = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <FiMail className="w-5 h-5 text-gray-500" />
                   <div>
@@ -1002,14 +1007,15 @@ const UserManagement = () => {
         </div>
       )}
 
+      {/* View Edit Modal */}
       {showEditModal && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">تعديل بيانات المستخدم</h2>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 cursor-pointer hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
               </button>
@@ -1184,14 +1190,14 @@ const UserManagement = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                  className="flex-1 bg-accent cursor-pointer text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
                 >
                   {isLoading ? "جاري التحديث..." : "حفظ التعديلات"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+                  className="flex-1 bg-gray-200 cursor-pointer text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
                 >
                   إلغاء
                 </button>
@@ -1203,7 +1209,7 @@ const UserManagement = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">تأكيد الحذف</h2>
@@ -1238,14 +1244,14 @@ const UserManagement = () => {
                   setShowDeleteModal(false);
                   setUserToDelete(null);
                 }}
-                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
               >
                 إلغاء
               </button>
               <button
                 onClick={confirmDelete}
                 disabled={isLoading}
-                className="flex-1 bg-red-600 text-white py-3 rounded-lg bold-16 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 flexCenter gap-2"
+                className="flex-1 bg-red-600 text-white py-3 rounded-lg bold-16 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 flexCenter gap-2 cursor-pointer disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>

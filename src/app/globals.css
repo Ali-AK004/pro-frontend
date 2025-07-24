@@ -44,6 +44,10 @@ html {
   .regular-14 {
     @apply text-[14px] font-[400];
   }
+
+  .regular-12 {
+    @apply text-[12px] font-[400];
+  }
   
   .bold-64 {
     @apply text-[64px] font-[700] leading-[150%];

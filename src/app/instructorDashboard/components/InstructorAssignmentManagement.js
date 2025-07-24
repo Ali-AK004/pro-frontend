@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { instructorAPI, handleAPIError } from '../services/instructorAPI';
-import { assignmentAPI } from '../../services/assignmentAPI';
-import { useUserData } from '../../../../models/UserContext';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import { instructorAPI, handleAPIError } from "../services/instructorAPI";
+import { assignmentAPI } from "../../services/assignmentAPI";
+import { useUserData } from "../../../../models/UserContext";
+import { toast } from "react-toastify";
 import {
   FiPlus,
   FiSearch,
@@ -19,9 +19,9 @@ import {
   FiCalendar,
   FiCheckCircle,
   FiAlertCircle,
-} from 'react-icons/fi';
-import AssignmentCreationModal from '../../adminDashboard/components/AssignmentCreationModal';
-import { getInstructorId, getRolePermissions } from '../../utils/roleHelpers';
+} from "react-icons/fi";
+import AssignmentCreationModal from "../../adminDashboard/components/Modal/AssignmentCreationModal";
+import { getInstructorId, getRolePermissions } from "../../utils/roleHelpers";
 
 const InstructorAssignmentManagement = () => {
   const { user } = useUserData();
@@ -29,9 +29,9 @@ const InstructorAssignmentManagement = () => {
   const [lessons, setLessons] = useState([]);
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [selectedLesson, setSelectedLesson] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedLesson, setSelectedLesson] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
@@ -52,7 +52,7 @@ const InstructorAssignmentManagement = () => {
       fetchLessons();
     } else {
       setLessons([]);
-      setSelectedLesson('');
+      setSelectedLesson("");
     }
   }, [selectedCourse]);
 
@@ -62,10 +62,11 @@ const InstructorAssignmentManagement = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await instructorAPI.courses.getByInstructor(instructorId);
+      const response =
+        await instructorAPI.courses.getByInstructor(instructorId);
       setCourses(response.data || []);
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل الكورسات'));
+      toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
     }
   };
 
@@ -74,7 +75,7 @@ const InstructorAssignmentManagement = () => {
       const response = await instructorAPI.courses.getLessons(selectedCourse);
       setLessons(response.data || []);
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل الدروس'));
+      toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
     }
   };
 
@@ -82,14 +83,16 @@ const InstructorAssignmentManagement = () => {
     try {
       setIsLoading(true);
       if (selectedLesson) {
-        const response = await instructorAPI.assignments.getByLesson(selectedLesson);
+        const response =
+          await instructorAPI.assignments.getByLesson(selectedLesson);
         setAssignments(response.data || []);
       } else if (instructorId) {
-        const response = await instructorAPI.assignments.getByInstructor(instructorId);
+        const response =
+          await instructorAPI.assignments.getByInstructor(instructorId);
         setAssignments(response.data || []);
       }
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل الواجبات'));
+      toast.error(handleAPIError(error, "فشل في تحميل الواجبات"));
     } finally {
       setIsLoading(false);
     }
@@ -98,12 +101,15 @@ const InstructorAssignmentManagement = () => {
   const handleCreateAssignment = async (assignmentData) => {
     try {
       setIsLoading(true);
-      await instructorAPI.assignments.create(assignmentData.lessonId, assignmentData);
-      toast.success('تم إنشاء الواجب بنجاح');
+      await instructorAPI.assignments.create(
+        assignmentData.lessonId,
+        assignmentData
+      );
+      toast.success("تم إنشاء الواجب بنجاح");
       setShowCreateModal(false);
       fetchAssignments();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في إنشاء الواجب'));
+      toast.error(handleAPIError(error, "فشل في إنشاء الواجب"));
     } finally {
       setIsLoading(false);
     }
@@ -113,29 +119,29 @@ const InstructorAssignmentManagement = () => {
     try {
       setIsLoading(true);
       await instructorAPI.assignments.update(assignmentData);
-      toast.success('تم تحديث الواجب بنجاح');
+      toast.success("تم تحديث الواجب بنجاح");
       setShowEditModal(false);
       setSelectedAssignment(null);
       fetchAssignments();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحديث الواجب'));
+      toast.error(handleAPIError(error, "فشل في تحديث الواجب"));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteAssignment = async (assignmentId) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا الواجب؟')) {
+    if (!window.confirm("هل أنت متأكد من حذف هذا الواجب؟")) {
       return;
     }
 
     try {
       setIsLoading(true);
       await instructorAPI.assignments.delete(assignmentId);
-      toast.success('تم حذف الواجب بنجاح');
+      toast.success("تم حذف الواجب بنجاح");
       fetchAssignments();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في حذف الواجب'));
+      toast.error(handleAPIError(error, "فشل في حذف الواجب"));
     } finally {
       setIsLoading(false);
     }
@@ -144,12 +150,14 @@ const InstructorAssignmentManagement = () => {
   const handleViewSubmissions = async (assignment) => {
     try {
       setIsLoading(true);
-      const response = await instructorAPI.assignments.getSubmissions(assignment.id);
+      const response = await instructorAPI.assignments.getSubmissions(
+        assignment.id
+      );
       setAssignmentSubmissions(response.data || []);
       setSelectedAssignment(assignment);
       setShowSubmissionsModal(true);
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل التسليمات'));
+      toast.error(handleAPIError(error, "فشل في تحميل التسليمات"));
     } finally {
       setIsLoading(false);
     }
@@ -159,11 +167,11 @@ const InstructorAssignmentManagement = () => {
     try {
       setIsLoading(true);
       await instructorAPI.assignments.grade(submissionId, grade, feedback);
-      toast.success('تم تقييم الواجب بنجاح');
+      toast.success("تم تقييم الواجب بنجاح");
       // Refresh submissions
       handleViewSubmissions(selectedAssignment);
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تقييم الواجب'));
+      toast.error(handleAPIError(error, "فشل في تقييم الواجب"));
     } finally {
       setIsLoading(false);
     }
@@ -180,7 +188,7 @@ const InstructorAssignmentManagement = () => {
     }, []);
   };
 
-  const filteredAssignments = assignments.filter(assignment =>
+  const filteredAssignments = assignments.filter((assignment) =>
     assignment.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -190,11 +198,13 @@ const InstructorAssignmentManagement = () => {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">إدارة الواجبات</h1>
-          <p className="regular-16 text-gray-600">إنشاء وتعديل وإدارة واجبات دروسك</p>
+          <p className="regular-16 text-gray-600">
+            إنشاء وتعديل وإدارة واجبات دروسك
+          </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
+          className="bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
         >
           <FiPlus className="w-5 h-5" />
           إنشاء واجب جديد
@@ -250,7 +260,10 @@ const InstructorAssignmentManagement = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
+            >
               <div className="h-4 bg-gray-200 rounded mb-4"></div>
               <div className="h-3 bg-gray-200 rounded mb-2"></div>
               <div className="h-3 bg-gray-200 rounded mb-4"></div>
@@ -319,9 +332,16 @@ const InstructorAssignmentManagement = () => {
 };
 
 // Assignment Card Component (reused from admin)
-const AssignmentCard = ({ assignment, onEdit, onDelete, onViewSubmissions }) => {
+const AssignmentCard = ({
+  assignment,
+  onEdit,
+  onDelete,
+  onViewSubmissions,
+}) => {
   const isOverdue = assignmentAPI.validation.isOverdue(assignment.dueDate);
-  const timeRemaining = assignmentAPI.validation.getTimeRemaining(assignment.dueDate);
+  const timeRemaining = assignmentAPI.validation.getTimeRemaining(
+    assignment.dueDate
+  );
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
@@ -332,15 +352,14 @@ const AssignmentCard = ({ assignment, onEdit, onDelete, onViewSubmissions }) => 
             <FiAlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
           )}
         </div>
-        
+
         <p className="regular-14 text-gray-600 mb-4 line-clamp-2">
-          {assignment.description || 'لا يوجد وصف'}
+          {assignment.description || "لا يوجد وصف"}
         </p>
 
-    <p className="regular-14 text-gray-600 mb-4 line-clamp-2">
-          {assignment.lessonName || 'لا يوجد اسم درس'}
+        <p className="regular-14 text-gray-600 mb-4 line-clamp-2">
+          {assignment.lessonName || "لا يوجد اسم درس"}
         </p>
-
 
         {/* Assignment Stats */}
         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -352,15 +371,23 @@ const AssignmentCard = ({ assignment, onEdit, onDelete, onViewSubmissions }) => 
           </div>
           <div className="flex items-center gap-2">
             <FiAward className="w-4 h-4 text-green-500" />
-            <span className="regular-12 text-gray-600">{assignment.maxPoints} نقطة</span>
+            <span className="regular-12 text-gray-600">
+              {assignment.maxPoints} نقطة
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <FiUsers className="w-4 h-4 text-purple-500" />
-            <span className="regular-12 text-gray-600">{assignment.submissionCount || 0} تسليم</span>
+            <span className="regular-12 text-gray-600">
+              {assignment.submissionCount || 0} تسليم
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <FiClock className={`w-4 h-4 ${isOverdue ? 'text-red-500' : 'text-orange-500'}`} />
-            <span className={`regular-12 ${isOverdue ? 'text-red-600' : 'text-gray-600'}`}>
+            <FiClock
+              className={`w-4 h-4 ${isOverdue ? "text-red-500" : "text-orange-500"}`}
+            />
+            <span
+              className={`regular-12 ${isOverdue ? "text-red-600" : "text-gray-600"}`}
+            >
               {timeRemaining}
             </span>
           </div>

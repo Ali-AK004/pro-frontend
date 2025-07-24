@@ -1,10 +1,9 @@
-'use client';
+"use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserData } from "../../../models/UserContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import GlobalSearch from "./components/GlobalSearch";
 import { canAccessInstructorDashboard } from "../utils/roleHelpers";
 
 // Import components
@@ -25,7 +24,7 @@ const InstructorDashboard = () => {
 
   const handleGlobalSearch = (searchTerm) => {
     // Implement global search logic across all instructor data
-    console.log('Searching across all instructor data:', searchTerm);
+    console.log("Searching across all instructor data:", searchTerm);
     // You can search across courses, lessons, students, etc.
   };
 
@@ -38,11 +37,11 @@ const InstructorDashboard = () => {
       return;
     }
 
-    if (!canAccessInstructorDashboard(user)) {
-      toast.error('غير مصرح لك بالوصول لهذه الصفحة');
-      router.push('/');
-      return;
-    }
+    // if (!canAccessInstructorDashboard(user)) {
+    //   toast.error("غير مصرح لك بالوصول لهذه الصفحة");
+    //   router.push("/");
+    //   return;
+    // }
   }, [user, loading, router]);
 
   // Loading state
@@ -74,16 +73,11 @@ const InstructorDashboard = () => {
         return <InstructorAssignmentManagement />;
       case "ai-chat":
         return (
-          <div className="p-8">
-            <div className="max-w-4xl mx-auto">
-              <h1 className="bold-32 text-gray-900 mb-8">المساعد الذكي</h1>
-              <div
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
-                style={{ height: "600px" }}
-              >
-                <AIChat isOpen={true} onClose={() => {}} className="h-full" />
-              </div>
-            </div>
+          <div
+            className="overflow-hidden p-4"
+            style={{ height: "100vh" }}
+          >
+            <AIChat isOpen={true} onClose={() => {}} />
           </div>
         );
       case "access-codes":
@@ -103,17 +97,8 @@ const InstructorDashboard = () => {
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
       <InstructorSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-
       {/* Main Content */}
       <div className="flex-1 lg:mr-80 mr-0">
-        {/* Optional: Add global search bar at the top */}
-        <div className="bg-white shadow-sm border-b border-gray-200 p-4">
-          <GlobalSearch 
-            onSearch={handleGlobalSearch}
-            className="mx-auto"
-          />
-        </div>
-        
         <div className="pt-16 lg:pt-0">{renderContent()}</div>
       </div>
     </div>

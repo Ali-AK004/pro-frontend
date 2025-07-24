@@ -5,10 +5,10 @@ import { sanitizeInput, validateSearchTerm, debounce } from '../utils/security';
 import { toast } from 'react-toastify';
 
 const SecureSearchInput = ({ 
-  placeholder, 
-  onSearch, 
+  placeholder,
+  onSearch,
   className = "",
-  maxLength = 100 
+  maxLength = 100
 }) => {
   const [value, setValue] = useState('');
   const [isValid, setIsValid] = useState(true);

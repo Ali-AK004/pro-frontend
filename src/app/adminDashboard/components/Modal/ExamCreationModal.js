@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { examAPI } from "../../services/examAPI";
+import { examAPI } from "../../../services/examAPI";
 import {
   FiX,
   FiPlus,
@@ -16,6 +16,7 @@ const ExamCreationModal = ({
   onClose,
   onSubmit,
   lessons,
+  courses = [],
   initialData = null,
   isLoading = false,
   isEdit = false,
@@ -171,8 +172,8 @@ const ExamCreationModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
-      <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/20 flexCenter z-50">
+      <div className="bg-white rounded-xl w-full max-w-4xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="bold-24 text-gray-900">
@@ -180,7 +181,7 @@ const ExamCreationModal = ({
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
           >
             <FiX className="w-6 h-6 text-gray-500" />
           </button>
@@ -209,11 +210,25 @@ const ExamCreationModal = ({
                     required
                   >
                     <option value="">اختر الدرس</option>
-                    {lessons.map((lesson) => (
-                      <option key={lesson.id} value={lesson.id}>
-                        {lesson.name}
-                      </option>
-                    ))}
+                    {courses.map((course) => {
+                      // Filter lessons that belong to this course
+                      const courseLessons = lessons.filter(
+                        (lesson) => lesson.courseId === course.id
+                      );
+
+                      // Only render optgroup if course has lessons
+                      if (courseLessons.length === 0) return null;
+
+                      return (
+                        <optgroup key={course.id} label={course.name}>
+                          {courseLessons.map((lesson) => (
+                            <option key={lesson.id} value={lesson.id}>
+                              {lesson.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      );
+                    })}
                   </select>
                   {errors.lessonId && (
                     <p className="mt-1 text-sm text-red-600">
@@ -253,7 +268,7 @@ const ExamCreationModal = ({
                   type="number"
                   min="0"
                   max="100"
-                  step="0.01"
+                  step="5"
                   value={examData.passingScore}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -282,7 +297,7 @@ const ExamCreationModal = ({
                 </label>
                 <input
                   type="number"
-                  min="1"
+                  min="0"
                   value={examData.timeLimitMinutes}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -297,6 +312,7 @@ const ExamCreationModal = ({
                       : "border-gray-300"
                   }`}
                   required
+                  step="5"
                 />
                 {errors.timeLimitMinutes && (
                   <p className="mt-1 text-sm text-red-600">
@@ -316,7 +332,7 @@ const ExamCreationModal = ({
                 <button
                   type="button"
                   onClick={addQuestion}
-                  className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2"
+                  className="bg-accent cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2"
                 >
                   <FiPlus className="w-4 h-4" />
                   إضافة سؤال
@@ -353,14 +369,14 @@ const ExamCreationModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
           >
             إلغاء
           </button>
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2 disabled:opacity-50"
+            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -402,7 +418,7 @@ const QuestionEditor = ({
           <button
             type="button"
             onClick={() => onRemoveQuestion(questionIndex)}
-            className="text-red-500 hover:text-red-700 transition-colors"
+            className="text-red-500 cursor-pointer hover:text-red-700 transition-colors"
           >
             <FiTrash2 className="w-4 h-4" />
           </button>
@@ -460,8 +476,8 @@ const QuestionEditor = ({
             <label className="block bold-14 text-gray-700 mb-2">الدرجات</label>
             <input
               type="number"
-              min="0.01"
-              step="0.01"
+              min="0"
+              step="5"
               value={question.points}
               onChange={(e) => {
                 const value = e.target.value;
@@ -494,7 +510,7 @@ const QuestionEditor = ({
               <button
                 type="button"
                 onClick={() => onAddAnswer(questionIndex)}
-                className="text-accent hover:text-accent-dark transition-colors flexCenter gap-1"
+                className="text-accent px-2 py-1 cursor-pointer border rounded-sm hover:text-accent-dark transition-colors flexCenter gap-1"
               >
                 <FiPlus className="w-4 h-4" />
                 إضافة إجابة
@@ -574,7 +590,7 @@ const QuestionEditor = ({
                     <button
                       type="button"
                       onClick={() => onRemoveAnswer(questionIndex, answerIndex)}
-                      className="text-red-500 hover:text-red-700 transition-colors"
+                      className="text-red-500 cursor-pointer hover:text-red-700 transition-colors"
                     >
                       <FiTrash2 className="w-4 h-4" />
                     </button>

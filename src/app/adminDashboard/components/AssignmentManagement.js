@@ -14,10 +14,9 @@ import {
   FiAward,
   FiUsers,
   FiCalendar,
-  FiCheckCircle,
   FiAlertCircle,
 } from "react-icons/fi";
-import AssignmentCreationModal from "./AssignmentCreationModal";
+import AssignmentCreationModal from "./Modal/AssignmentCreationModal";
 
 const AssignmentManagement = () => {
   const [assignments, setAssignments] = useState([]);

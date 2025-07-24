@@ -110,17 +110,9 @@ const ChatModal = ({ isOpen, onClose, initialPosition = "bottom-right" }) => {
 
   return (
     <>
-      {/* Backdrop - only show when not minimized */}
-      {!isMinimized && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={onClose}
-        />
-      )}
-
       {/* Chat Modal */}
       <div
-        className={`fixed z-50 transition-all duration-300 ${getPositionClasses()} ${
+        className={`fixed z-50 transition-all duration-300 left-6 bottom-0 ${
           isMinimized ? "w-16 h-16" : "w-96 h-[600px]"
         }`}
         onMouseDown={handleMouseDown}
@@ -133,14 +125,14 @@ const ChatModal = ({ isOpen, onClose, initialPosition = "bottom-right" }) => {
           <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-lg flexCenter cursor-pointer hover:scale-110 transition-transform">
             <button
               onClick={handleMinimize}
-              className="text-white hover:text-gray-200 transition-colors"
+              className="text-white hover:text-gray-200 transition-colors cursor-pointer"
             >
               <FiMessageCircle className="w-8 h-8" />
             </button>
           </div>
         ) : (
           // Full Chat Interface
-          <div className="bg-white rounded-lg shadow-2xl overflow-hidden h-full flex flex-col">
+          <div className="bg-white rounded-t-lg shadow-2xl overflow-hidden h-full flex flex-col">
             {/* Chat Content */}
             <div className="flex-1 overflow-hidden">
               <AIChat

@@ -1,9 +1,8 @@
-
 "use client";
-import React, { useState } from 'react';
-import { FiMessageCircle, FiX } from 'react-icons/fi';
-import ChatModal from './ChatModal';
-import { useUserData } from '../../../models/UserContext';
+import React, { useState } from "react";
+import { FiMessageCircle, FiX } from "react-icons/fi";
+import ChatModal from "./ChatModal";
+import { useUserData } from "../../../models/UserContext";
 
 const FloatingChatButton = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -26,17 +25,17 @@ const FloatingChatButton = () => {
     <>
       {/* Floating Chat Button */}
       {!isChatOpen && (
-        <div className="fixed bottom-6 right-6 z-40">
+        <div className="fixed bottom-6 left-6 z-40">
           <button
             onClick={toggleChat}
-            className="group relative bg-gradient-to-r from-blue-500 to-purple-600 text-white w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flexCenter"
+            className="group relative bg-gradient-to-r from-blue-500 to-purple-600 text-white w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flexCenter cursor-pointer"
             title="فتح المساعد الذكي"
           >
             <FiMessageCircle className="w-6 h-6" />
-            
+
             {/* Pulse Animation */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 animate-ping opacity-20"></div>
-            
+
             {/* Tooltip */}
             <div className="absolute bottom-full right-0 mb-2 px-3 py-1 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
               المساعد الذكي
@@ -47,8 +46,8 @@ const FloatingChatButton = () => {
       )}
 
       {/* Chat Modal */}
-      <ChatModal 
-        isOpen={isChatOpen} 
+      <ChatModal
+        isOpen={isChatOpen}
         onClose={closeChat}
         initialPosition="bottom-right"
       />
