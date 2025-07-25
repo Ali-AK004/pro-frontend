@@ -176,7 +176,7 @@ const CourseManagement = () => {
   };
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-col md:flex-row mb-8">
         <div>
@@ -196,7 +196,7 @@ const CourseManagement = () => {
 
       {/* Search Bar */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-col md:flex-row">
           <div className="flex-1 relative">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -218,7 +218,7 @@ const CourseManagement = () => {
       </div>
 
       {/* Courses Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {isLoading ? (
           // Loading skeleton
           Array.from({ length: 6 }).map((_, index) => (
@@ -269,7 +269,7 @@ const CourseManagement = () => {
 
               {/* Course Content */}
               <div className="p-5 flex-1 flex flex-col">
-                <div className="flexBetween flex-1">
+                <div className="flexBetween flex-col md:flex-row flex-1">
                   <div className="flex flex-col">
                     <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">
                       {course.name}
@@ -279,8 +279,8 @@ const CourseManagement = () => {
                     </p>
                   </div>
                   {/* Course Stats */}
-                  <div className="text-sm min-w-[80px] text-gray-500">
-                    <div className="flex items-center gap-1 mb-2">
+                  <div className="text-sm min-w-[80px] flex items-center gap-3 md:flex-col text-gray-500">
+                    <div className="flex items-center gap-1">
                       <FiUser className="w-4 h-4" />
                       <span>{course.instructorName || "غير محدد"}</span>
                     </div>
@@ -294,7 +294,7 @@ const CourseManagement = () => {
 
               {/* Actions - Moved to bottom */}
               <div className="p-4 pt-0 border-t border-gray-100">
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => {
                       setSelectedCourse(course);

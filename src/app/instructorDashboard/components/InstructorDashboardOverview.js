@@ -95,7 +95,7 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
       <div className="mb-8 flexBetween flex flex-col-reverse gap-6 md:gap-0 md:flex-row">
         <div>

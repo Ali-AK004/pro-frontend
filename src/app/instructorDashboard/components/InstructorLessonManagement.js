@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { instructorAPI, handleAPIError } from "../services/instructorAPI";
 import { useUserData } from "../../../../models/UserContext";
 import { Slide } from "react-toastify";
@@ -19,7 +19,7 @@ import {
 } from "react-icons/fi";
 import Image from "next/image";
 import { MdDeleteForever } from "react-icons/md";
-import { getInstructorId, getRolePermissions } from '../../utils/roleHelpers';
+import { getInstructorId, getRolePermissions } from "../../utils/roleHelpers";
 
 const InstructorLessonManagement = () => {
   const { user } = useUserData();
@@ -34,7 +34,12 @@ const InstructorLessonManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [lessonToDelete, setLessonToDelete] = useState(null);
-  
+  const [lessonStatus, setLessonStatus] = useState({
+    hasExam: false,
+    hasAssignment: false,
+    isLoading: false,
+  });
+
   const instructorId = getInstructorId(user);
   const permissions = getRolePermissions(user?.role);
 
@@ -70,7 +75,8 @@ const InstructorLessonManagement = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await instructorAPI.courses.getByInstructor(instructorId);
+      const response =
+        await instructorAPI.courses.getByInstructor(instructorId);
       setCourses(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
@@ -91,24 +97,28 @@ const InstructorLessonManagement = () => {
 
   const handleCreateLesson = async (e) => {
     e.preventDefault();
-    
+
     if (!permissions.canCreateLesson) {
-      toast.error('ليس لديك صلاحية لإنشاء درس جديد');
+      toast.error("ليس لديك صلاحية لإنشاء درس جديد");
       return;
     }
 
     try {
       setIsLoading(true);
       await instructorAPI.lessons.create(lessonForm.courseId, lessonForm);
-      toast.success('تم إنشاء الدرس بنجاح');
+      toast.success("تم إنشاء الدرس بنجاح");
       setShowCreateModal(false);
       setLessonForm({
-        name: "", description: "", photoUrl: "", 
-        price: "", videoUrl: "", courseId: ""
+        name: "",
+        description: "",
+        photoUrl: "",
+        price: "",
+        videoUrl: "",
+        courseId: "",
       });
       fetchLessons();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في إنشاء الدرس'));
+      toast.error(handleAPIError(error, "فشل في إنشاء الدرس"));
     } finally {
       setIsLoading(false);
     }
@@ -116,20 +126,24 @@ const InstructorLessonManagement = () => {
 
   const handleUpdateLesson = async (e) => {
     e.preventDefault();
-    
+
     if (!permissions.canEditLesson) {
-      toast.error('ليس لديك صلاحية لتعديل الدرس');
+      toast.error("ليس لديك صلاحية لتعديل الدرس");
       return;
     }
 
     try {
       setIsLoading(true);
-      await instructorAPI.lessons.update(instructorId, selectedLesson.id, editForm);
-      toast.success('تم تحديث الدرس بنجاح');
+      await instructorAPI.lessons.update(
+        instructorId,
+        selectedLesson.id,
+        editForm
+      );
+      toast.success("تم تحديث الدرس بنجاح");
       setShowEditModal(false);
       fetchLessons();
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحديث الدرس'));
+      toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
     } finally {
       setIsLoading(false);
     }
@@ -147,6 +161,30 @@ const InstructorLessonManagement = () => {
         lesson.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setLessons(filteredLessons);
+  };
+
+  const fetchLessonStatus = async (lessonId) => {
+    try {
+      setLessonStatus((prev) => ({ ...prev, isLoading: true }));
+
+      const [examResponse, assignmentResponse] = await Promise.all([
+        instructorAPI.lessons.hasExam(lessonId),
+        instructorAPI.lessons.hasAssignment(lessonId),
+      ]);
+
+      setLessonStatus({
+        hasExam: examResponse.data || false,
+        hasAssignment: assignmentResponse.data || false,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error("Error fetching lesson status:", error);
+      setLessonStatus({
+        hasExam: false,
+        hasAssignment: false,
+        isLoading: false,
+      });
+    }
   };
 
   const openEditModal = (lesson) => {
@@ -170,19 +208,19 @@ const InstructorLessonManagement = () => {
     if (!lessonToDelete) return;
 
     if (!permissions.canDeleteLesson) {
-      toast.error('ليس لديك صلاحية لحذف الدرس');
+      toast.error("ليس لديك صلاحية لحذف الدرس");
       return;
     }
 
     try {
       setIsLoading(true);
       await instructorAPI.lessons.delete(instructorId, lessonToDelete.id);
-      toast.success('تم حذف الدرس بنجاح');
+      toast.success("تم حذف الدرس بنجاح");
       fetchLessons();
       setShowDeleteModal(false);
       setLessonToDelete(null);
     } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في حذف الدرس'));
+      toast.error(handleAPIError(error, "فشل في حذف الدرس"));
     } finally {
       setIsLoading(false);
     }
@@ -194,7 +232,7 @@ const InstructorLessonManagement = () => {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -210,9 +248,12 @@ const InstructorLessonManagement = () => {
         className={`z-50`}
       />
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
         <div>
-          <h1 className="bold-32 text-gray-900 mb-2">إدارة الدروس {user?.role === 'ASSISTANT' && `- مساعد ${user.instructorName}`}</h1>
+          <h1 className="bold-32 text-gray-900 mb-2">
+            إدارة الدروس{" "}
+            {user?.role === "ASSISTANT" && `- مساعد ${user.instructorName}`}
+          </h1>
           <p className="regular-16 text-gray-600">
             إنشاء وتعديل وإدارة دروسك التعليمية
           </p>
@@ -230,8 +271,8 @@ const InstructorLessonManagement = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="flex gap-4">
-          <div className="flex-1 relative">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="flex md:col-span-3 relative">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -245,7 +286,7 @@ const InstructorLessonManagement = () => {
           <select
             value={selectedCourse}
             onChange={(e) => setSelectedCourse(e.target.value)}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+            className="px-4 py-3 border md:col-span-1  md:flex-0 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
             <option value="">اختر كورس</option>
             {courses.map((course) => (
@@ -256,7 +297,7 @@ const InstructorLessonManagement = () => {
           </select>
           <button
             onClick={handleSearch}
-            className="cursor-pointer bg-secondary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
+            className="cursor-pointer md:col-span-1 md:flex-0 bg-secondary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
           >
             بحث
           </button>
@@ -264,7 +305,7 @@ const InstructorLessonManagement = () => {
       </div>
 
       {/* Lessons Grid */}
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {isLoading ? (
           // Loading skeleton
           Array.from({ length: 6 }).map((_, index) => (
@@ -302,17 +343,17 @@ const InstructorLessonManagement = () => {
           lessons.map((lesson) => (
             <div
               key={lesson.id}
-              className="bg-white flex flex-col md:flex-row rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 overflow-hidden"
+              className="bg-white rounded-lg flex flex-col shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
             >
               {/* Lesson Image/Video Thumbnail */}
-              <div className=''>
+              <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-500 relative">
                 {lesson.photoUrl ? (
                   <Image
                     src={lesson.photoUrl}
-                    width={150}
-                    height={150}
+                    width={300}
+                    height={192}
                     alt={lesson.name}
-                    className="h-full w-full object-contain"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flexCenter">
@@ -322,74 +363,36 @@ const InstructorLessonManagement = () => {
               </div>
 
               {/* Lesson Content */}
-              <div className="p-6 flex flex-col  flex-1">
-                <div className="flex items-start justify-between flex-1">
-                  <div>
+              <div className="p-5 flex-1 flex flex-col">
+                <div className="flexBetween flex-1">
+                  <div className="flex flex-col">
                     <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">
                       {lesson.name}
                     </h3>
                     <p className="regular-14 text-gray-600 mb-4 line-clamp-3">
                       {lesson.description || "لا يوجد وصف متاح"}
                     </p>
-
-                    {/* Lesson Stats */}
-                    <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <FiBook className="w-4 h-4" />
-                        <span>{lesson.courseName || "غير محدد"}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FiDollarSign className="w-3 h-3" />
-                        <span>{lesson.price || "مجاني"}</span>
-                      </div>
-                    </div>
-
-                    {/* Lesson Components */}
-                    <div className="flex gap-2 mb-4">
-                      {/* Exam Status */}
-                      <div
-                        className={`px-3 py-1 rounded-full text-xs ${
-                          lesson.exam
-                            ? "bg-blue-100 text-blue-700 border border-blue-200"
-                            : "bg-gray-100 text-gray-500 border border-gray-200"
-                        }`}
-                      >
-                        {lesson.exam
-                          ? "✓ يحتوي على امتحان"
-                          : "✗ لا يحتوي على امتحان"}
-                      </div>
-
-                      {/* Assignment Status */}
-                      <div
-                        className={`px-3 py-1 rounded-full text-xs ${
-                          lesson.assignment
-                            ? "bg-purple-100 text-purple-700 border border-purple-200"
-                            : "bg-gray-100 text-gray-500 border border-gray-200"
-                        }`}
-                      >
-                        {lesson.assignment
-                          ? "✓ يحتوي على واجب"
-                          : "✗ لا يحتوي على واجب"}
-                      </div>
+                  </div>
+                  {/* Lesson Stats */}
+                  <div className="text-sm min-w-[80px] text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <FiBook className="w-4 h-4" />
+                      <span>{lesson.courseName || "غير محدد"}</span>
                     </div>
                   </div>
-
-                  {lesson.price && (
-                    <div className="bg-green-500 text-white px-3 py-1 rounded-full bold-12">
-                      {lesson.price} جنيه
-                    </div>
-                  )}
                 </div>
+              </div>
 
-                {/* Actions */}
+              {/* Actions - Moved to bottom */}
+              <div className="p-4 pt-0 border-t border-gray-100">
                 <div className="flex gap-2">
-                  {/* TODO: send to  video */}
                   <button
                     onClick={() => {
                       setSelectedLesson(lesson);
                       setShowViewModal(true);
+                      fetchLessonStatus(lesson.id);
                     }}
-                    className="cursor-pointer flex-1 bg-blue-50 text-blue-600 py-2 px-4 border border-blue-300 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
+                    className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
                   >
                     <FiEye className="w-4 h-4" />
                     عرض
@@ -401,7 +404,6 @@ const InstructorLessonManagement = () => {
                     <FiEdit className="w-4 h-4" />
                     تعديل
                   </button>
-
                   <button
                     onClick={() => handleDeleteLesson(lesson)}
                     className="cursor-pointer flex-1 bg-red-50 text-red-400 py-2 border border-red-300 px-4 rounded-lg hover:bg-red-100 transition-colors flexCenter gap-2"
@@ -728,20 +730,36 @@ const InstructorLessonManagement = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div
                     className={`p-4 rounded-lg border ${
-                      selectedLesson.exam
-                        ? "bg-blue-50 border-blue-200"
-                        : "bg-gray-50 border-gray-200"
+                      lessonStatus.isLoading
+                        ? "bg-gray-50 border-gray-200"
+                        : lessonStatus.hasExam
+                          ? "bg-blue-50 border-blue-200"
+                          : "bg-gray-50 border-gray-200"
                     }`}
                   >
-                    <p className="regular-12 text-gray-500 mb-1">الامتحان</p>
-                    <p
-                      className={`bold-14 ${
-                        selectedLesson.exam ? "text-blue-700" : "text-gray-500"
-                      }`}
-                    >
-                      {selectedLesson.exam ? "✓ متوفر" : "✗ غير متوفر"}
-                    </p>
-                    {selectedLesson.exam && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <FiFileText className="w-4 h-4 text-blue-500" />
+                      <span className="regular-12 text-gray-500">الامتحان</span>
+                    </div>
+                    {lessonStatus.isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        <span className="regular-12 text-gray-500">
+                          جاري التحميل...
+                        </span>
+                      </div>
+                    ) : (
+                      <p
+                        className={`bold-14 ${
+                          lessonStatus.hasExam
+                            ? "text-blue-700"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {lessonStatus.hasExam ? "✓ متوفر" : "✗ غير متوفر"}
+                      </p>
+                    )}
+                    {lessonStatus.hasExam && !lessonStatus.isLoading && (
                       <p className="regular-10 text-blue-600 mt-1">
                         يحتوي هذا الدرس على امتحان
                       </p>
@@ -749,22 +767,36 @@ const InstructorLessonManagement = () => {
                   </div>
                   <div
                     className={`p-4 rounded-lg border ${
-                      selectedLesson.assignment
-                        ? "bg-purple-50 border-purple-200"
-                        : "bg-gray-50 border-gray-200"
+                      lessonStatus.isLoading
+                        ? "bg-gray-50 border-gray-200"
+                        : lessonStatus.hasAssignment
+                          ? "bg-purple-50 border-purple-200"
+                          : "bg-gray-50 border-gray-200"
                     }`}
                   >
-                    <p className="regular-12 text-gray-500 mb-1">الواجب</p>
-                    <p
-                      className={`bold-14 ${
-                        selectedLesson.assignment
-                          ? "text-purple-700"
-                          : "text-gray-500"
-                      }`}
-                    >
-                      {selectedLesson.assignment ? "✓ متوفر" : "✗ غير متوفر"}
-                    </p>
-                    {selectedLesson.assignment && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <FiFileText className="w-4 h-4 text-purple-500" />
+                      <span className="regular-12 text-gray-500">الواجب</span>
+                    </div>
+                    {lessonStatus.isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+                        <span className="regular-12 text-gray-500">
+                          جاري التحميل...
+                        </span>
+                      </div>
+                    ) : (
+                      <p
+                        className={`bold-14 ${
+                          lessonStatus.hasAssignment
+                            ? "text-purple-700"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {lessonStatus.hasAssignment ? "✓ متوفر" : "✗ غير متوفر"}
+                      </p>
+                    )}
+                    {lessonStatus.hasAssignment && !lessonStatus.isLoading && (
                       <p className="regular-10 text-purple-600 mt-1">
                         يحتوي هذا الدرس على واجب
                       </p>

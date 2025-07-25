@@ -14,6 +14,7 @@ import {
   FiCheck,
   FiClock,
   FiFileText,
+  FiChevronDown,
 } from "react-icons/fi";
 
 const InstructorAccessCodeManagement = () => {
@@ -22,10 +23,19 @@ const InstructorAccessCodeManagement = () => {
   const [courses, setCourses] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
   const [selectedLesson, setSelectedLesson] = useState("");
   const [showGenerateModal, setShowGenerateModal] = useState(false);
+
+  // Pagination state
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0,
+    hasMore: true,
+  });
 
   const [generateForm, setGenerateForm] = useState({
     lessonId: selectedLesson || "",
@@ -47,6 +57,19 @@ const InstructorAccessCodeManagement = () => {
       fetchAllLessons();
     }
   }, [courses]);
+
+  // Fetch access codes when selectedLesson changes
+  useEffect(() => {
+    if (instructorId && selectedLesson !== "") {
+      // Reset pagination when lesson selection changes
+      setPagination((prev) => ({
+        ...prev,
+        page: 0,
+        hasMore: true,
+      }));
+      fetchAccessCodes();
+    }
+  }, [selectedLesson, instructorId]);
 
   const fetchCourses = async () => {
     try {
@@ -96,17 +119,76 @@ const InstructorAccessCodeManagement = () => {
     }
   };
 
-  const fetchAccessCodes = async () => {
+  const fetchAccessCodes = async (loadMore = false) => {
     try {
-      setIsLoading(true);
-      const response =
-        await instructorAPI.accessCodes.getByInstructor(instructorId);
-      setAccessCodes(response.data || []);
+      const loadingState = loadMore ? setIsLoadingMore : setIsLoading;
+      loadingState(true);
+
+      const page = loadMore ? pagination.page + 1 : 0;
+      const size = pagination.size;
+      // Use simple sorting by ID to ensure consistent pagination
+      const sort = "id,desc";
+
+      const response = selectedLesson
+        ? await instructorAPI.accessCodes.getByLesson(
+            instructorId,
+            selectedLesson,
+            page,
+            size,
+            sort
+          )
+        : await instructorAPI.accessCodes.getByInstructor(
+            instructorId,
+            page,
+            size,
+            sort
+          );
+
+      const newAccessCodes = response.data?.content || [];
+
+      if (loadMore) {
+        setAccessCodes((prev) => {
+          const existingIds = new Set(prev.map((c) => c.id));
+          const uniqueNewCodes = newAccessCodes.filter(
+            (code) => !existingIds.has(code.id)
+          );
+          const result = [...prev, ...uniqueNewCodes];
+          return result;
+        });
+      } else {
+        // Check for duplicates in the initial data
+        const uniqueIds = new Set();
+        const duplicates = [];
+        newAccessCodes.forEach((code) => {
+          if (uniqueIds.has(code.id)) {
+            duplicates.push(code.id);
+          } else {
+            uniqueIds.add(code.id);
+          }
+        });
+
+
+        // Remove duplicates from initial data
+        const uniqueCodes = newAccessCodes.filter(
+          (code, index, arr) => arr.findIndex((c) => c.id === code.id) === index
+        );
+        setAccessCodes(uniqueCodes);
+      }
+
+      setPagination({
+        page: response.data?.number || 0,
+        size: response.data?.size || size,
+        totalElements: response.data?.totalElements || 0,
+        totalPages: response.data?.totalPages || 0,
+        hasMore:
+          (response.data?.number || 0) < (response.data?.totalPages || 0) - 1,
+      });
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل أكواد الوصول"));
       console.error("Error fetching access codes:", error);
+      toast.error(handleAPIError(error, "Failed to load access codes"));
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
@@ -123,13 +205,30 @@ const InstructorAccessCodeManagement = () => {
       setShowGenerateModal(false);
       setGenerateForm({ lessonId: "", count: 5 });
 
-      // Refresh the access codes list
+      // Reset pagination and refresh the access codes list
+      setPagination((prev) => ({
+        ...prev,
+        page: 0,
+        hasMore: true,
+      }));
       await fetchAccessCodes();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء أكواد الوصول"));
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSearch = () => {
+    // Reset pagination when searching
+    setPagination((prev) => ({
+      ...prev,
+      page: 0,
+      hasMore: true,
+    }));
+
+    // Fetch fresh data
+    fetchAccessCodes();
   };
 
   const copyToClipboard = (code) => {
@@ -226,6 +325,7 @@ const InstructorAccessCodeManagement = () => {
               placeholder="البحث في الأكواد..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
               className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
             />
           </div>
@@ -244,7 +344,10 @@ const InstructorAccessCodeManagement = () => {
           </select>
 
           <div className="flex gap-2">
-            <button className="cursor-pointer flex-1 bg-secondary text-white py-3 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300">
+            <button
+              onClick={handleSearch}
+              className="cursor-pointer flex-1 bg-secondary text-white py-3 px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300"
+            >
               تطبيق
             </button>
             <button
@@ -390,9 +493,9 @@ const InstructorAccessCodeManagement = () => {
                   </td>
                 </tr>
               ) : (
-                filteredCodes.map((code) => (
+                filteredCodes.map((code, index) => (
                   <tr
-                    key={code.id}
+                    key={code.id || `code-${index}-${code.code}`}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -449,6 +552,28 @@ const InstructorAccessCodeManagement = () => {
             </tbody>
           </table>
         </div>
+
+        {pagination.hasMore && (
+          <div className="p-4 flex justify-center border-t border-gray-200">
+            <button
+              onClick={() => fetchAccessCodes(true)}
+              disabled={isLoadingMore}
+              className="bg-white text-accent px-6 py-2 rounded-lg border border-accent hover:bg-[#088395] hover:text-white transition-all duration-300 flex items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed hover:border hover:border-[#088395]"
+            >
+              {isLoadingMore ? (
+                <>
+                  <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent"></span>
+                  جاري التحميل...
+                </>
+              ) : (
+                <>
+                  <FiChevronDown className="w-4 h-4" />
+                  تحميل المزيد
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Generate Access Codes Modal */}

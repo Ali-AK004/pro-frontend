@@ -16,6 +16,7 @@ const CourseDetails = () => {
   const { instructorId, courseId } = params;
 
   const [course, setCourse] = useState(null);
+  const [instructorData, setInstructorData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
@@ -33,7 +34,7 @@ const CourseDetails = () => {
           await studentAPI.profile.getInstructorFullProfile(instructorId);
         const instructorData = response.data;
 
-        console.log(instructorData);
+        setInstructorData(instructorData);
 
         if (instructorData && instructorData.courses) {
           const foundCourse = instructorData.courses.find(
@@ -162,7 +163,7 @@ const CourseDetails = () => {
                 </div>
                 <div className="text-center">
                   <div className="bold-20 text-accent">المدرس</div>
-                  <div className="regular-14 text-gray-600">{instructorId}</div>
+                  <div className="regular-14 text-gray-600">{instructorData.fullname}</div>
                 </div>
               </div>
             </div>

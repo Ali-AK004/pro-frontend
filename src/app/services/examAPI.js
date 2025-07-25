@@ -169,8 +169,8 @@ export const examAPI = {
       switch (type) {
         case "TRUE_FALSE":
           baseQuestion.answers = [
-            { answerText: "صحيح", correct: false },
-            { answerText: "خطأ", correct: false },
+            { answerText: "true", correct: false },
+            { answerText: "false", correct: false },
           ];
           break;
         case "SINGLE_CHOICE":

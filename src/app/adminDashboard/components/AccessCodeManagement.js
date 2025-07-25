@@ -62,12 +62,12 @@ const AccessCodeManagement = () => {
         page,
         size
       );
-
       const newAccessCodes = response.data?.content || [];
-      const pageInfo = response.data?.page || {};
+      const pageInfo = response.data || {};
       const totalElements = pageInfo.totalElements || 0;
       const totalPages = pageInfo.totalPages || 0;
       const currentPage = pageInfo.number || 0;
+
 
       setAccessCodes((prev) =>
         loadMore ? [...prev, ...newAccessCodes] : newAccessCodes
@@ -80,6 +80,7 @@ const AccessCodeManagement = () => {
         totalPages,
         hasMore: newAccessCodes.length > 0 && currentPage + 1 < totalPages,
       }));
+
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل أكواد الوصول"));
       console.error(error);
@@ -234,9 +235,9 @@ const AccessCodeManagement = () => {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center flex-col gap-5 lg:gap-0 lg:flex-row justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">إدارة أكواد الوصول</h1>
           <p className="regular-16 text-gray-600">
@@ -244,7 +245,7 @@ const AccessCodeManagement = () => {
             {accessCodes.length}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={handleCopyAllCodes}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-300 flexCenter gap-2 cursor-pointer"
@@ -278,8 +279,8 @@ const AccessCodeManagement = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="relative">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="relative flex col-span-3">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -293,9 +294,9 @@ const AccessCodeManagement = () => {
           <select
             value={selectedLesson}
             onChange={(e) => setSelectedLesson(e.target.value)}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+            className="px-4 py-3 border col-span-1 border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
           >
-            <option value="">جميع الدروس</option>
+            <option value="">اختر الدرس</option>
             {lessons.map((lesson) => (
               <option key={lesson.id} value={lesson.id}>
                 {lesson.name}
@@ -304,7 +305,7 @@ const AccessCodeManagement = () => {
           </select>
           <button
             onClick={handleSearch}
-            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
+            className="bg-accent text-white col-span-1 px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
           >
             بحث
           </button>
@@ -421,7 +422,7 @@ const AccessCodeManagement = () => {
                 <button
                   onClick={() => fetchAccessCodes(true)}
                   disabled={isLoadingMore}
-                  className="bg-white text-accent px-6 py-2 rounded-lg border border-accent hover:bg-accent hover:text-white transition-all duration-300 flex items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                  className="bg-white text-accent px-6 py-2 rounded-lg border border-accent hover:bg-[#088395] hover:text-white transition-all duration-300 flex items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed hover:border hover:border-[#088395]"
                 >
                   {isLoadingMore ? (
                     <>
@@ -443,7 +444,7 @@ const AccessCodeManagement = () => {
 
       {/* Generate Access Codes Modal */}
       {showGenerateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-lg">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">إنشاء أكواد وصول جديدة</h2>
@@ -527,7 +528,7 @@ const AccessCodeManagement = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">تأكيد حذف كود الوصول</h2>
@@ -587,7 +588,7 @@ const AccessCodeManagement = () => {
 
       {/* Delete Used Codes Confirmation Modal */}
       {showDeleteUsedModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">

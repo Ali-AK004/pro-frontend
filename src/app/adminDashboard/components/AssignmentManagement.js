@@ -172,9 +172,9 @@ const AssignmentManagement = () => {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">إدارة الواجبات</h1>
           <p className="regular-16 text-gray-600">
@@ -192,9 +192,9 @@ const AssignmentManagement = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-y-4 md:gap-4">
           {/* Search */}
-          <div className="relative">
+          <div className="relative flex col-span-2">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -211,7 +211,7 @@ const AssignmentManagement = () => {
             onChange={(e) => setSelectedLesson(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
           >
-            <option value="">جميع الدروس</option>
+            <option value="">اختر الدرس</option>
             {lessons.map((lesson) => (
               <option key={lesson.id} value={lesson.id}>
                 {lesson.name}

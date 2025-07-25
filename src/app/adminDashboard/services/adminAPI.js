@@ -149,6 +149,14 @@ export const adminAPI = {
     // Generate access codes
     generateAccessCodes: (lessonId, count) =>
       apiClient.post(`/lessons/${lessonId}/generate-codes?count=${count}`),
+
+    // Check if lesson has exam
+    hasExam: (lessonId) =>
+      generalApiClient.get(`/students/lessons/${lessonId}/has-exam`),
+
+    // Check if lesson has assignment
+    hasAssignment: (lessonId) =>
+      generalApiClient.get(`/students/lessons/${lessonId}/has-assignment`),
   },
 
   // Exam Management

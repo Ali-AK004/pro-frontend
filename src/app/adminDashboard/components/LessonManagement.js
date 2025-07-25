@@ -26,6 +26,11 @@ const LessonManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [lessonToDelete, setLessonToDelete] = useState(null);
+  const [lessonStatus, setLessonStatus] = useState({
+    hasExam: false,
+    hasAssignment: false,
+    isLoading: false,
+  });
 
   // Form states
   const [lessonForm, setLessonForm] = useState({
@@ -155,6 +160,30 @@ const LessonManagement = () => {
     setLessons(filteredLessons);
   };
 
+  const fetchLessonStatus = async (lessonId) => {
+    try {
+      setLessonStatus((prev) => ({ ...prev, isLoading: true }));
+
+      const [examResponse, assignmentResponse] = await Promise.all([
+        adminAPI.lessons.hasExam(lessonId),
+        adminAPI.lessons.hasAssignment(lessonId),
+      ]);
+
+      setLessonStatus({
+        hasExam: examResponse.data || false,
+        hasAssignment: assignmentResponse.data || false,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error("Error fetching lesson status:", error);
+      setLessonStatus({
+        hasExam: false,
+        hasAssignment: false,
+        isLoading: false,
+      });
+    }
+  };
+
   const openEditModal = (lesson) => {
     setSelectedLesson(lesson);
     setEditForm({
@@ -168,7 +197,7 @@ const LessonManagement = () => {
   };
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between flex-col md:flex-row gap-4 mb-8">
         <div>
@@ -188,8 +217,8 @@ const LessonManagement = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="flex gap-4 flex-wrap">
-          <div className="flex-1 flex relative">
+        <div className="grid gap-4 lg:grid-cols-5">
+          <div className="flex-1 flex col-span-3 relative">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -222,7 +251,7 @@ const LessonManagement = () => {
       </div>
 
       {/* Lessons Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {isLoading ? (
           // Loading skeleton
           Array.from({ length: 6 }).map((_, index) => (
@@ -304,6 +333,7 @@ const LessonManagement = () => {
                     onClick={() => {
                       setSelectedLesson(lesson);
                       setShowViewModal(true);
+                      fetchLessonStatus(lesson.id);
                     }}
                     className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
                   >
@@ -660,6 +690,77 @@ const LessonManagement = () => {
                       <span className="regular-14 text-gray-600">
                         {selectedLesson.courseName || "غير محدد"}
                       </span>
+                    </div>
+                  </div>
+
+                  {/* Lesson Components Status */}
+                  <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div
+                      className={`p-4 rounded-lg border ${
+                        lessonStatus.isLoading
+                          ? "bg-gray-50 border-gray-200"
+                          : lessonStatus.hasExam
+                            ? "bg-blue-50 border-blue-200"
+                            : "bg-gray-50 border-gray-200"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <FiFileText className="w-5 h-5 text-blue-500" />
+                        <span className="bold-14 text-gray-700">الامتحان</span>
+                      </div>
+                      {lessonStatus.isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                          <span className="regular-14 text-gray-500">
+                            جاري التحميل...
+                          </span>
+                        </div>
+                      ) : (
+                        <span
+                          className={`bold-14 ${
+                            lessonStatus.hasExam
+                              ? "text-blue-700"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {lessonStatus.hasExam ? "✓ متوفر" : "✗ غير متوفر"}
+                        </span>
+                      )}
+                    </div>
+
+                    <div
+                      className={`p-4 rounded-lg border ${
+                        lessonStatus.isLoading
+                          ? "bg-gray-50 border-gray-200"
+                          : lessonStatus.hasAssignment
+                            ? "bg-purple-50 border-purple-200"
+                            : "bg-gray-50 border-gray-200"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <FiFileText className="w-5 h-5 text-purple-500" />
+                        <span className="bold-14 text-gray-700">الواجب</span>
+                      </div>
+                      {lessonStatus.isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+                          <span className="regular-14 text-gray-500">
+                            جاري التحميل...
+                          </span>
+                        </div>
+                      ) : (
+                        <span
+                          className={`bold-14 ${
+                            lessonStatus.hasAssignment
+                              ? "text-purple-700"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {lessonStatus.hasAssignment
+                            ? "✓ متوفر"
+                            : "✗ غير متوفر"}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

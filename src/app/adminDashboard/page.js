@@ -68,16 +68,11 @@ const AdminDashboard = () => {
         return <AssignmentManagement />;
       case "ai-chat":
         return (
-          <div className="p-8">
-            <div className="max-w-4xl mx-auto">
-              <h1 className="bold-32 text-gray-900 mb-8">المساعد الذكي</h1>
-              <div
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
-                style={{ height: "600px" }}
-              >
-                <AIChat isOpen={true} onClose={() => {}} className="h-full" />
-              </div>
-            </div>
+          <div
+            className="p-4 shadow-sm overflow-hidden"
+            style={{ height: "100vh" }}
+          >
+            <AIChat isOpen={true} onClose={() => {}} />
           </div>
         );
       case "access-codes":

@@ -120,6 +120,14 @@ export const instructorAPI = {
     generateAccessCodes: (lessonId, count) =>
       apiClient.post(`/lessons/${lessonId}/generate-codes?count=${count}`),
 
+    // Check if lesson has exam
+    hasExam: (lessonId) =>
+      generalApiClient.get(`/students/lessons/${lessonId}/has-exam`),
+
+    // Check if lesson has assignment
+    hasAssignment: (lessonId) =>
+      generalApiClient.get(`/students/lessons/${lessonId}/has-assignment`),
+
     search: (courseId, searchTerm) => {
       try {
         const sanitizedTerm = validateSearchTerm(searchTerm);
@@ -134,13 +142,31 @@ export const instructorAPI = {
 
   // Access Codes Management
   accessCodes: {
-    // Get all access codes for instructor
-    getByInstructor: (instructorId) =>
-      apiClient.get(`/${instructorId}/access-codes`),
+    // Get all access codes for instructor with pagination
+    getByInstructor: (
+      instructorId,
+      page = 0,
+      size = 10,
+      sort = "createdAt,desc"
+    ) =>
+      apiClient.get(`/${instructorId}/access-codes`, {
+        params: {
+          page,
+          size,
+          sort,
+        },
+      }),
 
-    // Get access codes for specific lesson
-    getByLesson: (lessonId) =>
-      apiClient.get(`/lessons/${lessonId}/access-codes`),
+    getByLesson: (
+      instructorId,
+      lessonId,
+      page = 0,
+      size = 10,
+      sort = "createdAt,desc"
+    ) =>
+      apiClient.get(`/${instructorId}/lessons/${lessonId}/access-codes`, {
+        params: { page, size, sort },
+      }),
 
     // Delete access code
     delete: (instructorId, codeId) =>

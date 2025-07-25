@@ -156,9 +156,9 @@ const ExamManagement = () => {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">إدارة الامتحانات</h1>
           <p className="regular-16 text-gray-600">
@@ -176,7 +176,7 @@ const ExamManagement = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-y-4 md:gap-4">
           <div className="flex-1 flex col-span-2 relative">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -322,7 +322,7 @@ const ExamManagement = () => {
       </div>
 
       {/* Create Exam Modal */}
-      {showCreateModal && ( 
+      {showCreateModal && (
         <ExamCreationModal
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}

@@ -35,6 +35,32 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
       // Check if user has enhanced access (admin, instructor, assistant)
       if (hasEnhancedAccess()) {
         setAccessStatus({ hasAccess: true, isEnhancedAccess: true });
+
+        // For non-students, try to get lesson details using the enhanced endpoint
+        try {
+          const lessonDetails = await studentAPI.lessons.getLessonDetails(
+            lesson.id
+          );
+          // For non-students, we don't need progress tracking, just set full access
+          setLessonProgress({
+            progressStatus: LessonProgressStatus.ASSIGNMENT_DONE, // Full access
+            canAccessVideo: true,
+            canAccessExam: true,
+            canAccessAssignment: true,
+          });
+        } catch (error) {
+          // If enhanced access fails, still allow access but without progress
+          console.log(
+            "Enhanced access granted but couldn't fetch lesson details:",
+            error
+          );
+          setLessonProgress({
+            progressStatus: LessonProgressStatus.ASSIGNMENT_DONE,
+            canAccessVideo: true,
+            canAccessExam: true,
+            canAccessAssignment: true,
+          });
+        }
         return;
       }
 
@@ -47,7 +73,11 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
         const lessonDetails = await studentAPI.lessons.getLessonDetails(
           lesson.id
         );
-        setLessonProgress(lessonDetails.data.progress);
+        setLessonProgress(
+          lessonDetails.data.progressStatus
+            ? lessonDetails.data
+            : lessonDetails.data.progress
+        );
       }
     } catch (error) {
       // If error, assume no access for students
@@ -111,6 +141,17 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   };
 
   const getProgressText = (status) => {
+    // For enhanced access users, show different text
+    if (accessStatus?.isEnhancedAccess) {
+      const roleText =
+        user?.role === "ADMIN"
+          ? "مدير"
+          : user?.role === "INSTRUCTOR"
+            ? "مدرس"
+            : "مساعد";
+      return `وصول كامل - ${roleText}`;
+    }
+
     const baseStatus = formatProgressStatus(status);
 
     switch (status) {
@@ -128,6 +169,11 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   };
 
   const getProgressColor = (status) => {
+    // For enhanced access users, use special styling
+    if (accessStatus?.isEnhancedAccess) {
+      return "text-purple-700 bg-purple-100 border-purple-300";
+    }
+
     switch (status) {
       case LessonProgressStatus.PURCHASED:
         return "text-orange-600 bg-orange-50 border-orange-200";
@@ -145,6 +191,21 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   const canAccessPart = (part) => {
     if (!lessonProgress) return false;
 
+    // For users with enhanced access (non-students), allow access to all parts
+    if (accessStatus?.isEnhancedAccess) {
+      switch (part) {
+        case "exam":
+          return !!lesson.exam; // Can access if lesson has exam
+        case "video":
+          return true; // Always can access video
+        case "assignment":
+          return !!lesson.assignment; // Can access if lesson has assignment
+        default:
+          return false;
+      }
+    }
+
+    // For students, use normal progress-based access
     const status = lessonProgress.progressStatus;
 
     switch (part) {
@@ -215,11 +276,25 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
           </p>
         </div>
 
-        {/* Price Badge */}
-        <div className="bg-accent text-white px-3 py-1 rounded-full bold-14 flex items-center gap-1">
-          <FaDollarSign className="w-3 h-3" />
-          {lesson.price} جنيه
-        </div>
+        {/* Price Badge - Only show for students */}
+        {user?.role === "STUDENT" && (
+          <div className="bg-accent text-white px-3 py-1 rounded-full bold-14 flex items-center gap-1">
+            <FaDollarSign className="w-3 h-3" />
+            {lesson.price} جنيه
+          </div>
+        )}
+
+        {/* Role Badge for non-students */}
+        {user?.role !== "STUDENT" && accessStatus?.isEnhancedAccess && (
+          <div className="bg-purple-600 text-white px-3 py-1 rounded-full bold-14 flex items-center gap-1">
+            <FaEye className="w-3 h-3" />
+            {user?.role === "ADMIN"
+              ? "مدير"
+              : user?.role === "INSTRUCTOR"
+                ? "مدرس"
+                : "مساعد"}
+          </div>
+        )}
       </div>
 
       {/* Progress Status */}

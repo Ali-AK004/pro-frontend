@@ -161,11 +161,19 @@ const InstructorExamManagement = () => {
   // Get lessons for the selected course or all lessons for instructor
   const getAvailableLessons = () => {
     if (selectedCourse) {
-      return lessons;
+      // Add courseId to lessons if not present
+      return lessons.map((lesson) => ({
+        ...lesson,
+        courseId: lesson.courseId || selectedCourse,
+      }));
     }
-    // Return all lessons from all courses
+    // Return all lessons from all courses with courseId
     return courses.reduce((allLessons, course) => {
-      return [...allLessons, ...(course.lessons || [])];
+      const courseLessons = (course.lessons || []).map((lesson) => ({
+        ...lesson,
+        courseId: lesson.courseId || course.id,
+      }));
+      return [...allLessons, ...courseLessons];
     }, []);
   };
 
@@ -346,6 +354,7 @@ const InstructorExamManagement = () => {
           onClose={() => setShowCreateModal(false)}
           onSubmit={handleCreateExam}
           lessons={getAvailableLessons()}
+          courses={courses.sort((a, b) => a.name.localeCompare(b.name))}
           isLoading={isLoading}
         />
       )}
@@ -360,6 +369,7 @@ const InstructorExamManagement = () => {
           }}
           onSubmit={handleUpdateExam}
           lessons={getAvailableLessons()}
+          courses={courses.sort((a, b) => a.name.localeCompare(b.name))}
           initialData={selectedExam}
           isLoading={isLoading}
           isEdit={true}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { examAPI } from "../../../services/examAPI";
+import { examAPI } from "../../services/examAPI";
 import {
   FiX,
   FiPlus,
@@ -16,7 +16,6 @@ const ExamCreationModal = ({
   onClose,
   onSubmit,
   lessons,
-  courses = [],
   initialData = null,
   isLoading = false,
   isEdit = false,
@@ -33,7 +32,6 @@ const ExamCreationModal = ({
       setExamData({
         ...defaultExam,
         ...initialData,
-        examId: initialData.id,
         lessonId: initialData.lessonId || "",
         title: initialData.title || "",
         passingScore: initialData.passingScore || defaultExam.passingScore,
@@ -182,7 +180,7 @@ const ExamCreationModal = ({
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <FiX className="w-6 h-6 text-gray-500" />
           </button>
@@ -211,25 +209,11 @@ const ExamCreationModal = ({
                     required
                   >
                     <option value="">اختر الدرس</option>
-                    {courses.map((course) => {
-                      // Filter lessons that belong to this course
-                      const courseLessons = lessons.filter(
-                        (lesson) => lesson.courseId === course.id
-                      );
-
-                      // Only render optgroup if course has lessons
-                      if (courseLessons.length === 0) return null;
-
-                      return (
-                        <optgroup key={course.id} label={course.name}>
-                          {courseLessons.map((lesson) => (
-                            <option key={lesson.id} value={lesson.id}>
-                              {lesson.name}
-                            </option>
-                          ))}
-                        </optgroup>
-                      );
-                    })}
+                    {lessons.map((lesson) => (
+                      <option key={lesson.id} value={lesson.id}>
+                        {lesson.name}
+                      </option>
+                    ))}
                   </select>
                   {errors.lessonId && (
                     <p className="mt-1 text-sm text-red-600">
@@ -567,15 +551,7 @@ const QuestionEditor = ({
 
                 <input
                   type="text"
-                  value={
-                    question.questionType === "TRUE_FALSE"
-                      ? answer.answerText === "true"
-                        ? "صحيح"
-                        : answer.answerText === "false"
-                          ? "خطأ"
-                          : answer.answerText
-                      : answer.answerText
-                  }
+                  value={answer.answerText}
                   onChange={(e) =>
                     onAnswerChange(
                       questionIndex,

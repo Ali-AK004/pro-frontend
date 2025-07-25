@@ -146,7 +146,6 @@ const InstructorCourseManagement = () => {
   };
 
   const openViewModal = (course) => {
-    console.log(course);
     setSelectedCourse(course);
     setShowViewModal(true);
   };
@@ -185,7 +184,7 @@ const InstructorCourseManagement = () => {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -201,7 +200,7 @@ const InstructorCourseManagement = () => {
         className={`z-50`}
       />
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">
             إدارة الكورسات{" "}
@@ -246,7 +245,7 @@ const InstructorCourseManagement = () => {
       </div>
 
       {/* Courses Grid */}
-      <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {isLoading ? (
           // Loading skeleton
           Array.from({ length: 6 }).map((_, index) => (
@@ -280,7 +279,7 @@ const InstructorCourseManagement = () => {
           courses.map((course) => (
             <div
               key={course.id}
-              className="bg-white rounded-lg flex shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
+              className="bg-white rounded-lg flex flex-col shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
             >
               {/* Course Image */}
               <div className="h-48 bg-gradient-to-br from-secondary to-accent relative">
@@ -298,28 +297,29 @@ const InstructorCourseManagement = () => {
               </div>
 
               {/* Course Content */}
-              <div className="p-5 w-full justify-between flex flex-col">
-                <div className="flexBetween">
+              <div className="p-5 flex-1 flex flex-col">
+                <div className="flexBetween flex-1">
                   <div className="flex flex-col">
                     <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">
                       {course.name}
                     </h3>
-                    <p className="regular-14 text-gray-600 mb-4 line-clamp-3">
+                    <p className="regular-14 text-gray-600 max-w-[250px] mb-4 line-clamp-3">
                       {course.description || "لا يوجد وصف متاح"}
                     </p>
                   </div>
-
                   {/* Course Stats */}
-                  <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+                  <div className="text-sm min-w-[80px] text-gray-500">
                     <div className="flex items-center gap-1">
                       <FiFileText className="w-4 h-4" />
                       <span>{course.lessonCount || 0} درس</span>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Actions */}
-                <div className="flex items-end justify-end gap-2">
+              {/* Actions - Moved to bottom */}
+              <div className="p-4 pt-0 border-t border-gray-100">
+                <div className="flex gap-2">
                   <button
                     onClick={() => openViewModal(course)}
                     className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
