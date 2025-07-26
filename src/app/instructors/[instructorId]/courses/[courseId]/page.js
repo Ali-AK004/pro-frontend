@@ -121,7 +121,7 @@ const CourseDetails = () => {
         {/* Back Button */}
         <button
           onClick={() => router.push("/instructors")}
-          className="flexCenter gap-2 text-accent hover:text-opacity-80 transition-colors mb-6"
+          className="flexCenter cursor-pointer hover:bg-[#088395] hover:border hover:border-[#088395] hover:text-white border border-[#088395] px-4 py-1 rounded-md gap-2 text-accent hover:text-opacity-80 transition-colors mb-6"
         >
           <FaArrowLeft className="w-4 h-4" />
           <span className="regular-16">العودة للمدرسين</span>

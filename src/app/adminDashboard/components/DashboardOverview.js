@@ -8,8 +8,10 @@ import {
   FiCode,
   FiActivity,
 } from "react-icons/fi";
+import Link from "next/link";
+import { FaArrowLeftLong } from "react-icons/fa6";
 
-const DashboardOverview = ({setActiveTab}) => {
+const DashboardOverview = ({ setActiveTab }) => {
   const [stats, setStats] = useState({
     students: 0,
     instructors: 0,
@@ -46,7 +48,6 @@ const DashboardOverview = ({setActiveTab}) => {
       color: "bg-blue-500",
       bgColor: "bg-blue-50",
       textColor: "text-blue-600",
-      changeType: "increase",
     },
     {
       title: "إجمالي المدرسين",
@@ -97,7 +98,7 @@ const DashboardOverview = ({setActiveTab}) => {
   }
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 lg:p-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="bold-32 text-gray-900 mb-2">لوحة التحكم</h1>

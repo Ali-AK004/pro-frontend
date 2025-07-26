@@ -7,10 +7,7 @@ import {
   FiCode,
   FiCopy,
   FiDownload,
-  FiEye,
   FiX,
-  FiFileText,
-  FiCalendar,
   FiCheck,
   FiTrash2,
   FiChevronDown,
@@ -68,7 +65,6 @@ const AccessCodeManagement = () => {
       const totalPages = pageInfo.totalPages || 0;
       const currentPage = pageInfo.number || 0;
 
-
       setAccessCodes((prev) =>
         loadMore ? [...prev, ...newAccessCodes] : newAccessCodes
       );
@@ -80,7 +76,6 @@ const AccessCodeManagement = () => {
         totalPages,
         hasMore: newAccessCodes.length > 0 && currentPage + 1 < totalPages,
       }));
-
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل أكواد الوصول"));
       console.error(error);
@@ -235,7 +230,7 @@ const AccessCodeManagement = () => {
   };
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 lg:p-8">
       {/* Header */}
       <div className="flex items-center flex-col gap-5 lg:gap-0 lg:flex-row justify-between mb-8">
         <div>
@@ -279,7 +274,7 @@ const AccessCodeManagement = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 md:gap-3 gap-y-4">
           <div className="relative flex col-span-3">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -305,7 +300,7 @@ const AccessCodeManagement = () => {
           </select>
           <button
             onClick={handleSearch}
-            className="bg-accent text-white col-span-1 px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
+            className="bg-accent text-white col-span-1 mr-3 md:mr-0 px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
           >
             بحث
           </button>
@@ -332,26 +327,51 @@ const AccessCodeManagement = () => {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            {/* Mobile Scroll Hint */}
+            <div className="block sm:hidden bg-blue-50 border-l-4 border-blue-400 p-3 mb-0 rounded-t-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-4 w-4 text-blue-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="mr-3">
+                  <p className="text-sm text-blue-700">
+                    اسحب يميناً ويساراً لعرض جميع الأعمدة
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Table Container with Enhanced Mobile Scrolling */}
+            <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 border-t border-gray-200 sm:border-t-0">
+              <table className="w-full min-w-[800px]">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    <th className="px-3 sm:px-6 py-4 text-right bold-14 text-gray-900 whitespace-nowrap min-w-[120px]">
                       الكود
                     </th>
-                    <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    <th className="px-3 sm:px-6 py-4 text-right bold-14 text-gray-900 whitespace-nowrap min-w-[150px]">
                       الدرس
                     </th>
-                    <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    <th className="px-3 sm:px-6 py-4 text-right bold-14 text-gray-900 whitespace-nowrap min-w-[120px]">
                       المنشئ
                     </th>
-                    <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    <th className="px-3 sm:px-6 py-4 text-right bold-14 text-gray-900 whitespace-nowrap min-w-[100px]">
                       الحالة
                     </th>
-                    <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    <th className="px-3 sm:px-6 py-4 text-right bold-14 text-gray-900 whitespace-nowrap min-w-[120px]">
                       تاريخ الإنشاء
                     </th>
-                    <th className="px-6 py-4 text-right bold-14 text-gray-900">
+                    <th className="px-3 sm:px-6 py-4 text-right bold-14 text-gray-900 whitespace-nowrap min-w-[100px]">
                       الإجراءات
                     </th>
                   </tr>
@@ -359,22 +379,32 @@ const AccessCodeManagement = () => {
                 <tbody className="divide-y divide-gray-200">
                   {accessCodes.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <code className="bg-gray-100 px-3 py-1 rounded font-mono text-sm">
+                      <td className="px-3 sm:px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <code className="bg-gray-100 px-2 sm:px-3 py-1 rounded font-mono text-xs sm:text-sm whitespace-nowrap">
                             {item.code}
                           </code>
                         </div>
                       </td>
-                      <td className="px-6 py-4 regular-14 text-gray-900">
-                        {item.lessonName || "غير محدد"}
+                      <td className="px-3 sm:px-6 py-4 regular-12 sm:regular-14 text-gray-900">
+                        <div
+                          className="max-w-[150px] truncate"
+                          title={item.lessonName || "غير محدد"}
+                        >
+                          {item.lessonName || "غير محدد"}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 regular-14 text-gray-900">
-                        {item.creatorName || "غير محدد"}
+                      <td className="px-3 sm:px-6 py-4 regular-12 sm:regular-14 text-gray-900">
+                        <div
+                          className="max-w-[120px] truncate"
+                          title={item.creatorName || "غير محدد"}
+                        >
+                          {item.creatorName || "غير محدد"}
+                        </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 sm:px-6 py-4">
                         <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm ${
+                          className={`inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm whitespace-nowrap ${
                             item.used
                               ? "bg-red-100 text-red-800"
                               : "bg-green-100 text-green-800"
@@ -383,32 +413,40 @@ const AccessCodeManagement = () => {
                           {item.used ? (
                             <>
                               <FiX className="w-3 h-3" />
-                              مستخدم
+                              <span className="hidden sm:inline">مستخدم</span>
+                              <span className="sm:hidden">✓</span>
                             </>
                           ) : (
                             <>
                               <FiCheck className="w-3 h-3" />
-                              متاح
+                              <span className="hidden sm:inline">متاح</span>
+                              <span className="sm:hidden">○</span>
                             </>
                           )}
                         </span>
                       </td>
-                      <td className="px-6 py-4 regular-14 text-gray-500">
-                        {new Date(item.createdAt).toLocaleDateString("ar-EG")}
+                      <td className="px-3 sm:px-6 py-4 regular-12 sm:regular-14 text-gray-500">
+                        <div className="whitespace-nowrap">
+                          {new Date(item.createdAt).toLocaleDateString("ar-EG")}
+                        </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => handleCopyCode(item.code)}
-                          className="p-1 text-gray-500 cursor-pointer hover:text-accent transition-colors"
-                        >
-                          <FiCopy className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCode(item.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <FiTrash2 className="w-4 h-4 cursor-pointer" />
-                        </button>
+                      <td className="px-3 sm:px-6 py-4">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleCopyCode(item.code)}
+                            className="p-1 sm:p-2 text-gray-500 cursor-pointer hover:text-accent transition-colors rounded"
+                            title="نسخ الكود"
+                          >
+                            <FiCopy className="w-3 h-3 sm:w-4 sm:h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCode(item.id)}
+                            className="p-1 sm:p-2 text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                            title="حذف الكود"
+                          >
+                            <FiTrash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

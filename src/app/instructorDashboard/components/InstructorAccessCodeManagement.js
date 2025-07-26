@@ -167,7 +167,6 @@ const InstructorAccessCodeManagement = () => {
           }
         });
 
-
         // Remove duplicates from initial data
         const uniqueCodes = newAccessCodes.filter(
           (code, index, arr) => arr.findIndex((c) => c.id === code.id) === index
@@ -429,26 +428,50 @@ const InstructorAccessCodeManagement = () => {
 
       {/* Access Codes Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+        {/* Mobile Scroll Hint */}
+        <div className="block sm:hidden bg-blue-50 border-l-4 border-blue-400 p-3 mb-0">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-4 w-4 text-blue-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="mr-3">
+              <p className="text-sm text-blue-700">
+                اسحب يميناً ويساراً لعرض جميع الأعمدة
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 border-t border-gray-200 sm:border-t-0">
+          <table className="w-full min-w-[800px] divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap min-w-[120px]">
                   الكود
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap min-w-[150px]">
                   الدرس
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap min-w-[120px]">
                   المنشئ
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap min-w-[100px]">
                   الحالة
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap min-w-[120px]">
                   تاريخ الإنشاء
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap min-w-[100px]">
                   الإجراءات
                 </th>
               </tr>
@@ -457,29 +480,29 @@ const InstructorAccessCodeManagement = () => {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, index) => (
                   <tr key={index} className="animate-pulse">
-                    <td className="px-6 py-4">
+                    <td className="px-3 sm:px-6 py-4">
                       <div className="h-4 bg-gray-200 rounded"></div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 sm:px-6 py-4">
                       <div className="h-4 bg-gray-200 rounded"></div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 sm:px-6 py-4">
                       <div className="h-4 bg-gray-200 rounded"></div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 sm:px-6 py-4">
                       <div className="h-4 bg-gray-200 rounded"></div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 sm:px-6 py-4">
                       <div className="h-4 bg-gray-200 rounded"></div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 sm:px-6 py-4">
                       <div className="h-4 bg-gray-200 rounded"></div>
                     </td>
                   </tr>
                 ))
               ) : filteredCodes.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center">
+                  <td colSpan="6" className="px-3 sm:px-6 py-12 text-center">
                     <FiCode className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     <p className="regular-14 text-gray-600 mb-4">
                       لا توجد أكواد وصول للعرض
@@ -498,51 +521,63 @@ const InstructorAccessCodeManagement = () => {
                     key={code.id || `code-${index}-${code.code}`}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <code className="bg-gray-100 px-3 py-1 rounded font-mono text-sm">
+                        <code className="bg-gray-100 px-2 sm:px-3 py-1 rounded font-mono text-xs sm:text-sm">
                           {code.code}
                         </code>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="regular-14 text-gray-900">
-                        {code.lessonName || "غير محدد"}
-                      </p>
+                    <td className="px-3 sm:px-6 py-4">
+                      <div
+                        className="max-w-[150px] truncate"
+                        title={code.lessonName || "غير محدد"}
+                      >
+                        <p className="regular-12 sm:regular-14 text-gray-900">
+                          {code.lessonName || "غير محدد"}
+                        </p>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="regular-14 text-gray-600">
-                        {code.creatorName || "غير محدد"}
-                      </p>
+                    <td className="px-3 sm:px-6 py-4">
+                      <div
+                        className="max-w-[120px] truncate"
+                        title={code.creatorName || "غير محدد"}
+                      >
+                        <p className="regular-12 sm:regular-14 text-gray-600">
+                          {code.creatorName || "غير محدد"}
+                        </p>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                       {code.used ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                           <FiCheck className="w-3 h-3 mr-1" />
-                          مستخدم
+                          <span className="hidden sm:inline">مستخدم</span>
+                          <span className="sm:hidden">✓</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                        <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                           <FiClock className="w-3 h-3 mr-1" />
-                          متاح
+                          <span className="hidden sm:inline">متاح</span>
+                          <span className="sm:hidden">○</span>
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <p className="regular-12 text-gray-500">
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                      <p className="regular-10 sm:regular-12 text-gray-500">
                         {code.createdAt
                           ? new Date(code.createdAt).toLocaleDateString("ar-EG")
                           : "غير محدد"}
                       </p>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
                         <button
                           onClick={() => copyToClipboard(code.code)}
-                          className="cursor-pointer text-blue-600 hover:text-blue-900 transition-colors"
+                          className="cursor-pointer text-blue-600 hover:text-blue-900 transition-colors p-1 sm:p-2 rounded"
                           title="نسخ"
                         >
-                          <FiCopy className="w-4 h-4" />
+                          <FiCopy className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                       </div>
                     </td>

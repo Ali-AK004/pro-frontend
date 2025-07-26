@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import { instructorAPI, handleAPIError } from '../services/instructorAPI';
 import { useUserData } from '../../../../models/UserContext';
@@ -103,8 +102,8 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
             مرحباً، {user?.fullname}
           </h1>
           <p className="text-gray-600">
-            {user?.role === 'INSTRUCTOR' 
-              ? 'إليك نظرة عامة على أنشطتك التعليمية' 
+            {user?.role === 'INSTRUCTOR'
+              ? 'إليك نظرة عامة على أنشطتك التعليمية'
               : `مساعد للمدرس ${user?.instructorName} - إليك نظرة عامة على الأنشطة`
             }
           </p>
