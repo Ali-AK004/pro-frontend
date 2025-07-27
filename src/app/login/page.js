@@ -1,35 +1,34 @@
-'use client';
-import React, { useState } from 'react';
-import Link from 'next/link';
-import axios from 'axios';
-import { useUserData } from '../../../models/UserContext';
+"use client";
+import React, { useState } from "react";
+import Link from "next/link";
+import axios from "axios";
+import { useUserData } from "../../../models/UserContext";
 import { FaEyeSlash, FaRegEye } from "react-icons/fa";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
 
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const {setUser} = useUserData();
+  const { setUser, fetchCurrentUser } = useUserData();
   const router = useRouter();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear error when user starts typing
     if (error) {
       setError("");
     }
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,59 +46,102 @@ const Login = () => {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
-            "Accept": "application/json",
+            Accept: "application/json",
           },
         }
       );
-      setUser(response.data);
-      router.push('/');
+
+      // Small delay to ensure backend has processed the login
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Fetch the current user data to update context properly
+      await fetchCurrentUser(false); // Don't use cache, get fresh data
+
+      router.push("/");
       return response.data;
     } catch (error) {
-      console.error(error)
-        const errorMessage = error.response?.data?.error ||error.response?.data?.message ||'حدث خطأ أثناء تسجيل الدخول';
-        setError(errorMessage);
+      console.error(error);
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "حدث خطأ أثناء تسجيل الدخول";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-main flexCenter">
-      <div className="w-[300px] md:w-[600px]">
-        <div className="space-y-8 bg-white p-10 rounded-lg shadow-lg">
-          {/* Header */}
-          <Link href="/" className='mx-auto flexCenter w-fit'>
-            <h1 className="bold-32 text-gray-900">لوجو</h1>
-          </Link>
-          <div className="text-center">
-            <h2 className="md:bold-32 font-[700] text-[25px] text-gray-900">
-              تسجيل الدخول
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="relative w-full max-w-md">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+          {/* Header with gradient */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12 text-center">
+            <Link href="/" className="inline-block mb-4">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto">
+                <span className="text-2xl font-bold text-white">Pro</span>
+              </div>
+            </Link>
+            <h2 className="text-3xl font-bold text-white mb-2">
+              مرحباً بك مرة أخرى
             </h2>
+            <p className="text-blue-100">سجل دخولك لمتابعة رحلتك التعليمية</p>
           </div>
 
-          {/* Form */}
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="email" className="block bold-14 text-gray-700 mb-2">
+          {/* Form Container */}
+          <div className="px-8 py-8">
+            {/* Form */}
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-semibold text-gray-700"
+                >
                   البريد الإلكتروني
                 </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
-                  placeholder="أدخل بريدك الإلكتروني"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
+                <div className="relative">
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-right"
+                    placeholder="أدخل بريدك الإلكتروني"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+                      />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               {/* Password Field */}
-              <div>
-                <label htmlFor="password" className="block bold-14 text-gray-700 mb-2">
+              <div className="space-y-2">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-semibold text-gray-700"
+                >
                   كلمة المرور
                 </label>
                 <div className="relative">
@@ -109,57 +151,132 @@ const Login = () => {
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
-                    className="font-main appearance-none relative block w-full pl-10 py-3 pr-4 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-4 pl-12 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-right"
                     placeholder="أدخل كلمة المرور"
                     value={formData.password}
                     onChange={handleChange}
                   />
-                  <button
-                    type="button"
-                    className="absolute cursor-pointer left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <FaEyeSlash className="h-5 w-5" />
-                    ) : (
-                      <FaRegEye className="h-5 w-5" />
-                    )}
-                  </button>
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                    <svg
+                      className="h-5 w-5 text-gray-400 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
+                    </svg>
+                    <button
+                      type="button"
+                      className="text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <FaEyeSlash className="h-5 w-5" />
+                      ) : (
+                        <FaRegEye className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {error && (
-              <p className="regular-14 text-red-600">{error}</p>
-            )}
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <div className="flex items-center">
+                    <svg
+                      className="h-5 w-5 text-red-400 ml-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                </div>
+              )}
 
-            {/* Submit Button */}
-            <div>
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="font-main cursor-pointer w-full flexCenter py-3 px-6 bg-accent text-white md:bold-16 bold-14 rounded-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 {isLoading ? (
-                  <div className="flexCenter">
+                  <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
                     جاري تسجيل الدخول...
                   </div>
                 ) : (
-                  'تسجيل الدخول'
+                  <div className="flex items-center justify-center gap-2">
+                    <span>تسجيل الدخول</span>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                      />
+                    </svg>
+                  </div>
                 )}
               </button>
-            </div>
-          </form>
+            </form>
 
-          {/* Footer */}
-          <div className="text-center">
-            <p className="regular-16 text-gray-600">
-              ليس لديك حساب؟{' '}
-              <Link href="/signup" className="bold-16 text-accent hover:underline transition-colors">
-                سجل الآن
-              </Link>
-            </p>
+            {/* Divider */}
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500">أو</span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="text-center space-y-4">
+              <p className="text-gray-600">
+                ليس لديك حساب؟{" "}
+                <Link
+                  href="/signup"
+                  className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  سجل الآن مجاناً
+                </Link>
+              </p>
+
+              <div className="pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500">
+                  بتسجيل الدخول، أنت توافق على{" "}
+                  <Link href="/terms" className="text-blue-600 hover:underline">
+                    شروط الاستخدام
+                  </Link>{" "}
+                  و{" "}
+                  <Link
+                    href="/privacy"
+                    className="text-blue-600 hover:underline"
+                  >
+                    سياسة الخصوصية
+                  </Link>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

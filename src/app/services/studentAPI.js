@@ -67,6 +67,14 @@ export const studentAPI = {
     markVideoWatched: (lessonId) =>
       apiClient.post(`/students/lessons/${lessonId}/video/complete`),
 
+    // Check if lesson has exam
+    hasExam: (lessonId) =>
+      apiClient.get(`/students/lessons/${lessonId}/has-exam`),
+
+    // Check if lesson has assignment
+    hasAssignment: (lessonId) =>
+      apiClient.get(`/students/lessons/${lessonId}/has-assignment`),
+
     // Get lesson progress
     getProgress: (lessonId) =>
       apiClient.get(`/students/lessons/${lessonId}/progress`),

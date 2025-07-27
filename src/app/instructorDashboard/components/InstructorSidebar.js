@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserData } from "../../../../models/UserContext";
+import axios from "axios";
 import {
   FiHome,
   FiBook,
@@ -25,10 +26,26 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
 
   const handleLogout = async () => {
     try {
+      // Clear frontend state immediately
       clearUser();
-      router.push("/login");
+
+      // Make logout request (don't wait for response)
+      axios
+        .post(
+          "http://localhost:8080/api/auth/signout",
+          {},
+          {
+            withCredentials: true,
+            headers: { "Content-Type": "application/json" },
+          }
+        )
+        .catch(() => {}); // Ignore any errors
+
+      // Redirect to home page
+      router.replace("/");
     } catch (error) {
       console.error("Logout error:", error);
+      router.replace("/");
     }
   };
 
@@ -107,27 +124,32 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 right-0 w-80 lg:w-80 sm:w-72 bg-white shadow-2xl border-l border-gray-200 z-40 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 w-80 lg:w-80 sm:w-72 bg-white/95 backdrop-blur-md shadow-2xl border-l border-gray-200/50 z-40 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isMobileMenuOpen
             ? "translate-x-0"
             : "translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Header */}
-        <div className="p-4 lg:p-6 border-b border-gray-200 bg-gradient-to-r from-secondary to-accent">
+        <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-green-500 to-emerald-600 relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+          <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+
           <div
-            className={`flex items-center gap-3 ${isMobileMenuOpen ? "mr-14" : ""}`}
+            className={`relative flex items-center gap-4 ${isMobileMenuOpen ? "mr-14" : ""}`}
           >
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-white rounded-full flexCenter">
-              <FiUser className="w-5 h-5 lg:w-6 lg:h-6 text-secondary" />
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+              <FiUser className="w-6 h-6 text-white" />
             </div>
-            <div className="text-gray-700">
-              <h1 className="bold-16 lg:bold-20">لوحة المدرس</h1>
+            <div className="text-white">
+              <h1 className="text-xl font-bold">لوحة المدرس</h1>
+              <p className="text-green-100 text-sm">مرحباً {user?.fullname}</p>
             </div>
             {/* Close button for mobile */}
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="lg:hidden mr-auto p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors cursor-pointer"
+              className="lg:hidden mr-auto p-2 text-white hover:bg-white/20 rounded-xl transition-colors cursor-pointer"
             >
               <FiX className="w-5 h-5" />
             </button>
@@ -135,8 +157,8 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
         </div>
 
         {/* Navigation Menu */}
-        <nav className="p-3 lg:p-4 flex-1 overflow-y-auto">
-          <ul className="space-y-1 lg:space-y-2">
+        <nav className="p-4 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent min-h-0">
+          <ul className="space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -148,43 +170,63 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
                       setActiveTab(item.id);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`cursor-pointer w-full flex items-center gap-3 lg:gap-4 p-3 lg:p-4 rounded-lg lg:rounded-xl transition-all duration-300 group ${
+                    className={`cursor-pointer w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 group relative overflow-hidden ${
                       isActive
-                        ? "bg-secondary text-white shadow-lg transform scale-[1.02]"
-                        : "hover:bg-gray-200 text-gray-700 hover:text-[#87ceeb]"
+                        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-xl transform scale-[1.02]"
+                        : "hover:bg-white/80 hover:shadow-lg text-gray-700 hover:text-green-600"
                     }`}
                   >
+                    {/* Active indicator */}
+                    {isActive && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full"></div>
+                    )}
+
+                    {/* Background decoration for active state */}
+                    {isActive && (
+                      <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+                    )}
+
                     <div
-                      className={`p-2 rounded-lg ${
+                      className={`relative p-3 rounded-xl transition-all duration-300 ${
                         isActive
-                          ? "bg-white bg-opacity-20"
-                          : "bg-gray-100 group-hover:bg-gray-50 group-hover:bg-opacity-10"
+                          ? "bg-white/20 backdrop-blur-sm"
+                          : "bg-gray-100 group-hover:bg-green-50 group-hover:scale-110"
                       }`}
                     >
                       <Icon
-                        className={`w-5 h-5 ${
-                          isActive ? "text-gray-600" : "text-gray-600"
+                        className={`w-5 h-5 transition-colors ${
+                          isActive
+                            ? "text-white"
+                            : "text-gray-600 group-hover:text-green-600"
                         }`}
                       />
                     </div>
-                    <div className="text-right flex-1">
+
+                    <div className="text-right flex-1 relative">
                       <div
-                        className={`bold-14 lg:bold-16 ${
-                          isActive ? "text-white" : "text-gray-900"
+                        className={`text-base font-semibold transition-colors ${
+                          isActive
+                            ? "text-white"
+                            : "text-gray-900 group-hover:text-green-600"
                         }`}
                       >
                         {item.label}
                       </div>
                       <div
-                        className={`regular-10 lg:regular-12 ${
+                        className={`text-sm transition-colors ${
                           isActive
-                            ? "text-white text-opacity-80"
-                            : "text-gray-500"
+                            ? "text-white/80"
+                            : "text-gray-500 group-hover:text-green-500"
                         }`}
                       >
                         {item.description}
                       </div>
                     </div>
+
+                    {/* Hover effect */}
+                    {!isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-emerald-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+                    )}
                   </button>
                 </li>
               );
@@ -193,16 +235,20 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
         </nav>
 
         {/* User Profile & Logout */}
-        <div className="p-3 lg:p-4 border-t border-gray-200 bg-gray-50">
-          <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-3 bg-white rounded-lg mb-3">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-secondary rounded-full flexCenter">
-              <FiUser className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+        <div className="p-4 border-t border-gray-200/50 bg-gradient-to-r from-gray-50 to-gray-100">
+          <div className="flex items-center gap-3 p-4 bg-white/80 backdrop-blur-sm rounded-2xl mb-4 shadow-sm border border-white/20">
+            <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+              <FiUser className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 text-right min-w-0">
-              <div className="bold-12 lg:bold-14 text-gray-900 truncate">
+              <div className="text-sm font-bold text-gray-900 truncate">
                 {user?.fullname || user?.username}
               </div>
-              <div className="regular-10 lg:regular-12 text-gray-500 truncate">
+              <div className="text-xs text-gray-500 flex items-center gap-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                مدرس
+              </div>
+              <div className="text-xs text-gray-400 mt-1 truncate">
                 {user?.email}
               </div>
             </div>
@@ -210,10 +256,10 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
 
           <button
             onClick={handleLogout}
-            className="cursor-pointer w-full flex items-center justify-center gap-2 p-2 lg:p-3 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-300 group"
+            className="cursor-pointer w-full flex items-center justify-center gap-3 p-4 text-red-600 hover:text-white hover:bg-gradient-to-r hover:from-red-500 hover:to-red-600 rounded-2xl transition-all duration-300 group border-2 border-red-200 hover:border-red-500 shadow-sm hover:shadow-lg"
           >
-            <FiLogOut className="w-4 h-4 group-hover:transform group-hover:translate-x-1 transition-transform" />
-            <span className="bold-12 lg:bold-14">تسجيل الخروج</span>
+            <FiLogOut className="w-5 h-5 group-hover:transform group-hover:translate-x-1 transition-transform" />
+            <span className="font-semibold">تسجيل الخروج</span>
           </button>
         </div>
       </div>

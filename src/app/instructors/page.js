@@ -52,80 +52,109 @@ const Instructors = () => {
   };
 
   return (
-    <div className="min-h-screen bg-main">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+      </div>
+
       <NavBar />
-      <div className="max-container padding-container py-12">
-        <div className="flex items-center justify-start">
+      <div className="relative max-container padding-container py-12">
+        {/* Back Button */}
+        <div className="mb-8">
           <Link
             href={"/"}
-            className="flexCenter hover:bg-[#088395] hover:border hover:border-[#088395] hover:text-white gap-2 cursor-pointer text-accent hover:text-opacity-80 transition-all border border-accent rounded-lg py-1 px-4 mb-6"
+            className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl transition-all duration-300 text-gray-700 hover:text-blue-600 shadow-sm hover:shadow-md"
           >
             <FaArrowLeft className="w-4 h-4" />
-            <span className="regular-16">العودة للصفحة الرئيسية</span>
+            <span className="font-medium">العودة للصفحة الرئيسية</span>
           </Link>
         </div>
+
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flexCenter gap-3 mb-4">
-            <FaChalkboardTeacher className="w-12 h-12 text-accent" />
-            <h1 className="bold-48 text-gray-900">المدرسين</h1>
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-4 mb-6">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
+              <FaChalkboardTeacher className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              المدرسين
+            </h1>
           </div>
-          <p className="regular-18 text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             ابحث عن المدرس باستخدام ID الخاص به لعرض ملفه الشخصي ومعلوماته
-            التفصيلية
+            التفصيلية والكورسات التي يقدمها
           </p>
         </div>
 
         {/* Search Section */}
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="bold-24 text-gray-900 text-center mb-6">
-              البحث عن مدرس
-            </h2>
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12 relative overflow-hidden">
+            {/* Background decoration */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-2xl"></div>
 
-            <form onSubmit={handleSearch} className="space-y-6">
-              <div>
-                <label
-                  htmlFor="instructorId"
-                  className="block bold-16 text-gray-700 mb-3"
-                >
-                  ID المدرس
-                </label>
-                <div className="relative">
-                  <input
-                    id="instructorId"
-                    type="text"
-                    value={instructorId}
-                    onChange={handleInputChange}
-                    placeholder="أدخل ID المدرس (مثال: INST001)"
-                    className="font-main w-full px-4 py-4 pr-12 border-2 border-gray-300 rounded-lg focus:border-accent focus:outline-none transition-colors regular-16"
-                    disabled={isLoading}
-                  />
-                  <FaSearch className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                    <FaSearch className="w-6 h-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                    البحث عن مدرس
+                  </h2>
                 </div>
+                <p className="text-gray-600">
+                  أدخل ID المدرس للوصول إلى ملفه الشخصي والكورسات المتاحة
+                </p>
               </div>
 
-              {/* Error message */}
-              {error && <p className="text-red-500 regular-14">{error}</p>}
+              <form onSubmit={handleSearch} className="space-y-6">
+                <div>
+                  <label
+                    htmlFor="instructorId"
+                    className="block text-lg font-semibold text-gray-700 mb-3"
+                  >
+                    ID المدرس
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="instructorId"
+                      type="text"
+                      value={instructorId}
+                      onChange={handleInputChange}
+                      placeholder="أدخل ID المدرس (مثال: INST001)"
+                      className="font-main w-full px-4 py-4 pr-12 border-2 border-gray-300 rounded-lg focus:border-accent focus:outline-none transition-colors regular-16"
+                      disabled={isLoading}
+                    />
+                    <FaSearch className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  </div>
+                </div>
 
-              <button
-                type="submit"
-                disabled={isLoading || !instructorId.trim()}
-                className="w-full bg-accent cursor-pointer text-white py-4 rounded-lg bold-16 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flexCenter gap-2 shadow-md hover:shadow-lg"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    جاري البحث...
-                  </>
-                ) : (
-                  <>
-                    <FaSearch className="w-4 h-4" />
-                    البحث عن المدرس
-                  </>
-                )}
-              </button>
-            </form>
+                {/* Error message */}
+                {error && <p className="text-red-500 regular-14">{error}</p>}
+
+                <button
+                  type="submit"
+                  disabled={isLoading || !instructorId.trim()}
+                  className="w-full bg-accent cursor-pointer text-white py-4 rounded-lg bold-16 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flexCenter gap-2 shadow-md hover:shadow-lg"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      جاري البحث...
+                    </>
+                  ) : (
+                    <>
+                      <FaSearch className="w-4 h-4" />
+                      البحث عن المدرس
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
           </div>
         </div>
 

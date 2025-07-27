@@ -9,7 +9,7 @@ import {
   FiActivity,
 } from "react-icons/fi";
 
-const DashboardOverview = ({setActiveTab}) => {
+const DashboardOverview = ({ setActiveTab }) => {
   const [stats, setStats] = useState({
     students: 0,
     instructors: 0,
@@ -84,12 +84,15 @@ const DashboardOverview = ({setActiveTab}) => {
         <div className="animate-pulse">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-gray-200 h-32 rounded-xl"></div>
+              <div
+                key={i}
+                className="bg-gradient-to-r from-gray-200 to-gray-300 h-32 rounded-2xl"
+              ></div>
             ))}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-gray-200 h-64 rounded-xl"></div>
-            <div className="bg-gray-200 h-64 rounded-xl"></div>
+            <div className="bg-gradient-to-r from-gray-200 to-gray-300 h-64 rounded-2xl"></div>
+            <div className="bg-gradient-to-r from-gray-200 to-gray-300 h-64 rounded-2xl"></div>
           </div>
         </div>
       </div>
@@ -100,10 +103,15 @@ const DashboardOverview = ({setActiveTab}) => {
     <div className="p-4 md:p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="bold-32 text-gray-900 mb-2">لوحة التحكم</h1>
-        <p className="regular-16 text-gray-600">
-          نظرة عامة على أداء المنصة التعليمية
-        </p>
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-2xl flex items-center justify-center">
+            <FiActivity className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">لوحة التحكم</h1>
+            <p className="text-gray-600">نظرة عامة على أداء المنصة التعليمية</p>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -113,19 +121,29 @@ const DashboardOverview = ({setActiveTab}) => {
           return (
             <div
               key={index}
-              className="bg-white flex items-center justify-between flex-col md:flex-row p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
+              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-all duration-300 hover:transform hover:-translate-y-1 relative overflow-hidden group"
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 rounded-lg ${card.bgColor}`}>
-                  <Icon className={`w-6 h-6 ${card.textColor}`} />
+              {/* Background decoration */}
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-white/50 group-hover:from-blue-50/50 group-hover:to-purple-50/50 transition-all duration-300"></div>
+
+              <div className="relative flex items-center justify-between">
+                <div
+                  className={`p-4 rounded-2xl ${card.bgColor} group-hover:scale-110 transition-transform duration-300`}
+                >
+                  <Icon className={`w-7 h-7 ${card.textColor}`} />
+                </div>
+                <div className="text-right">
+                  <h3 className="text-sm font-medium text-gray-600 mb-1">
+                    {card.title}
+                  </h3>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {card.value.toLocaleString()}
+                  </p>
                 </div>
               </div>
-              <div className="text-center">
-                <h3 className="regular-14 text-gray-600 mb-1">{card.title}</h3>
-                <p className="bold-24 text-gray-900">
-                  ({card.value.toLocaleString()})
-                </p>
-              </div>
+
+              {/* Hover effect */}
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
             </div>
           );
         })}

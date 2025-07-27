@@ -62,10 +62,19 @@ const InstructorProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-main flexCenter">
-        <div className="flexCenter flex-col">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-          <p className="mt-4 regular-16 text-gray-600">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative text-center">
+          <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <FaChalkboardTeacher className="w-10 h-10 text-white" />
+          </div>
+          <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg font-medium text-gray-700">
             جاري تحميل بيانات المدرس...
           </p>
         </div>
@@ -75,13 +84,24 @@ const InstructorProfile = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-main flexCenter">
-        <div className="text-center">
-          <FaChalkboardTeacher className="w-24 h-24 text-gray-300 mx-auto mb-4" />
-          <h2 className="bold-24 text-gray-600 mb-4">{error}</h2>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative text-center max-w-md mx-auto p-8">
+          <div className="w-24 h-24 bg-gradient-to-r from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FaChalkboardTeacher className="w-12 h-12 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">{error}</h2>
+          <p className="text-gray-600 mb-8">
+            تأكد من صحة ID المدرس وحاول مرة أخرى
+          </p>
           <button
             onClick={() => router.push("/instructors")}
-            className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-colors flexCenter gap-2"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-3 mx-auto shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             <FaArrowLeft className="w-4 h-4" />
             العودة للبحث
@@ -96,31 +116,43 @@ const InstructorProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-main">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+      </div>
+
       <NavBar />
-      <div className="max-container py-8 padding-container">
+      <div className="relative max-container py-8 padding-container">
         {/* Back Button */}
-        <div className="flex items-center justify-start">
+        <div className="mb-8">
           <Link
             href={"/instructors"}
-            className="flexCenter hover:bg-[#088395] hover:border hover:border-[#088395] hover:text-white gap-2 cursor-pointer text-accent hover:text-opacity-80 transition-all border border-accent rounded-lg py-1 px-4 mb-6"
+            className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl transition-all duration-300 text-gray-700 hover:text-blue-600 shadow-sm hover:shadow-md"
           >
             <FaArrowLeft className="w-4 h-4" />
-            <span className="regular-16">العودة للبحث</span>
+            <span className="font-medium">العودة للبحث</span>
           </Link>
         </div>
 
         {/* Instructor Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          <div className="flex flex-col items-center gap-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12 mb-8 relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-2xl"></div>
+
+          <div className="relative flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             {/* Avatar */}
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 flexCenter">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
+              <div className="relative w-32 h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center border-4 border-white shadow-xl">
                 {instructor.photoUrl ? (
                   <Image
                     src={instructor.photoUrl}
-                    width={128}
-                    height={128}
+                    width={160}
+                    height={160}
                     alt="صورة المدرس"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -129,38 +161,50 @@ const InstructorProfile = () => {
                     }}
                   />
                 ) : null}
-                <FaChalkboardTeacher className="w-16 h-16 text-gray-400" />
+                <FaChalkboardTeacher className="w-16 h-16 lg:w-20 lg:h-20 text-gray-400" />
               </div>
-              <div className="absolute -bottom-2 -right-2 bg-yellow-400 rounded-full p-2">
-                <FaStar className="w-4 h-4 text-white" />
+              <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-3 shadow-lg">
+                <FaStar className="w-5 h-5 text-white" />
               </div>
+              {/* Pulse rings */}
+              <div className="absolute inset-0 rounded-full border-4 border-blue-400/30 animate-ping"></div>
+              <div className="absolute inset-2 rounded-full border-4 border-purple-400/20 animate-ping animation-delay-75"></div>
             </div>
 
             {/* Info */}
-            <div className="flex-1 text-center">
-              <h1 className="bold-32 text-gray-900 mb-5">
-                م/ {instructor.fullname}
-              </h1>
-              <p className="regular-16 text-gray-600 mb-6 max-w-2xl">
-                {instructor.bio || "مدرس خبير في مجاله"}
-              </p>
+            <div className="flex-1 text-center lg:text-right space-y-6">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                  <FaAward className="w-4 h-4" />
+                  مدرس معتمد
+                </div>
+
+                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
+                  م/ {instructor.fullname}
+                </h1>
+
+                <p className="text-lg text-gray-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                  {instructor.bio ||
+                    "مدرس خبير في مجاله مع سنوات من الخبرة في التدريس والتعليم"}
+                </p>
+              </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className="bold-20 text-accent">
+              <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 mt-8">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-2xl text-center">
+                  <div className="text-2xl font-bold">
                     {instructor.courses?.length || 0}
                   </div>
-                  <div className="regular-14 text-gray-600">كورس</div>
+                  <div className="text-sm opacity-90">كورس</div>
                 </div>
-                <div className="text-center">
-                  <div className="bold-20 text-accent">
+                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-2xl text-center">
+                  <div className="text-2xl font-bold">
                     {instructor.courses?.reduce(
                       (total, course) => total + (course.lessons?.length || 0),
                       0
                     ) || 0}
                   </div>
-                  <div className="regular-14 text-gray-600">درس</div>
+                  <div className="text-sm opacity-90">درس</div>
                 </div>
               </div>
             </div>
@@ -182,58 +226,53 @@ const InstructorProfile = () => {
                   instructor.courses.map((course) => (
                     <div
                       key={course.id}
-                      className="border border-gray-200 overflow-hidden rounded-lg hover:shadow-md transition-shadow"
+                      className="bg-white border border-gray-200 overflow-hidden rounded-xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                     >
                       <div className="flex items-start  gap-4">
                         {/* صورة الكورس */}
-                        <div className="mx-auto w-[200px] h-[200px] md:mx-0 overflow-hidden bg-gray-100 flexCenter relative">
-                          {instructor.courses?.map(
-                            (course) =>
-                              course.photoUrl && (
-                                <Image
-                                  key={course.id}
-                                  src={course.photoUrl}
-                                  width={200}
-                                  height={200}
-                                  alt={course.name}
-                                  priority
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = "none";
-                                    // If you have a fallback element:
-                                    const fallback =
-                                      e.currentTarget.nextElementSibling;
-                                    if (fallback)
-                                      fallback.style.display = "flex";
-                                  }}
-                                />
-                              )
-                          )}
+                        <div className="mx-auto w-[200px] h-[200px] md:mx-0 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flexCenter relative rounded-xl">
+                          {course.photoUrl ? (
+                            <Image
+                              src={course.photoUrl}
+                              width={200}
+                              height={200}
+                              alt={course.name}
+                              priority
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                                const fallback =
+                                  e.currentTarget.nextElementSibling;
+                                if (fallback) fallback.style.display = "flex";
+                              }}
+                            />
+                          ) : null}
+                          <FaChalkboardTeacher className="w-16 h-16 text-gray-400" />
                         </div>
 
                         {/* محتوى الكورس */}
-                        <div className="flex flex-col flex-1 justify-between h-[200px] py-5 pl-3">
-                          <div className="flexBetween mb-2">
-                            <h3 className="bold-18 text-gray-900">
-                              {course.name}
-                            </h3>
-                            <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-3">
-                              <div className="flexCenter gap-1">
+                        <div className="flex flex-col flex-1 justify-between h-[200px] py-6 px-6">
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <h3 className="text-xl font-bold text-gray-900 leading-tight">
+                                {course.name}
+                              </h3>
+                              <div className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium ml-4">
                                 <FaBookOpen className="w-4 h-4" />
                                 <span>{course.lessons?.length || 0} درس</span>
                               </div>
                             </div>
                           </div>
 
-                          <p className="regular-14 text-gray-600 mb-3">
-                            {course.description}
+                          <p className="text-gray-600 leading-relaxed line-clamp-3 mb-4">
+                            {course.description || "وصف الكورس غير متوفر"}
                           </p>
                           <div className="flex items-center justify-end">
                             <Link
                               href={`/instructors/${instructor.id}/courses/${course.id}`}
-                              className="bg-accent text-white px-4 py-2 rounded-lg regular-14 hover:bg-opacity-90 transition-colors flexCenter gap-2"
+                              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                             >
-                              <FaPlay className="w-3 h-3" />
+                              <FaPlay className="w-4 h-4" />
                               عرض التفاصيل
                             </Link>
                           </div>
@@ -259,8 +298,11 @@ const InstructorProfile = () => {
           {/* Right Column */}
           <div className="space-y-8">
             {/* Instructor Info */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="bold-20 text-gray-900 mb-6">معلومات المدرس</h2>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <FaChalkboardTeacher className="w-5 h-5 text-blue-600" />
+                معلومات المدرس
+              </h2>
 
               <div className="space-y-4">
                 <div className="flex items-center gap-5">
@@ -284,9 +326,9 @@ const InstructorProfile = () => {
             </div>
 
             {/* Course Summary */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="bold-20 text-gray-900 mb-6 flexCenter gap-2">
-                <FaBookOpen className="w-5 h-5 text-accent" />
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <FaBookOpen className="w-5 h-5 text-green-600" />
                 ملخص الكورسات
               </h2>
 
@@ -295,15 +337,18 @@ const InstructorProfile = () => {
                   instructor.courses.map((course, index) => (
                     <div
                       key={course.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-blue-50 hover:to-purple-50 transition-all duration-300"
                     >
-                      <div>
-                        <p className="bold-14 text-gray-900">{course.name}</p>
-                        <p className="regular-12 text-gray-600">
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 mb-1">
+                          {course.name}
+                        </p>
+                        <p className="text-sm text-gray-600 flex items-center gap-1">
+                          <FaPlay className="w-3 h-3" />
                           {course.lessons?.length || 0} درس
                         </p>
                       </div>
-                      <span className="text-xs bg-accent text-white px-2 py-1 rounded">
+                      <span className="text-xs bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-full font-medium">
                         #{index + 1}
                       </span>
                     </div>

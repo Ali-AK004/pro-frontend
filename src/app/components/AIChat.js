@@ -139,32 +139,43 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
     <div
       className={`flex flex-col h-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 rounded-lg shadow-lg ${className}`}
     >
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg">
-        <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white/20 rounded-full flexCenter">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+        <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+
+        <div className="relative flex items-center gap-3">
+          <div className="relative">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
               <FiCpu className="w-5 h-5" />
             </div>
+            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+            {/* Pulse rings */}
+            <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-ping"></div>
+          </div>
           <div>
-            <h3 className="bold-16">المساعد الذكي</h3>
-            <p className="regular-12 opacity-90">
-              {isTyping ? "يكتب..." : "متصل"}
+            <h3 className="text-lg font-bold">المساعد الذكي</h3>
+            <p className="text-sm opacity-90 flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              {isTyping ? "يكتب..." : "متصل ومستعد للمساعدة"}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="relative flex items-center gap-2">
           <button
             onClick={resetChat}
-            className="p-2 hover:bg-white/20 rounded-sm transition-colors cursor-pointer"
+            className="p-2 hover:bg-white/20 rounded-xl transition-all duration-300 cursor-pointer group"
             title="بدء محادثة جديدة"
           >
-            <FiRefreshCw className="w-4 h-4" />
+            <FiRefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
           </button>
           <button
             onClick={onClose}
-            className="px-3 py-2 hover:bg-white/20 rounded-sm transition-colors cursor-pointer"
+            className="p-2 hover:bg-white/20 rounded-xl transition-all duration-300 cursor-pointer group"
             title="إغلاق"
           >
-            <FiX className="w-4 h-4"/>
+            <FiX className="w-4 h-4 group-hover:scale-110 transition-transform" />
           </button>
         </div>
       </div>

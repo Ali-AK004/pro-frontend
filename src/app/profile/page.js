@@ -246,300 +246,329 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-main">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+      {/* Background decorations */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+      </div>
+
       <NavBar />
-      <div className="max-container padding-container py-8">
+      <div className="relative max-container padding-container py-8">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="md:items-center md:justify-between gap-4 md:gap-0 flex-col md:flex-row flex">
-            <div className="md:justify-between md:items-center flex flex-col md:flex-row gap-4 w-full">
-              <div className="flex flex-col justify-center text-center md:text-right md:justify- md:flex-row items-center space-x-4 md:gap-3 gap-2 space-x-reverse">
-                <div className="relative">
-                  <Image
-                    src={
-                      user.avatarUrl ||
-                      "https://images.unsplash.com/photo-1550399105-c4db5fb85c18?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                    }
-                    width={80}
-                    height={80}
-                    alt="صورة المستخدم"
-                    className="w-20 h-20 rounded-full object-cover border-4 border-secondary"
-                    onError={(e) => {
-                      e.target.src = "/default-avatar.png";
-                    }}
-                  />
-                  <div className="absolute -bottom-1 -right-1 bg-accent text-white rounded-full p-1">
-                    <FaUser className="w-3 h-3" />
-                  </div>
-                </div>
-                <div>
-                  <h1 className="bold-32 text-gray-900">{user?.fullname}</h1>
-                  <p className="regular-16 text-gray-600">@{user?.username}</p>
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 mb-8 relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-2xl"></div>
+
+          <div className="relative flex flex-col lg:flex-row items-center lg:items-start gap-8">
+            {/* Profile Image and Basic Info */}
+            <div className="flex flex-col lg:flex-row items-center gap-6">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                <Image
+                  src={
+                    user.avatarUrl ||
+                    "https://images.unsplash.com/photo-1550399105-c4db5fb85c18?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                  }
+                  width={120}
+                  height={120}
+                  alt="صورة المستخدم"
+                  className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full object-cover border-4 border-white shadow-xl"
+                  onError={(e) => {
+                    e.target.src = "/default-avatar.png";
+                  }}
+                />
+                <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full p-2 shadow-lg">
+                  <FaUser className="w-4 h-4" />
                 </div>
               </div>
-              <div className="flex items-center flex-col space-x-2 space-x-reverse gap-3">
-                <span
-                  className={`inline-block px-10 py-1 rounded-full bold-16  ${getRoleDetails(user?.role).color}`}
-                >
-                  {getRoleDetails(user?.role).text}
-                </span>
-                <p className="regular-12 text-center md:text-right text-gray-500">
+
+              <div className="text-center lg:text-right">
+                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+                  {user?.fullname}
+                </h1>
+                <p className="text-lg text-gray-600 mb-4">@{user?.username}</p>
+                <div className="flex flex-col lg:flex-row items-center gap-4">
+                  <span
+                    className={`inline-flex items-center gap-2 px-6 py-2 rounded-full font-semibold ${getRoleDetails(user?.role).color}`}
+                  >
+                    {React.createElement(getRoleDetails(user?.role).icon, {
+                      className: "w-4 h-4",
+                    })}
+                    {getRoleDetails(user?.role).text}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 mt-2 max-w-md">
                   {getRoleDetails(user?.role).description}
                 </p>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="flex-1 lg:mr-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-2xl text-center">
+                  <div className="text-2xl font-bold">{userLessons.length}</div>
+                  <div className="text-sm opacity-90">إجمالي الحصص</div>
+                </div>
+                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-2xl text-center">
+                  <div className="text-2xl font-bold">
+                    {
+                      userLessons.filter((lesson) => lesson.status === "active")
+                        .length
+                    }
+                  </div>
+                  <div className="text-sm opacity-90">حصص نشطة</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* معلومات المستخدم */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="bold-20 text-gray-900 mb-6">المعلومات الشخصية</h2>
+
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 gap-5 space-x-reverse">
+                <FaEnvelope className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="regular-14 text-gray-600">البريد الإلكتروني</p>
+                  <p className="bold-14 text-gray-900">
+                    {user?.email || "لا يوجد"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 gap-5 space-x-reverse">
+                <FaPhone className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="regular-14 text-gray-600">رقم الهاتف</p>
+                  <p className="bold-14 text-gray-900">
+                    {user?.phoneNumber || "لا يوجد"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 gap-5 space-x-reverse">
+                <FaPhone className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="regular-14 text-gray-600">هاتف ولي الأمر</p>
+                  <p className="bold-14 text-gray-900">
+                    {user?.parentPhoneNumber || "لا يوجد"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 gap-5 space-x-reverse">
+                <FaIdCard className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="regular-14 text-gray-600">الرقم القومي</p>
+                  <p className="bold-14 text-gray-900">
+                    {user?.nationalId || "لا يوجد"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 gap-5 space-x-reverse">
+                <FaCalendarAlt className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="regular-14 text-gray-600">تاريخ الميلاد</p>
+                  <p className="bold-14 text-gray-900">
+                    {formatDate(user?.dateOfBirth) || "لا يوجد"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 gap-5 space-x-reverse">
+                <FaMapMarkerAlt className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="regular-14 text-gray-600">المحافظة</p>
+                  <p className="bold-14 text-gray-900">
+                    {user?.government || "لا يوجد"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 gap-5 space-x-reverse">
+                <FaClock className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="regular-14 text-gray-600">تاريخ التسجيل</p>
+                  <p className="bold-14 text-gray-900">
+                    {formatDate(user?.createdAt) || "لا يوجد"}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* معلومات المستخدم */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="bold-20 text-gray-900 mb-6">المعلومات الشخصية</h2>
-
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 gap-5 space-x-reverse">
-                  <FaEnvelope className="w-5 h-5 text-accent" />
-                  <div>
-                    <p className="regular-14 text-gray-600">
-                      البريد الإلكتروني
-                    </p>
-                    <p className="bold-14 text-gray-900">
-                      {user?.email || "لا يوجد"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3 gap-5 space-x-reverse">
-                  <FaPhone className="w-5 h-5 text-accent" />
-                  <div>
-                    <p className="regular-14 text-gray-600">رقم الهاتف</p>
-                    <p className="bold-14 text-gray-900">
-                      {user?.phoneNumber || "لا يوجد"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3 gap-5 space-x-reverse">
-                  <FaPhone className="w-5 h-5 text-accent" />
-                  <div>
-                    <p className="regular-14 text-gray-600">هاتف ولي الأمر</p>
-                    <p className="bold-14 text-gray-900">
-                      {user?.parentPhoneNumber || "لا يوجد"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3 gap-5 space-x-reverse">
-                  <FaIdCard className="w-5 h-5 text-accent" />
-                  <div>
-                    <p className="regular-14 text-gray-600">الرقم القومي</p>
-                    <p className="bold-14 text-gray-900">
-                      {user?.nationalId || "لا يوجد"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3 gap-5 space-x-reverse">
-                  <FaCalendarAlt className="w-5 h-5 text-accent" />
-                  <div>
-                    <p className="regular-14 text-gray-600">تاريخ الميلاد</p>
-                    <p className="bold-14 text-gray-900">
-                      {formatDate(user?.dateOfBirth) || "لا يوجد"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3 gap-5 space-x-reverse">
-                  <FaMapMarkerAlt className="w-5 h-5 text-accent" />
-                  <div>
-                    <p className="regular-14 text-gray-600">المحافظة</p>
-                    <p className="bold-14 text-gray-900">
-                      {user?.government || "لا يوجد"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3 gap-5 space-x-reverse">
-                  <FaClock className="w-5 h-5 text-accent" />
-                  <div>
-                    <p className="regular-14 text-gray-600">تاريخ التسجيل</p>
-                    <p className="bold-14 text-gray-900">
-                      {formatDate(user?.createdAt) || "لا يوجد"}
-                    </p>
-                  </div>
-                </div>
+        {/* الحصص والكورسات */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="flexBetween mb-6">
+              <h2 className="bold-20 text-gray-900">
+                {getCourseSectionTitle(user?.role)}
+              </h2>
+              <div className="flex flex-col md:flex-row gap-2 items-center space-x-2 space-x-reverse">
+                <FaBook className="w-5 h-5 text-accent" />
+                <span className="regular-14 text-gray-600">
+                  {isLoadingLessons
+                    ? "جاري التحميل..."
+                    : `${userLessons.length} حصة`}
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* الحصص والكورسات */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flexBetween mb-6">
-                <h2 className="bold-20 text-gray-900">
-                  {getCourseSectionTitle(user?.role)}
-                </h2>
-                <div className="flex flex-col md:flex-row gap-2 items-center space-x-2 space-x-reverse">
-                  <FaBook className="w-5 h-5 text-accent" />
-                  <span className="regular-14 text-gray-600">
-                    {isLoadingLessons
-                      ? "جاري التحميل..."
-                      : `${userLessons.length} حصة`}
-                  </span>
-                </div>
+            {isLoadingLessons ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+                <p className="regular-16 text-gray-600">جاري تحميل الحصص...</p>
               </div>
+            ) : lessonsError ? (
+              <div className="text-center py-12">
+                <FaUserGraduate className="w-16 h-16 text-red-300 mx-auto mb-4" />
+                <h3 className="bold-18 text-red-600 mb-2">خطأ في التحميل</h3>
+                <p className="regular-14 text-red-500">{lessonsError}</p>
+              </div>
+            ) : userLessons.length === 0 ? (
+              <div className="text-center py-12">
+                <FaUserGraduate className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="bold-18 text-gray-600 mb-2">
+                  {getEmptyCoursesMessage(user?.role).title}
+                </h3>
+                <p className="regular-14 text-gray-500">
+                  {getEmptyCoursesMessage(user?.role).description}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {displayedLessons.map((lesson) => {
+                  const statusBadge = getLessonStatusBadge(lesson);
+                  return (
+                    <div
+                      key={lesson.id}
+                      className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start md:items-center pl-4 md:flex-row flex-col md:gap-4 space-x-4 space-x-reverse">
+                        {/* صورة الحصة */}
+                        <div className="mx-auto w-[200px] h-[200px] md:mx-0 overflow-hidden bg-gray-100 flexCenter relative">
+                          {lesson.photoUrl ? (
+                            <Image
+                              src={lesson.photoUrl}
+                              width={200}
+                              height={200}
+                              alt={lesson.name}
+                              priority
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                                e.target.nextSibling.style.display = "flex";
+                              }}
+                            />
+                          ) : null}
+                        </div>
 
-              {isLoadingLessons ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
-                  <p className="regular-16 text-gray-600">
-                    جاري تحميل الحصص...
-                  </p>
-                </div>
-              ) : lessonsError ? (
-                <div className="text-center py-12">
-                  <FaUserGraduate className="w-16 h-16 text-red-300 mx-auto mb-4" />
-                  <h3 className="bold-18 text-red-600 mb-2">خطأ في التحميل</h3>
-                  <p className="regular-14 text-red-500">{lessonsError}</p>
-                </div>
-              ) : userLessons.length === 0 ? (
-                <div className="text-center py-12">
-                  <FaUserGraduate className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="bold-18 text-gray-600 mb-2">
-                    {getEmptyCoursesMessage(user?.role).title}
-                  </h3>
-                  <p className="regular-14 text-gray-500">
-                    {getEmptyCoursesMessage(user?.role).description}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {displayedLessons.map((lesson) => {
-                    const statusBadge = getLessonStatusBadge(lesson);
-                    return (
-                      <div
-                        key={lesson.id}
-                        className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-start md:items-center pl-4 md:flex-row flex-col md:gap-4 space-x-4 space-x-reverse">
-                          {/* صورة الحصة */}
-                          <div className="mx-auto w-[200px] h-[200px] md:mx-0 overflow-hidden bg-gray-100 flexCenter relative">
-                            {lesson.photoUrl ? (
-                              <Image
-                                src={lesson.photoUrl}
-                                width={200}
-                                height={200}
-                                alt={lesson.name}
-                                priority
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.target.style.display = "none";
-                                  e.target.nextSibling.style.display = "flex";
-                                }}
-                              />
-                            ) : null}
+                        <div className="flex-1">
+                          <div className="flexBetween mb-2">
+                            <h3 className="bold-16 text-gray-900">
+                              {lesson.name}
+                            </h3>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge.color}`}
+                            >
+                              {statusBadge.text}
+                            </span>
                           </div>
 
-                          <div className="flex-1">
-                            <div className="flexBetween mb-2">
-                              <h3 className="bold-16 text-gray-900">
-                                {lesson.name}
-                              </h3>
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${statusBadge.color}`}
-                              >
-                                {statusBadge.text}
+                          <p className="regular-14 text-gray-600 mb-2">
+                            {lesson.description}
+                          </p>
+
+                          <p className="regular-14 text-gray-600 mb-2">
+                            المعلم :{" "}
+                            <span className="bold-14">
+                              {lesson.instructorName}
+                            </span>
+                          </p>
+
+                          <div className="flex md:gap-4 items-center  space-x-4 space-x-reverse mb-3">
+                            <div className="flex flex-col md:flex-row items-center gap-1">
+                              <FaClock className="w-4 h-4 text-gray-500" />
+                              <span className="regular-12 text-gray-600">
+                                ينتهي: {formatDate(lesson.accessExpiryDate)}
                               </span>
                             </div>
+                          </div>
 
-                            <p className="regular-14 text-gray-600 mb-2">
-                              {lesson.description}
-                            </p>
-
-                            <p className="regular-14 text-gray-600 mb-2">
-                              المعلم :{" "}
-                              <span className="bold-14">
-                                {lesson.instructorName}
-                              </span>
-                            </p>
-
-                            <div className="flex md:gap-4 items-center  space-x-4 space-x-reverse mb-3">
-                              <div className="flex flex-col md:flex-row items-center gap-1">
-                                <FaClock className="w-4 h-4 text-gray-500" />
-                                <span className="regular-12 text-gray-600">
-                                  ينتهي: {formatDate(lesson.accessExpiryDate)}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="flex space-x-2 gap-2 flex-col md:flex-row md:justify-end space-x-reverse">
-                              <Link
-                                href={`/instructors/${lesson.instructorId}/courses/${lesson.courseId}/lessons/${lesson.id}`}
-                                className={`px-4 py-2 rounded-md regular-12 transition-colors flexCenter gap-2 ${
-                                  lesson.expired
-                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                    : "bg-accent text-white hover:bg-opacity-90 cursor-pointer"
-                                }`}
-                                disabled={lesson.expired}
-                              >
-                                <FaPlay className="w-3 h-3" />
-                                {lesson.expired
-                                  ? "منتهية الصلاحية"
-                                  : "بدء الحصة"}
-                              </Link>
-                            </div>
+                          <div className="flex space-x-2 gap-2 flex-col md:flex-row md:justify-end space-x-reverse">
+                            <Link
+                              href={`/instructors/${lesson.instructorId}/courses/${lesson.courseId}/lessons/${lesson.id}`}
+                              className={`px-4 py-2 rounded-md regular-12 transition-colors flexCenter gap-2 ${
+                                lesson.expired
+                                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                  : "bg-accent text-white hover:bg-opacity-90 cursor-pointer"
+                              }`}
+                              disabled={lesson.expired}
+                            >
+                              <FaPlay className="w-3 h-3" />
+                              {lesson.expired ? "منتهية الصلاحية" : "بدء الحصة"}
+                            </Link>
                           </div>
                         </div>
                       </div>
-                    );
-                  })}
-
-                  {/* زر عرض المزيد/عرض أقل */}
-                  {userLessons.length > 3 && (
-                    <div className="text-center mt-6">
-                      {!showAllLessons ? (
-                        <button
-                          onClick={handleShowMore}
-                          className="bg-secondary cursor-pointer text-white px-6 py-3 rounded-lg hover:bg-secondry transition-colors regular-14"
-                        >
-                          عرض المزيد ({userLessons.length - 3} حصة إضافية)
-                        </button>
-                      ) : (
-                        <button
-                          onClick={handleShowLess}
-                          className="border border-secondary cursor-pointer text-secondary px-6 py-3 rounded-lg hover:bg-secondary hover:text-white transition-colors regular-14"
-                        >
-                          عرض أقل
-                        </button>
-                      )}
                     </div>
-                  )}
-                </div>
-              )}
+                  );
+                })}
+
+                {/* زر عرض المزيد/عرض أقل */}
+                {userLessons.length > 3 && (
+                  <div className="text-center mt-6">
+                    {!showAllLessons ? (
+                      <button
+                        onClick={handleShowMore}
+                        className="bg-secondary cursor-pointer text-white px-6 py-3 rounded-lg hover:bg-secondry transition-colors regular-14"
+                      >
+                        عرض المزيد ({userLessons.length - 3} حصة إضافية)
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleShowLess}
+                        className="border border-secondary cursor-pointer text-secondary px-6 py-3 rounded-lg hover:bg-secondary hover:text-white transition-colors regular-14"
+                      >
+                        عرض أقل
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* إحصائيات سريعة */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <div className="bg-white rounded-lg shadow-lg p-4 text-center">
+              <FaUserGraduate className="w-8 h-8 text-green-500 mx-auto mb-2" />
+              <h3 className="bold-18 text-gray-900">
+                {isLoadingLessons
+                  ? "..."
+                  : userLessons.filter((lesson) => !lesson.expired).length}
+              </h3>
+              <p className="regular-14 text-gray-600">حصص نشطة</p>
             </div>
 
-            {/* إحصائيات سريعة */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-              <div className="bg-white rounded-lg shadow-lg p-4 text-center">
-                <FaUserGraduate className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                <h3 className="bold-18 text-gray-900">
-                  {isLoadingLessons
-                    ? "..."
-                    : userLessons.filter((lesson) => !lesson.expired).length}
-                </h3>
-                <p className="regular-14 text-gray-600">حصص نشطة</p>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-lg p-4 text-center">
-                <FaClock className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                <h3 className="bold-18 text-gray-900">
-                  {isLoadingLessons
-                    ? "..."
-                    : userLessons.filter((lesson) => lesson.expired).length}
-                </h3>
-                <p className="regular-14 text-gray-600">حصص منتهية</p>
-              </div>
+            <div className="bg-white rounded-lg shadow-lg p-4 text-center">
+              <FaClock className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+              <h3 className="bold-18 text-gray-900">
+                {isLoadingLessons
+                  ? "..."
+                  : userLessons.filter((lesson) => lesson.expired).length}
+              </h3>
+              <p className="regular-14 text-gray-600">حصص منتهية</p>
             </div>
           </div>
         </div>
