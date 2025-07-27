@@ -2,10 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserData } from "../../../models/UserContext";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { canAccessInstructorDashboard } from "../utils/roleHelpers";
-
 // Import components
 import InstructorSidebar from "./components/InstructorSidebar";
 import InstructorDashboardOverview from "./components/InstructorDashboardOverview";
@@ -16,6 +13,8 @@ import InstructorAssignmentManagement from "./components/InstructorAssignmentMan
 import InstructorAccessCodeManagement from "./components/InstructorAccessCodeManagement";
 import InstructorProfileManagement from "./components/InstructorProfileManagement";
 import AIChat from "../components/AIChat";
+import { canAccessInstructorDashboard } from "../utils/roleHelpers";
+import { toast } from "react-toastify";
 
 const InstructorDashboard = () => {
   const router = useRouter();
@@ -37,11 +36,11 @@ const InstructorDashboard = () => {
       return;
     }
 
-    // if (!canAccessInstructorDashboard(user)) {
-    //   toast.error("غير مصرح لك بالوصول لهذه الصفحة");
-    //   router.push("/");
-    //   return;
-    // }
+    if (!canAccessInstructorDashboard(user)) {
+      toast.error("غير مصرح لك بالوصول لهذه الصفحة");
+      router.push("/");
+      return;
+    }
   }, [user, loading, router]);
 
   // Loading state

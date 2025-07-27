@@ -1,5 +1,5 @@
 import axios from "axios";
-import { sanitizeInput, validateSearchTerm } from "../../utils/security";
+import { validateSearchTerm } from "../../utils/security";
 
 const BASE_URL = "http://localhost:8080/api/admin";
 const API_BASE_URL = "http://localhost:8080/api";

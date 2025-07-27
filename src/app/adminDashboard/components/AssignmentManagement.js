@@ -172,7 +172,7 @@ const AssignmentManagement = () => {
   );
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 lg:p-8">
       {/* Header */}
       <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
         <div>

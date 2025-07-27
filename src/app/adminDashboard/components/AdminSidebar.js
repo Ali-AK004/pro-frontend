@@ -17,6 +17,7 @@ import {
   FiMenu,
   FiX,
 } from "react-icons/fi";
+import Link from "next/link";
 
 const AdminSidebar = ({ activeTab, setActiveTab }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -141,9 +142,16 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
             <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
               <FiSettings className="w-6 h-6 text-white" />
             </div>
+<<<<<<< HEAD
             <div className="text-white">
               <h1 className="text-xl font-bold">لوحة الإدارة</h1>
               <p className="text-red-100 text-sm">مرحباً {user?.fullname}</p>
+=======
+            <div className="text-gray-600">
+              <Link href="/">
+                <h1 className="bold-16 border rounded-md px-8 py-1 lg:bold-20">لوجو</h1>
+              </Link>
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
             </div>
             {/* Close button for mobile */}
             <button

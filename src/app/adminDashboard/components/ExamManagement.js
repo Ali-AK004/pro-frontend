@@ -14,7 +14,6 @@ import {
   FiBarChart,
 } from "react-icons/fi";
 import ExamCreationModal from "./Modal/ExamCreationModal";
-import SecureSearchInput from "../../components/SecureSearchInput";
 
 const ExamManagement = () => {
   const [exams, setExams] = useState([]);
@@ -140,7 +139,6 @@ const ExamManagement = () => {
     try {
       setIsLoading(true);
       const response = await adminAPI.exams.getResults(exam.id);
-      console.log(response.data);
       setExamResults(response.data);
       setSelectedExam(exam);
       setShowResultsModal(true);
@@ -156,7 +154,7 @@ const ExamManagement = () => {
   );
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 lg:p-8">
       {/* Header */}
       <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
         <div>

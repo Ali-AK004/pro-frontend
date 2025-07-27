@@ -10,9 +10,7 @@ import {
   FaUserGraduate,
   FaBook,
   FaClock,
-  FaEdit,
   FaPlay,
-  FaImage,
 } from "react-icons/fa";
 import { useUserData } from "../../../models/UserContext";
 import Image from "next/image";
@@ -28,11 +26,9 @@ const Profile = () => {
   const [userLessons, setUserLessons] = useState([]);
   const [isLoadingLessons, setIsLoadingLessons] = useState(true);
   const [lessonsError, setLessonsError] = useState(null);
-
   const [showAllLessons, setShowAllLessons] = useState(false);
   const [lessonsToShow, setLessonsToShow] = useState(3);
 
-  // التحقق من حالة التحميل بناءً على وجود بيانات المستخدم
   const isLoading = !user;
 
   // جلب الحصص من الـ API
@@ -50,7 +46,6 @@ const Profile = () => {
             withCredentials: true,
           }
         );
-        console.log(response.data);
 
         setUserLessons(response.data || []);
       } catch (error) {

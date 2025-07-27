@@ -18,6 +18,8 @@ import {
   canAccessLessonPart,
   formatProgressStatus,
 } from "../../../../../services/studentAPI";
+import { adminAPI } from "../../../../../adminDashboard/services/adminAPI";
+import { instructorAPI } from "../../../../../instructorDashboard/services/instructorAPI";
 import { useUserData } from "../../../../../../../models/UserContext";
 
 const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
@@ -25,14 +27,24 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   const [accessStatus, setAccessStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lessonProgress, setLessonProgress] = useState(null);
+<<<<<<< HEAD
   const [hasExam, setHasExam] = useState(false);
   const [hasAssignment, setHasAssignment] = useState(false);
   const [componentsLoading, setComponentsLoading] = useState(true);
+=======
+  const [lessonStatus, setLessonStatus] = useState({
+    hasExam: false,
+    hasAssignment: false,
+    isLoading: true,
+  });
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
 
   useEffect(() => {
     checkLessonAccess();
+    fetchLessonStatus();
   }, [lesson.id, user]);
 
+<<<<<<< HEAD
   useEffect(() => {
     checkLessonComponents();
   }, [lesson.id]);
@@ -57,6 +69,44 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
       setHasAssignment(false);
     } finally {
       setComponentsLoading(false);
+=======
+  const fetchLessonStatus = async () => {
+    try {
+      setLessonStatus((prev) => ({ ...prev, isLoading: true }));
+
+      // Use appropriate API based on user role
+      let hasExamAPI, hasAssignmentAPI;
+
+      if (user?.role === "ADMIN") {
+        hasExamAPI = adminAPI.lessons.hasExam;
+        hasAssignmentAPI = adminAPI.lessons.hasAssignment;
+      } else if (user?.role === "INSTRUCTOR" || user?.role === "ASSISTANT") {
+        hasExamAPI = instructorAPI.lessons.hasExam;
+        hasAssignmentAPI = instructorAPI.lessons.hasAssignment;
+      } else {
+        // For students, we'll use the same endpoints but they might have different permissions
+        hasExamAPI = adminAPI.lessons.hasExam;
+        hasAssignmentAPI = adminAPI.lessons.hasAssignment;
+      }
+
+      const [examResponse, assignmentResponse] = await Promise.all([
+        hasExamAPI(lesson.id),
+        hasAssignmentAPI(lesson.id),
+      ]);
+
+      setLessonStatus({
+        hasExam: examResponse.data || false,
+        hasAssignment: assignmentResponse.data || false,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error("Error fetching lesson status:", error);
+      setLessonStatus({
+        hasExam: false,
+        hasAssignment: false,
+        isLoading: false,
+      });
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
     }
   };
 
@@ -225,33 +275,64 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
     if (accessStatus?.isEnhancedAccess) {
       switch (part) {
         case "exam":
+<<<<<<< HEAD
           return hasExam; // Can access if lesson has exam (from API)
         case "video":
           return true; // Always can access video
         case "assignment":
           return hasAssignment; // Can access if lesson has assignment (from API)
+=======
+          return lessonStatus.hasExam; // Can access if lesson has exam (real-time)
+        case "video":
+          return true; // Always can access video
+        case "assignment":
+          return lessonStatus.hasAssignment; // Can access if lesson has assignment (real-time)
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
         default:
           return false;
       }
     }
 
+<<<<<<< HEAD
     if (!lessonProgress) return false;
 
     // For students, use normal progress-based access
+=======
+    // For students, use normal progress-based access with real-time lesson status
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
     const status = lessonProgress.progressStatus;
 
     switch (part) {
       case "exam":
+<<<<<<< HEAD
         return hasExam && status === LessonProgressStatus.PURCHASED;
+=======
+        return (
+          lessonStatus.hasExam && status === LessonProgressStatus.PURCHASED
+        );
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
       case "video":
-        return [
-          LessonProgressStatus.EXAM_PASSED,
-          LessonProgressStatus.VIDEO_WATCHED,
-          LessonProgressStatus.ASSIGNMENT_DONE,
-        ].includes(status);
+        // If lesson has exam, need to pass it first; otherwise can access after purchase
+        if (lessonStatus.hasExam) {
+          return [
+            LessonProgressStatus.EXAM_PASSED,
+            LessonProgressStatus.VIDEO_WATCHED,
+            LessonProgressStatus.ASSIGNMENT_DONE,
+          ].includes(status);
+        } else {
+          return [
+            LessonProgressStatus.PURCHASED,
+            LessonProgressStatus.VIDEO_WATCHED,
+            LessonProgressStatus.ASSIGNMENT_DONE,
+          ].includes(status);
+        }
       case "assignment":
         return (
+<<<<<<< HEAD
           hasAssignment &&
+=======
+          lessonStatus.hasAssignment &&
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
           [
             LessonProgressStatus.VIDEO_WATCHED,
             LessonProgressStatus.ASSIGNMENT_DONE,
@@ -386,6 +467,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
       <div className="relative grid grid-cols-3 gap-4 mb-8">
         {/* Enhanced Exam */}
         <div
+<<<<<<< HEAD
           className={`group/exam p-5 rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
             componentsLoading
               ? "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 animate-pulse"
@@ -415,6 +497,35 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
             {componentsLoading
               ? "جاري التحميل..."
               : hasExam
+=======
+          className={`p-3 rounded-lg border text-center ${
+            lessonStatus.isLoading
+              ? "bg-gray-50 border-gray-200"
+              : lessonStatus.hasExam
+                ? canAccessPart("exam")
+                  ? "bg-blue-50 border-blue-200"
+                  : "bg-gray-50 border-gray-200"
+                : "bg-gray-100 border-gray-300"
+          }`}
+        >
+          {lessonStatus.isLoading ? (
+            <div className="w-5 h-5 mx-auto mb-1 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500"></div>
+          ) : (
+            <FaQuestionCircle
+              className={`w-5 h-5 mx-auto mb-1 ${
+                lessonStatus.hasExam
+                  ? canAccessPart("exam")
+                    ? "text-blue-500"
+                    : "text-gray-400"
+                  : "text-gray-300"
+              }`}
+            />
+          )}
+          <p className="regular-12 text-gray-600">
+            {lessonStatus.isLoading
+              ? "جاري التحميل..."
+              : lessonStatus.hasExam
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
                 ? "امتحان"
                 : "لا يوجد امتحان"}
           </p>
@@ -442,6 +553,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
         {/* Enhanced Assignment */}
         <div
+<<<<<<< HEAD
           className={`group/assignment p-5 rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
             componentsLoading
               ? "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 animate-pulse"
@@ -471,6 +583,35 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
             {componentsLoading
               ? "جاري التحميل..."
               : hasAssignment
+=======
+          className={`p-3 rounded-lg border text-center ${
+            lessonStatus.isLoading
+              ? "bg-gray-50 border-gray-200"
+              : lessonStatus.hasAssignment
+                ? canAccessPart("assignment")
+                  ? "bg-purple-50 border-purple-200"
+                  : "bg-gray-50 border-gray-200"
+                : "bg-gray-100 border-gray-300"
+          }`}
+        >
+          {lessonStatus.isLoading ? (
+            <div className="w-5 h-5 mx-auto mb-1 animate-spin rounded-full border-2 border-gray-300 border-t-purple-500"></div>
+          ) : (
+            <FaFileAlt
+              className={`w-5 h-5 mx-auto mb-1 ${
+                lessonStatus.hasAssignment
+                  ? canAccessPart("assignment")
+                    ? "text-purple-500"
+                    : "text-gray-400"
+                  : "text-gray-300"
+              }`}
+            />
+          )}
+          <p className="regular-12 text-gray-600">
+            {lessonStatus.isLoading
+              ? "جاري التحميل..."
+              : lessonStatus.hasAssignment
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
                 ? "واجب"
                 : "لا يوجد واجب"}
           </p>

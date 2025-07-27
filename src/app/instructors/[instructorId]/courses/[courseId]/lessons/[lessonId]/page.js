@@ -6,7 +6,6 @@ import {
   FaPlay,
   FaQuestionCircle,
   FaFileAlt,
-  FaClock,
   FaCheckCircle,
   FaExclamationTriangle,
   FaLock,
@@ -17,16 +16,18 @@ import {
   FaBook,
   FaGraduationCap,
   FaEye,
+<<<<<<< HEAD
   FaDownload,
   FaStar,
   FaCheck,
+=======
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import NavBar from "@/app/components/navBar";
 import { studentAPI } from "@/app/services/studentAPI";
 import examAPI, { handleAPIError } from "@/app/services/examAPI";
 import assignmentAPI from "@/app/services/assignmentAPI";
-import { useUserData } from "../../../../../../../../models/UserContext";
 import CustomVideoPlayer from "../../components/CustomVideoPlayer";
 
 const LessonPage = () => {
@@ -300,7 +301,7 @@ const LessonPage = () => {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
               >
                 <FaArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
@@ -460,7 +461,11 @@ const TabButton = ({
   return (
     <button
       onClick={() => canClick && setActiveTab(id)}
+<<<<<<< HEAD
       className={`group relative flex items-center gap-3 px-6 py-4 rounded-t-2xl transition-all duration-300 font-semibold ${
+=======
+      className={`flex items-center cursor-pointer gap-2 px-4 py-3 border-b-2 transition-colors ${
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
         isActive
           ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform -translate-y-1"
           : canClick

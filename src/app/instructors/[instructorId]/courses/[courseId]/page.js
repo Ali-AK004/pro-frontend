@@ -124,6 +124,7 @@ const CourseDetails = () => {
   return (
     <div className="min-h-screen bg-main py-8">
       <div className="max-container padding-container">
+<<<<<<< HEAD
         {/* Enhanced Navigation */}
         <div className="mb-8 space-y-4">
           {/* Breadcrumb Navigation */}
@@ -153,6 +154,16 @@ const CourseDetails = () => {
               {course?.name || "الكورس"}
             </span>
           </nav>
+=======
+        {/* Back Button */}
+        <button
+          onClick={() => router.push("/instructors")}
+          className="flexCenter cursor-pointer hover:bg-[#088395] hover:border hover:border-[#088395] hover:text-white border border-[#088395] px-4 py-1 rounded-md gap-2 text-accent hover:text-opacity-80 transition-colors mb-6"
+        >
+          <FaArrowLeft className="w-4 h-4" />
+          <span className="regular-16">العودة للمدرسين</span>
+        </button>
+>>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
 
           {/* Back Button */}
           <button
