@@ -8,8 +8,6 @@ import {
   FaTimes,
   FaUser,
   FaSignOutAlt,
-  FaCog,
-  FaBookOpen,
 } from "react-icons/fa";
 import axios from "axios";
 import { useUserData } from "../../../models/UserContext";
@@ -34,8 +32,7 @@ const NavBar = () => {
             withCredentials: true,
             headers: { "Content-Type": "application/json" },
           }
-        )
-        .catch(() => {}); // Ignore any errors
+        );
 
       // Redirect to home page
       router.replace("/");
@@ -71,7 +68,7 @@ const NavBar = () => {
               <FaGraduationCap className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              اكادميتنا
+              أكاديميتنا
             </span>
           </Link>
 
@@ -83,7 +80,7 @@ const NavBar = () => {
                 href="/instructors"
                 className="relative text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 group"
               >
-                المدرسين
+                المعلمين
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
               </Link>
               <a
@@ -124,10 +121,10 @@ const NavBar = () => {
               <div className="relative">
                 <button
                   onClick={toggleUserMenu}
-                  className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-xl transition-all duration-300 border border-gray-200 hover:border-gray-300"
+                  className="flex items-center cursor-pointer gap-3 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-xl transition-all duration-300 border border-gray-200 hover:border-gray-300"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                    <FaUser className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                    <FaUser className="w-4 h-4 text-white" />
                   </div>
                   <div className="text-right">
                     <span className="block text-sm font-semibold text-gray-900">
@@ -182,7 +179,7 @@ const NavBar = () => {
                     <div className="border-t border-gray-100 mt-2 pt-2">
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-all duration-200 w-full text-right"
+                        className="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-all duration-200 w-full text-right cursor-pointer"
                       >
                         <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                           <FaSignOutAlt className="w-4 h-4 text-red-600" />
@@ -235,7 +232,7 @@ const NavBar = () => {
                 className="regular-16 text-gray-700 hover:text-accent transition-colors py-2"
                 onClick={closeMenus}
               >
-                المدرسين
+                المعلمين
               </Link>
               <a
                 href="#footer"

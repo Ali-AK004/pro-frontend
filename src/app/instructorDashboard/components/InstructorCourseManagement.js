@@ -223,7 +223,7 @@ const InstructorCourseManagement = () => {
 
       {/* Search Bar */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="flex gap-4">
+        <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -319,7 +319,7 @@ const InstructorCourseManagement = () => {
 
               {/* Actions - Moved to bottom */}
               <div className="p-4 pt-0 border-t border-gray-100">
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => openViewModal(course)}
                     className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"

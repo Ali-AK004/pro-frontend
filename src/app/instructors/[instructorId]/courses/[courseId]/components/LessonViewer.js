@@ -4,7 +4,6 @@ import {
   FaQuestionCircle,
   FaFileAlt,
   FaClock,
-  FaArrowLeft,
   FaExclamationTriangle,
   FaCheckCircle,
   FaCalendarAlt,

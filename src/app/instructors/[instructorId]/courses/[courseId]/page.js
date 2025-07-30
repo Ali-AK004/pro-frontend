@@ -74,16 +74,21 @@ const CourseDetails = () => {
   };
 
   const handleViewLesson = (lesson) => {
-    // Navigate to the new lesson page
+    // Navigate to the new lesson page with overview tab
     router.push(
-      `/instructors/${instructorId}/courses/${courseId}/lessons/${lesson.id}`
+      `/instructors/${instructorId}/courses/${courseId}/lessons/${lesson.id}#overview`
     );
   };
 
   const handlePaymentSuccess = () => {
-    setRefreshTrigger((prev) => prev + 1);
     setShowPaymentModal(false);
     toast.success("تم شراء الدرس بنجاح!");
+    // Redirect to the purchased lesson's overview tab
+    if (selectedLesson) {
+      router.push(
+        `/instructors/${instructorId}/courses/${courseId}/lessons/${selectedLesson.id}#overview`
+      );
+    }
   };
 
   if (isLoading) {
@@ -124,28 +129,27 @@ const CourseDetails = () => {
   return (
     <div className="min-h-screen bg-main py-8">
       <div className="max-container padding-container">
-<<<<<<< HEAD
         {/* Enhanced Navigation */}
         <div className="mb-8 space-y-4">
           {/* Breadcrumb Navigation */}
           <nav className="flex items-center space-x-2 text-sm">
             <button
               onClick={() => router.push("/")}
-              className="text-gray-600 hover:text-blue-600 transition-colors font-medium"
+              className="text-gray-600 cursor-pointer hover:text-blue-600 transition-colors font-medium"
             >
               الرئيسية
             </button>
             <span className="text-gray-400 mx-2">/</span>
             <button
               onClick={() => router.push("/instructors")}
-              className="text-gray-600 hover:text-blue-600 transition-colors font-medium"
+              className="text-gray-600 cursor-pointer hover:text-blue-600 transition-colors font-medium"
             >
               المدرسين
             </button>
             <span className="text-gray-400 mx-2">/</span>
             <button
               onClick={() => router.push(`/instructors/${instructorId}`)}
-              className="text-gray-600 hover:text-blue-600 transition-colors font-medium"
+              className="text-gray-600 cursor-pointer hover:text-blue-600 transition-colors font-medium"
             >
               {instructorData?.fullname || "المدرس"}
             </button>
@@ -154,38 +158,28 @@ const CourseDetails = () => {
               {course?.name || "الكورس"}
             </span>
           </nav>
-=======
-        {/* Back Button */}
-        <button
-          onClick={() => router.push("/instructors")}
-          className="flexCenter cursor-pointer hover:bg-[#088395] hover:border hover:border-[#088395] hover:text-white border border-[#088395] px-4 py-1 rounded-md gap-2 text-accent hover:text-opacity-80 transition-colors mb-6"
-        >
-          <FaArrowLeft className="w-4 h-4" />
-          <span className="regular-16">العودة للمدرسين</span>
-        </button>
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
 
           {/* Back Button */}
           <button
             onClick={() => router.push("/instructors")}
-            className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl transition-all duration-300 text-gray-700 hover:text-blue-600 shadow-sm hover:shadow-md group"
+            className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl transition-all duration-300 text-gray-700 hover:text-blue-600 shadow-sm hover:shadow-md group cursor-pointer"
           >
             <FaArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-medium">العودة للمدرسين</span>
+            <span className="font-medium">العودة للمعلمين</span>
           </button>
         </div>
 
         {/* Enhanced Course Header */}
-        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-white/30 p-8 md:p-12 mb-8 relative overflow-hidden group hover:shadow-3xl transition-all duration-500">
+        <div className="bg-white/90 backdrop-blur-md rounded-2xl lg:rounded-3xl shadow-2xl border border-white/30 p-4 md:p-8 lg:p-12 mb-6 lg:mb-8 relative overflow-hidden group hover:shadow-3xl transition-all duration-500">
           {/* Background decoration */}
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-2xl"></div>
 
-          <div className="relative flex flex-col lg:flex-row items-center lg:items-start gap-8 lg:gap-12">
+          <div className="relative flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             {/* Enhanced Course Image */}
-            <div className="relative group/image">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur-lg opacity-30 group-hover/image:opacity-50 transition-opacity"></div>
-              <div className="relative w-56 h-56 lg:w-64 lg:h-64 rounded-2xl overflow-hidden bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center border-4 border-white shadow-xl flex-shrink-0">
+            <div className="relative group/image mx-auto lg:mx-0">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl lg:rounded-2xl blur-lg opacity-30 group-hover/image:opacity-50 transition-opacity"></div>
+              <div className="relative w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-xl lg:rounded-2xl overflow-hidden bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center border-4 border-white shadow-xl flex-shrink-0">
                 {course.photoUrl ? (
                   <img
                     src={course.photoUrl}
@@ -196,59 +190,61 @@ const CourseDetails = () => {
                       e.target.nextSibling.style.display = "flex";
                     }}
                   />
-                ) : null}
-                <FaBookOpen className="w-20 h-20 lg:w-24 lg:h-24 text-gray-400" />
+                ) : (
+                  <>
+                    <FaBookOpen className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 text-gray-400" />
+                  </>
+                )}
               </div>
               {/* Pulse rings */}
-              <div className="absolute inset-0 rounded-2xl border-4 border-blue-400/30 animate-ping"></div>
-              <div className="absolute inset-2 rounded-2xl border-4 border-purple-400/20 animate-ping animation-delay-75"></div>
+              <div className="absolute inset-0 rounded-xl lg:rounded-2xl border-4 border-blue-400/30 animate-ping"></div>
+              <div className="absolute inset-2 rounded-xl lg:rounded-2xl border-4 border-purple-400/20 animate-ping animation-delay-75"></div>
             </div>
 
             {/* Enhanced Course Info */}
-            <div className="flex-1 text-center lg:text-right space-y-4">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
-                <FaBookOpen className="w-4 h-4" />
-                كورس متاح
+            <div className="flex-1 flex-col md:flex-row w-full lg:w-auto text-center items-center justify-between flex lg:text-right space-y-4">
+              <div>
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                  <FaBookOpen className="w-4 h-4" />
+                  كورس متاح
+                </div>
+
+                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text">
+                  {course.name}
+                </h1>
+
+                <p className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                  {course.description || "وصف الكورس غير متاح"}
+                </p>
               </div>
 
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                {course.name}
-              </h1>
-
-              <p className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                {course.description || "وصف الكورس غير متاح"}
-              </p>
-
               {/* Enhanced Course Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <div className="group bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-2xl text-center hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+              <div className="flex flex-col w-full gap-2 md:gap-4 md:w-[250px]">
+                <div className="group bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 md:p-6 rounded-xl md:rounded-2xl text-center hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
                   <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative">
-                    <FaPlay className="w-8 h-8 mx-auto mb-3 opacity-80" />
-                    <div className="text-3xl font-bold mb-1">
-                      {course.lessons?.length || 0}
-                    </div>
-                    <div className="text-sm opacity-90">درس</div>
+                  <div className="relative flexCenter gap-4">
+                    <FaPlay className="w-6 h-6 opacity-80" />
+                    <p className="regular-16">
+                      <span className="bold-18">
+                        {course.lessons?.length || 0}
+                      </span>{" "}
+                      درس
+                    </p>
                   </div>
                 </div>
 
-                <div className="group bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-2xl text-center hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+                <div className="group bg-gradient-to-r from-green-500 to-green-600 text-white p-4 md:p-6 rounded-xl md:rounded-2xl text-center hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
                   <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative">
-                    <FaChalkboardTeacher className="w-8 h-8 mx-auto mb-3 opacity-80" />
-                    <div className="text-lg font-bold mb-1">المدرس</div>
-                    <div className="text-sm opacity-90">
-                      {instructorData?.fullname || "غير محدد"}
+                  <div className="relative flexCenter gap-4">
+                    <FaChalkboardTeacher className="w-6 h-6 md:w-8 md:h-8 opacity-80" />
+                    <div>
+                      <div className="text-base md:text-sm mb-1">
+                        المعلم
+                      </div>
+                      <div className="text-xs md:text-lg font-bold opacity-90 truncate">
+                        {instructorData?.fullname || "غير محدد"}
+                      </div>
                     </div>
-                  </div>
-                </div>
-
-                <div className="group bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-2xl text-center hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden md:col-span-2 lg:col-span-1">
-                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative">
-                    <FaStar className="w-8 h-8 mx-auto mb-3 opacity-80" />
-                    <div className="text-3xl font-bold mb-1">متاح</div>
-                    <div className="text-sm opacity-90">الحالة</div>
                   </div>
                 </div>
               </div>
@@ -257,10 +253,12 @@ const CourseDetails = () => {
         </div>
 
         {/* Lessons List */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="bold-24 text-gray-900 mb-6">دروس الكورس</h2>
+        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
+            دروس الكورس
+          </h2>
 
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-4 md:gap-6">
             {course.lessons && course.lessons.length > 0 ? (
               course.lessons.map((lesson, index) => (
                 <LessonCard

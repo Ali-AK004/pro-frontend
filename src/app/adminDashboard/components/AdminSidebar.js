@@ -142,24 +142,10 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
             <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
               <FiSettings className="w-6 h-6 text-white" />
             </div>
-<<<<<<< HEAD
             <div className="text-white">
               <h1 className="text-xl font-bold">لوحة الإدارة</h1>
               <p className="text-red-100 text-sm">مرحباً {user?.fullname}</p>
-=======
-            <div className="text-gray-600">
-              <Link href="/">
-                <h1 className="bold-16 border rounded-md px-8 py-1 lg:bold-20">لوجو</h1>
-              </Link>
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
             </div>
-            {/* Close button for mobile */}
-            <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="lg:hidden mr-auto p-2 text-white hover:bg-white/20 rounded-xl transition-colors cursor-pointer"
-            >
-              <FiX className="w-5 h-5" />
-            </button>
           </div>
         </div>
 
@@ -183,11 +169,6 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
                         : "hover:bg-white/80 hover:shadow-lg text-gray-700 hover:text-red-600"
                     }`}
                   >
-                    {/* Active indicator */}
-                    {isActive && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full"></div>
-                    )}
-
                     {/* Background decoration for active state */}
                     {isActive && (
                       <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>

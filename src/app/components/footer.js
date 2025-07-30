@@ -8,6 +8,7 @@ import {
   FaTwitter,
   FaInstagram,
   FaLinkedin,
+  FaWhatsapp,
 } from "react-icons/fa";
 import Link from "next/link";
 
@@ -31,7 +32,7 @@ const Footer = ({ id }) => {
                 <FaGraduationCap className="w-7 h-7 text-white" />
               </div>
               <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Pro Academy
+                أكادميتنا
               </h3>
             </div>
             <p className="text-gray-300 mb-8 leading-relaxed max-w-md">
@@ -93,11 +94,30 @@ const Footer = ({ id }) => {
           <div className="mx-auto">
             <h4 className="bold-18 mb-6">تواصل معنا</h4>
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <FaPhone className="w-5 h-5 text-accent" />
-                <div>
-                  <p className="regular-14 text-gray-300">الهاتف</p>
-                  <p className="bold-14">+20 123 456 7890</p>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <FaPhone className="w-5 h-5 text-accent" />
+                  <p className="bold-14">واتساب</p>
+                </div>
+                <div className="flex gap-4 flex-wrap mr-8">
+                  <a
+                    href="https://wa.me/+201558546155"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 bg-[#25d366] bg-opacity-10 hover:bg-opacity-20 px-3 py-2 rounded-lg transition-all"
+                  >
+                    <FaWhatsapp className="text-white w-5 h-5" />
+                    <span className="regular-14">الدعم الفني</span>
+                  </a>
+                  <a
+                    href="https://wa.me/+201211177695"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 bg-[#25d366] bg-opacity-10 hover:bg-opacity-20 px-3 py-2 rounded-lg transition-all"
+                  >
+                    <FaWhatsapp className="text-white w-5 h-5" />
+                    <span className="regular-14">الشكاوى</span>
+                  </a>
                 </div>
               </div>
 
@@ -105,7 +125,7 @@ const Footer = ({ id }) => {
                 <FaEnvelope className="w-5 h-5 text-accent" />
                 <div>
                   <p className="regular-14 text-gray-300">البريد الإلكتروني</p>
-                  <p className="bold-14">info@academy.com</p>
+                  <p className="bold-14">academitna@gmail.com</p>
                 </div>
               </div>
 
@@ -113,7 +133,7 @@ const Footer = ({ id }) => {
                 <FaMapMarkerAlt className="w-5 h-5 text-accent" />
                 <div>
                   <p className="regular-14 text-gray-300">العنوان</p>
-                  <p className="bold-14">القاهرة، مصر</p>
+                  <p className="bold-14">الإسكندرية، مصر</p>
                 </div>
               </div>
             </div>

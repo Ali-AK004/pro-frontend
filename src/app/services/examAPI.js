@@ -190,7 +190,7 @@ export const examAPI = {
     // Create default exam structure
     createDefaultExam: () => ({
       title: "",
-      passingScore: 70,
+      passingScore: 50,
       timeLimitMinutes: 60,
       questions: [examAPI.validation.createDefaultQuestion()],
     }),

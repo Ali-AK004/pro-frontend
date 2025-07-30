@@ -348,13 +348,22 @@ const InstructorLessonManagement = () => {
               {/* Lesson Image/Video Thumbnail */}
               <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-500 relative">
                 {lesson.photoUrl ? (
-                  <Image
-                    src={lesson.photoUrl}
-                    width={300}
-                    height={192}
-                    alt={lesson.name}
-                    className="w-full h-full object-cover"
-                  />
+                  <>
+                    {/* Price Tag - Absolute positioned on top-left */}
+                    <div className="absolute top-3 left-3 bg-emerald-500 text-white font-bold text-sm px-3 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                      <span>{lesson.price || 0}</span>
+                      <span className="text-xs ">ج.م</span>{" "}
+                      {/* Saudi Riyal symbol */}
+                    </div>
+
+                    <Image
+                      src={lesson.photoUrl}
+                      width={300}
+                      height={192}
+                      alt={lesson.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </>
                 ) : (
                   <div className="w-full h-full flexCenter">
                     <FiPlay className="w-16 h-16 text-white opacity-50" />

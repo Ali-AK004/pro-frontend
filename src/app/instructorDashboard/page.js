@@ -21,12 +21,6 @@ const InstructorDashboard = () => {
   const { user, loading } = useUserData();
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  const handleGlobalSearch = (searchTerm) => {
-    // Implement global search logic across all instructor data
-    console.log("Searching across all instructor data:", searchTerm);
-    // You can search across courses, lessons, students, etc.
-  };
-
   // Check if user can access instructor dashboard
   useEffect(() => {
     if (loading) return;
@@ -101,55 +95,11 @@ const InstructorDashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 lg:mr-80 mr-0 relative">
-        <div className="pt-16 lg:pt-0 p-6">
+        <div className="pt-16 lg:pt-0">
           <div className="max-w-7xl mx-auto">{renderContent()}</div>
         </div>
       </div>
     </div>
   );
 };
-
-// Placeholder components for students and analytics
-const InstructorStudentsView = () => (
-  <div className="p-8">
-    <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center">
-      <h2 className="bold-24 text-gray-900 mb-4">عرض الطلاب</h2>
-      <p className="regular-16 text-gray-600 mb-6">
-        هذه الميزة قيد التطوير. ستتمكن قريباً من عرض قائمة طلابك ومتابعة تقدمهم.
-      </p>
-      <div className="bg-gray-50 p-6 rounded-lg">
-        <h3 className="bold-18 text-gray-900 mb-2">الميزات القادمة:</h3>
-        <ul className="text-right space-y-2 regular-14 text-gray-600">
-          <li>• عرض قائمة الطلاب المسجلين في كورساتك</li>
-          <li>• متابعة تقدم الطلاب في الدروس</li>
-          <li>• إحصائيات أداء الطلاب</li>
-          <li>• التواصل مع الطلاب</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-);
-
-const InstructorAnalytics = () => (
-  <div className="p-8">
-    <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center">
-      <h2 className="bold-24 text-gray-900 mb-4">التحليلات والإحصائيات</h2>
-      <p className="regular-16 text-gray-600 mb-6">
-        هذه الميزة قيد التطوير. ستتمكن قريباً من عرض تحليلات مفصلة لأداء
-        كورساتك.
-      </p>
-      <div className="bg-gray-50 p-6 rounded-lg">
-        <h3 className="bold-18 text-gray-900 mb-2">التحليلات القادمة:</h3>
-        <ul className="text-right space-y-2 regular-14 text-gray-600">
-          <li>• إحصائيات المبيعات والإيرادات</li>
-          <li>• معدلات إكمال الدروس</li>
-          <li>• تقييمات الطلاب</li>
-          <li>• نمو عدد الطلاب</li>
-          <li>• أداء الكورسات المختلفة</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-);
-
 export default InstructorDashboard;

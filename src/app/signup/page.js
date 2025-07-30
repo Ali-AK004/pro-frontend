@@ -219,12 +219,12 @@ const SignUp = () => {
           {/* Header with gradient */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12 text-center">
             <Link href="/" className="inline-block mb-4">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto">
-                <span className="text-2xl font-bold text-white">Pro</span>
+              <div className="px-10 py-2 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center mx-auto">
+                <span className="text-2xl font-bold text-white">أكادميتنا</span>
               </div>
             </Link>
             <h2 className="text-3xl font-bold text-white mb-2">
-              انضم إلى عائلة Pro Academy
+              انضم إلى عائلة أكادميتنا
             </h2>
             <p className="text-blue-100">
               ابدأ رحلتك التعليمية معنا واحصل على أفضل النتائج
@@ -233,19 +233,6 @@ const SignUp = () => {
 
           {/* Form Container */}
           <div className="px-8 py-8">
-            {/* Quick Login Link */}
-            <div className="text-center mb-8">
-              <p className="text-gray-600">
-                لديك حساب بالفعل؟{" "}
-                <Link
-                  href="/login"
-                  className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  تسجيل الدخول
-                </Link>
-              </p>
-            </div>
-
             {/* Form */}
             <form className="space-y-6" onSubmit={handleSubmit}>
               {/* General Error */}
@@ -647,7 +634,7 @@ const SignUp = () => {
                 لديك حساب بالفعل؟{" "}
                 <Link
                   href="/login"
-                  className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                  className="font-semibold hover:border-b hover:border-b-blue-700 border-b border-b-transparent text-blue-600 hover:text-blue-700 transition-colors"
                 >
                   تسجيل الدخول
                 </Link>

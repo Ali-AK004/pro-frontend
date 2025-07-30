@@ -155,10 +155,10 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
           </div>
           <div>
             <h3 className="text-lg font-bold">المساعد الذكي</h3>
-            <p className="text-sm opacity-90 flex items-center gap-2">
+            <div className="text-sm opacity-90 flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
               {isTyping ? "يكتب..." : "متصل ومستعد للمساعدة"}
-            </p>
+            </div>
           </div>
         </div>
 

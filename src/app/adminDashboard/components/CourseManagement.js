@@ -16,18 +16,21 @@ import {
   validateSearchTerm,
   debounce,
 } from "../../utils/security";
+import Image from "next/image";
 
 const CourseManagement = () => {
   const [courses, setCourses] = useState([]);
   const [instructors, setInstructors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCourseFilter, setSelectedCourseFilter] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [courseToDelete, setCourseToDelete] = useState(null);
+  const [allCourses, setAllCourses] = useState([]); // Store original courses data
 
   // Form states
   const [courseForm, setCourseForm] = useState({
@@ -48,15 +51,57 @@ const CourseManagement = () => {
     fetchInstructors();
   }, []);
 
+  const handleSecureSearch = useCallback(
+    debounce(() => {
+      try {
+        const sanitizedTerm = validateSearchTerm(searchTerm);
+        let filteredCourses = [...allCourses];
+
+        // Filter by search term
+        if (sanitizedTerm.trim()) {
+          filteredCourses = filteredCourses.filter(
+            (course) =>
+              course.name.toLowerCase().includes(sanitizedTerm.toLowerCase()) ||
+              course.description
+                ?.toLowerCase()
+                .includes(sanitizedTerm.toLowerCase())
+          );
+        }
+
+        // Filter by selected course from dropdown
+        if (selectedCourseFilter) {
+          filteredCourses = filteredCourses.filter(
+            (course) => course.id === selectedCourseFilter
+          );
+        }
+
+        setCourses(filteredCourses);
+      } catch (error) {
+        toast.error("خطأ في البحث");
+      }
+    }, 300),
+    [searchTerm, selectedCourseFilter, allCourses]
+  );
+
+  // Trigger search when searchTerm or selectedCourseFilter changes
+  useEffect(() => {
+    if (allCourses.length > 0) {
+      handleSecureSearch();
+    }
+  }, [searchTerm, selectedCourseFilter, handleSecureSearch]);
+
   const fetchCourses = async () => {
     try {
       setIsLoading(true);
       const response = await adminAPI.courses.getAll();
       // Handle paginated response
-      setCourses(response.data?.content || response.data || []);
+      const coursesData = response.data?.content || response.data || [];
+      setCourses(coursesData);
+      setAllCourses(coursesData); // Store original data for filtering
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
       setCourses([]);
+      setAllCourses([]);
     } finally {
       setIsLoading(false);
     }
@@ -131,31 +176,6 @@ const CourseManagement = () => {
     setShowDeleteModal(true);
   };
 
-  const handleSecureSearch = useCallback(
-    debounce(() => {
-      try {
-        const sanitizedTerm = validateSearchTerm(searchTerm);
-
-        if (!sanitizedTerm.trim()) {
-          fetchCourses();
-          return;
-        }
-
-        const filteredCourses = courses.filter(
-          (course) =>
-            course.name.toLowerCase().includes(sanitizedTerm.toLowerCase()) ||
-            course.description
-              ?.toLowerCase()
-              .includes(sanitizedTerm.toLowerCase())
-        );
-        setCourses(filteredCourses);
-      } catch (error) {
-        toast.error("خطأ في البحث");
-      }
-    }, 300),
-    [searchTerm, courses]
-  );
-
   const handleSearchInput = (e) => {
     try {
       const sanitizedValue = sanitizeInput(e.target.value);
@@ -163,6 +183,10 @@ const CourseManagement = () => {
     } catch (error) {
       toast.error("مصطلح البحث غير صالح");
     }
+  };
+
+  const handleCourseFilterChange = (e) => {
+    setSelectedCourseFilter(e.target.value);
   };
 
   const openEditModal = (course) => {
@@ -196,8 +220,8 @@ const CourseManagement = () => {
 
       {/* Search Bar */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="flex gap-4 flex-col md:flex-row">
-          <div className="flex-1 relative">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-4">
+          <div className="md:col-span-2 flex relative">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -205,9 +229,53 @@ const CourseManagement = () => {
               value={searchTerm}
               onChange={handleSearchInput}
               className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-              onKeyPress={(e) => e.key === "Enter" && handleSecureSearch()}
+              onKeyDown={(e) => e.key === "Enter" && handleSecureSearch()}
             />
           </div>
+          <select
+            value={selectedCourseFilter}
+            onChange={handleCourseFilterChange}
+            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+          >
+            <option value="">جميع الكورسات</option>
+            {instructors.map((instructor) => {
+              // Filter courses that belong to this instructor
+              const instructorCourses = allCourses.filter(
+                (course) =>
+                  course.instructorName === instructor.fullname ||
+                  course.instructorName === instructor.username
+              );
+
+              // Only render optgroup if instructor has courses
+              if (instructorCourses.length === 0) return null;
+
+              return (
+                <optgroup
+                  key={instructor.id}
+                  label={`المدرس: ${instructor.fullname || instructor.username}`}
+                >
+                  {instructorCourses.map((course) => (
+                    <option key={course.id} value={course.id}>
+                      {course.name}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            })}
+            {/* Courses without assigned instructor */}
+            {allCourses.filter((course) => !course.instructorName).length >
+              0 && (
+              <optgroup label="كورسات غير مخصصة">
+                {allCourses
+                  .filter((course) => !course.instructorName)
+                  .map((course) => (
+                    <option key={course.id} value={course.id}>
+                      {course.name}
+                    </option>
+                  ))}
+              </optgroup>
+            )}
+          </select>
           <button
             onClick={handleSecureSearch}
             className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
@@ -253,12 +321,14 @@ const CourseManagement = () => {
               className="bg-white rounded-lg flex flex-col shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
             >
               {/* Course Image */}
-              <div className="h-48 bg-gradient-to-br from-accent to-secondary relative">
+              <div className="h-48 w-full bg-gradient-to-br from-accent to-secondary relative">
                 {course.photoUrl ? (
-                  <img
+                  <Image
                     src={course.photoUrl}
+                    fill
                     alt={course.name}
-                    className="w-full h-full object-cover"
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw" // Optional: optimizes responsive loading
                   />
                 ) : (
                   <div className="w-full h-full flexCenter">

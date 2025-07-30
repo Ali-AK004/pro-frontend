@@ -3,30 +3,19 @@ import React from "react";
 import Link from "next/link";
 import {
   FaGraduationCap,
-  FaUsers,
-  FaBookOpen,
   FaCertificate,
-  FaPhone,
-  FaEnvelope,
-  FaMapMarkerAlt,
-  FaFacebook,
-  FaTwitter,
-  FaInstagram,
-  FaLinkedin,
   FaArrowRight,
   FaPlay,
   FaRobot,
   FaClipboardList,
   FaChartLine,
   FaCode,
-  FaLaptopCode,
   FaUserGraduate,
 } from "react-icons/fa";
 import { useUserData } from "../../models/UserContext";
 import NavBar from "./components/navBar";
 import Footer from "./components/footer";
 import { ProgressiveLoader, SkeletonCard } from "./components/OptimizedLoader";
-import { performanceUtils } from "./components/PerformanceMonitor";
 
 export default function Home() {
   const { user, loading } = useUserData();
@@ -130,32 +119,6 @@ export default function Home() {
                     </Link>
                   </div>
                 )}
-
-                {/* Trust indicators */}
-                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 pt-8">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <div className="flex -space-x-2">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full border-2 border-white"></div>
-                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full border-2 border-white"></div>
-                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full border-2 border-white"></div>
-                    </div>
-                    <span>+1000 طالب ناجح</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                    <div className="flex text-yellow-400">
-                      {[...Array(5)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className="w-4 h-4 fill-current"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                        </svg>
-                      ))}
-                    </div>
-                    <span>4.9/5 تقييم</span>
-                  </div>
-                </div>
               </div>
 
               {/* Hero Visual */}
@@ -254,7 +217,7 @@ export default function Home() {
               </div>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
                 طلابنا يحققون نتائج
-                <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent block">
+                <span className="bg-gradient-to-r from-green-600 to-blue-600 py-2 bg-clip-text text-transparent block">
                   استثنائية!
                 </span>
               </h2>
@@ -279,7 +242,7 @@ export default function Home() {
                         معدل النجاح
                       </h3>
                       <p className="text-sm text-gray-600 leading-relaxed">
-                        من طلابنا يحسنون درجاتهم بشكل ملحوظ
+                        من طلابنا يحسنون درجاتهم سريعًا
                       </p>
                     </div>
                   </div>
@@ -470,103 +433,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Student Success Stories Section */}
-        <section className="py-20 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-          <div className="max-container padding-container">
-            <div className="text-center mb-16">
-              <h2 className="bold-48 text-gray-900 mb-4">
-                طلابنا يحققون المعجزات!
-              </h2>
-              <p className="regular-18 text-gray-600 max-w-2xl mx-auto">
-                اقرأ قصص نجاح حقيقية من طلاب حسنوا درجاتهم بشكل مذهل
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Success Story 1 */}
-              <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-green-500">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-green-500 rounded-full flexCenter text-white font-bold">
-                    أ
-                  </div>
-                  <div className="mr-3">
-                    <h4 className="bold-16 text-gray-900">أحمد محمد</h4>
-                    <p className="regular-12 text-gray-600">طالب ثانوية عامة</p>
-                  </div>
-                </div>
-                <p className="regular-14 text-gray-700 mb-4">
-                  "كانت درجاتي في الرياضيات ضعيفة جداً، لكن بعد استخدام المساعد
-                  الذكي والتدرب على الامتحانات، حسنت درجاتي من 45% إلى 92%!"
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="text-green-600 font-bold">45% → 92%</div>
-                  <div className="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
-                </div>
-              </div>
-
-              {/* Success Story 2 */}
-              <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-blue-500">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flexCenter text-white font-bold">
-                    ف
-                  </div>
-                  <div className="mr-3">
-                    <h4 className="bold-16 text-gray-900">فاطمة علي</h4>
-                    <p className="regular-12 text-gray-600">طالبة إعدادية</p>
-                  </div>
-                </div>
-                <p className="regular-14 text-gray-700 mb-4">
-                  "المساعد الذكي ساعدني أفهم العلوم بطريقة سهلة ومبسطة. الآن أنا
-                  من أوائل الفصل والكل يسألني عن سر تفوقي!"
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="text-blue-600 font-bold">المركز الأول</div>
-                  <div className="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
-                </div>
-              </div>
-
-              {/* Success Story 3 */}
-              <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-purple-500">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-purple-500 rounded-full flexCenter text-white font-bold">
-                    م
-                  </div>
-                  <div className="mr-3">
-                    <h4 className="bold-16 text-gray-900">محمد حسن</h4>
-                    <p className="regular-12 text-gray-600">طالب جامعي</p>
-                  </div>
-                </div>
-                <p className="regular-14 text-gray-700 mb-4">
-                  "الامتحانات التجريبية خلتني أتدرب على أسئلة مشابهة للامتحان
-                  الحقيقي. نجحت في مادة كانت صعبة عليي جداً!"
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="text-purple-600 font-bold">نجاح مضمون</div>
-                  <div className="flex text-yellow-400">⭐⭐⭐⭐⭐</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Call to Action in Success Section */}
-            <div className="text-center mt-12">
-              <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white p-6 rounded-xl inline-block">
-                <h3 className="bold-24 mb-2">أنت التالي في قائمة النجاح!</h3>
-                <p className="regular-16 mb-4">
-                  انضم لآلاف الطلاب الناجحين واحصل على نفس النتائج المذهلة
-                </p>
-                <div className="flex items-center justify-center gap-4 text-sm">
-                  <span>✅ مساعد ذكي مجاني</span>
-                  <span>✅ امتحانات تجريبية</span>
-                  <span>✅ نتائج مضمونة</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* CTA Section */}
         {user ? (
-          <section className="py-20 bg-gradient-to-r from-accent to-secondary">
+          <section className="py-20 bg-gradient-to-r from-[#088395] to-[#87ceeb]">
             <div className="max-container padding-container">
               <div className="text-center text-white">
                 <h2 className="bold-48 mb-4">جاهز لتحسين درجاتك؟</h2>
@@ -597,7 +466,7 @@ export default function Home() {
             </div>
           </section>
         ) : (
-          <section className="py-20 bg-gradient-to-r from-accent to-secondary">
+          <section className="py-20 bg-gradient-to-r from-[#088395] to-[#87ceeb]">
             <div className="max-container padding-container">
               <div className="text-center text-white">
                 <h2 className="bold-48 mb-4">احصل على درجات أعلى مجاناً!</h2>
@@ -613,7 +482,7 @@ export default function Home() {
                     ابدأ مجاناً الآن
                     <FaArrowRight className="w-4 h-4" />
                   </Link>
-                  <div className="flex items-center gap-4 text-white/90">
+                  <div className="flex items-center flex-col gap-4 text-white/90">
                     <div className="flex items-center gap-2">
                       <FaRobot className="w-5 h-5" />
                       <span className="regular-14">مدرس مجاني</span>

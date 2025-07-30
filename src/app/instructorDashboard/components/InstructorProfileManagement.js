@@ -12,13 +12,12 @@ import {
   FiSave,
   FiX,
   FiCamera,
-  FiMapPin,
   FiFileText,
   FiEye,
 } from "react-icons/fi";
 
 const InstructorProfileManagement = () => {
-  const { user, updateUser } = useUserData();
+  const { user, setUser } = useUserData();
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [instructorData, setInstructorData] = useState(null);
@@ -33,7 +32,6 @@ const InstructorProfileManagement = () => {
     username: "",
     avatarUrl: "",
     bio: "",
-    photoUrl: "",
   });
 
   useEffect(() => {
@@ -42,14 +40,12 @@ const InstructorProfileManagement = () => {
         try {
           setIsLoading(true);
           const response = await instructorAPI.profile.getById(instructorId);
-          console.log(response.data)
           setInstructorData(response.data);
           setProfileForm({
             phoneNumber: response.data.phoneNumber || "",
             username: response.data.username || "",
             avatarUrl: response.data.avatarUrl || "",
             bio: response.data.bio || "",
-            photoUrl: response.data.photoUrl || "",
           });
         } catch (error) {
           toast.error(handleAPIError(error, "فشل في تحميل بيانات المدرس"));
@@ -75,12 +71,16 @@ const InstructorProfileManagement = () => {
       const response = await instructorAPI.profile.update(user.id, profileForm);
 
       // Update user context with new data
-      updateUser(response.data);
-      console.log(response.data);
+      setUser(response.data);
+
+      // Update local instructor data state
+      setInstructorData(response.data);
+
       toast.success("تم تحديث الملف الشخصي بنجاح");
       setIsEditing(false);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحديث الملف الشخصي"));
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +93,6 @@ const InstructorProfileManagement = () => {
       username: dataSource.username || "",
       avatarUrl: dataSource.avatarUrl || "",
       bio: dataSource.bio || "",
-      photoUrl: dataSource.photoUrl || "",
     });
     setIsEditing(false);
   };
@@ -168,26 +167,6 @@ const InstructorProfileManagement = () => {
               <p className="regular-12 text-gray-500">
                 {instructorData?.email}
               </p>
-
-              {isEditing && (
-                <div className="mt-4">
-                  <label className="block regular-12 text-gray-600 mb-2">
-                    رابط الصورة الشخصية
-                  </label>
-                  <input
-                    type="url"
-                    value={profileForm.avatarUrl}
-                    onChange={(e) =>
-                      setProfileForm({
-                        ...profileForm,
-                        avatarUrl: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent text-sm"
-                    placeholder="https://example.com/avatar.jpg"
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -195,10 +174,10 @@ const InstructorProfileManagement = () => {
         {/* Profile Information Section */}
         <div className="lg:col-span-2">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between flex-col md:flex-row gap-5 mb-6">
               <h3 className="bold-20 text-gray-900">المعلومات الشخصية</h3>
               {isEditing && canEditProfile && (
-                <div className="flex gap-2">
+                <div className="flex flex-col w-full md:w-auto md:flex-row gap-2">
                   <button
                     onClick={handleCancel}
                     className="cursor-pointer px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flexCenter gap-2"
@@ -207,7 +186,8 @@ const InstructorProfileManagement = () => {
                     إلغاء
                   </button>
                   <button
-                    onClick={handleUpdateProfile}
+                    type="submit"
+                    form="profile-form"
                     disabled={isLoading}
                     className="cursor-pointer px-4 py-2 bg-secondary text-white rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2 disabled:opacity-50"
                   >
@@ -218,9 +198,27 @@ const InstructorProfileManagement = () => {
               )}
             </div>
 
-            <form onSubmit={handleUpdateProfile} className="space-y-6">
-              {/* Basic Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form
+              id="profile-form"
+              onSubmit={handleUpdateProfile}
+              className="space-y-6"
+            >
+              {/* Personal Information Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Full Name */}
+                <div>
+                  <label className="flex items-center gap-2 bold-14 text-gray-900 mb-2">
+                    <FiUser className="w-4 h-4" />
+                    الاسم الكامل
+                  </label>
+                  <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                    <p className="regular-14 text-gray-900">
+                      {instructorData?.fullname || "غير محدد"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Username */}
                 <div>
                   <label className="flex items-center gap-2 bold-14 text-gray-900 mb-2">
                     <FiUser className="w-4 h-4" />
@@ -242,12 +240,30 @@ const InstructorProfileManagement = () => {
                   ) : (
                     <div className="px-4 py-3 bg-gray-50 rounded-lg">
                       <p className="regular-14 text-gray-900">
-                        {instructorData?.username}
+                        {instructorData?.username || "غير محدد"}
                       </p>
                     </div>
                   )}
                 </div>
 
+                {/* Role */}
+                <div>
+                  <label className="flex items-center gap-2 bold-14 text-gray-900 mb-2">
+                    <FiUser className="w-4 h-4" />
+                    الدور
+                  </label>
+                  <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {instructorData?.role === "INSTRUCTOR"
+                        ? "مدرس"
+                        : instructorData?.role === "ASSISTANT"
+                          ? "مساعد"
+                          : instructorData?.role || "مدرس"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Phone Number */}
                 <div>
                   <label className="flex items-center gap-2 bold-14 text-gray-900 mb-2">
                     <FiPhone className="w-4 h-4" />
@@ -274,9 +290,35 @@ const InstructorProfileManagement = () => {
                     </div>
                   )}
                 </div>
+
+                {/* National ID */}
+                <div>
+                  <label className="flex items-center gap-2 bold-14 text-gray-900 mb-2">
+                    <FiFileText className="w-4 h-4" />
+                    الرقم القومي
+                  </label>
+                  <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                    <p className="regular-14 text-gray-900">
+                      {instructorData?.nationalId || "غير محدد"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Government */}
+                <div>
+                  <label className="flex items-center gap-2 bold-14 text-gray-900 mb-2">
+                    <FiFileText className="w-4 h-4" />
+                    المحافظة
+                  </label>
+                  <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                    <p className="regular-14 text-gray-900">
+                      {instructorData?.government || "غير محدد"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* Email (Read-only) */}
+              {/* Email (Full Width) */}
               <div>
                 <label className="flex items-center gap-2 bold-14 text-gray-900 mb-2">
                   <FiMail className="w-4 h-4" />
@@ -284,7 +326,7 @@ const InstructorProfileManagement = () => {
                 </label>
                 <div className="px-4 py-3 bg-gray-50 rounded-lg">
                   <p className="regular-14 text-gray-900">
-                    {instructorData?.email}
+                    {instructorData?.email || "غير محدد"}
                   </p>
                   <p className="regular-12 text-gray-500 mt-1">
                     لا يمكن تغيير البريد الإلكتروني
@@ -292,7 +334,6 @@ const InstructorProfileManagement = () => {
                 </div>
               </div>
 
-              {/* Bio */}
               <div>
                 <label className="flex items-center gap-2 bold-14 text-gray-900 mb-2">
                   <FiFileText className="w-4 h-4" />
@@ -317,7 +358,7 @@ const InstructorProfileManagement = () => {
                 )}
               </div>
 
-              {/* Photo URL */}
+              {/* Photo URL (Only in Edit Mode) */}
               {isEditing && canEditProfile && (
                 <div>
                   <label className="flex items-center gap-2 bold-14 text-gray-900 mb-2">
@@ -326,11 +367,11 @@ const InstructorProfileManagement = () => {
                   </label>
                   <input
                     type="url"
-                    value={profileForm.photoUrl}
+                    value={profileForm.avatarUrl}
                     onChange={(e) =>
                       setProfileForm({
                         ...profileForm,
-                        photoUrl: e.target.value,
+                        avatarUrl: e.target.value,
                       })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
@@ -339,59 +380,6 @@ const InstructorProfileManagement = () => {
                 </div>
               )}
             </form>
-          </div>
-
-          {/* Additional Information */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-6">
-            <h3 className="bold-20 text-gray-900 mb-4">معلومات إضافية</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="bold-14 text-gray-900 mb-2 block">
-                  الاسم الكامل
-                </label>
-                <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                  <p className="regular-14 text-gray-900">
-                    {instructorData?.fullname}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <label className="bold-14 text-gray-900 mb-2 block">
-                  الدور
-                </label>
-                <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {instructorData?.role === "INSTRUCTOR"
-                      ? "مدرس"
-                      : instructorData?.role || "مدرس"}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="bold-14 text-gray-900 mb-2 block">
-                  الرقم القومي
-                </label>
-                <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                  <p className="regular-14 text-gray-900">
-                    {instructorData?.nationalId || "غير محدد"}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <label className="bold-14 text-gray-900 mb-2 block">
-                  المحافظة
-                </label>
-                <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                  <p className="regular-14 text-gray-900">
-                    {instructorData?.government || "غير محدد"}
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

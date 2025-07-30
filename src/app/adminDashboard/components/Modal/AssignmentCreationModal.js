@@ -96,7 +96,7 @@ const AssignmentCreationModal = ({
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
           >
             <FiX className="w-6 h-6 text-gray-500" />
           </button>
@@ -123,11 +123,34 @@ const AssignmentCreationModal = ({
                   required
                 >
                   <option value="">اختر الدرس</option>
-                  {lessons.map((lesson) => (
-                    <option key={lesson.id} value={lesson.id}>
-                      {lesson.name}
-                    </option>
-                  ))}
+                  {/* Group lessons by course if they have course information */}
+                  {lessons.some((lesson) => lesson.courseName)
+                    ? // Group lessons by course
+                      [
+                        ...new Set(lessons.map((lesson) => lesson.courseName)),
+                      ].map((courseName) => {
+                        const courseLessons = lessons.filter(
+                          (lesson) => lesson.courseName === courseName
+                        );
+                        return (
+                          <optgroup
+                            key={courseName}
+                            label={`كورس: ${courseName}`}
+                          >
+                            {courseLessons.map((lesson) => (
+                              <option key={lesson.id} value={lesson.id}>
+                                {lesson.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      })
+                    : // Fallback to simple list if no course information
+                      lessons.map((lesson) => (
+                        <option key={lesson.id} value={lesson.id}>
+                          {lesson.name}
+                        </option>
+                      ))}
                 </select>
                 {errors.lessonId && (
                   <p className="mt-1 text-sm text-red-600">{errors.lessonId}</p>

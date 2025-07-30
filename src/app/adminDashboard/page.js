@@ -97,7 +97,7 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 md:mr-80 mr-0 relative">
-        <div className="pt-16 md:pt-0 p-6">
+        <div className="pt-16 md:pt-0">
           <div className="max-w-7xl mx-auto">{renderContent()}</div>
         </div>
       </div>

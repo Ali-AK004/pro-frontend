@@ -16,6 +16,7 @@ import {
 const AccessCodeManagement = () => {
   const [accessCodes, setAccessCodes] = useState([]);
   const [lessons, setLessons] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -92,11 +93,13 @@ const AccessCodeManagement = () => {
   const fetchLessons = async () => {
     try {
       const coursesResponse = await adminAPI.courses.getAll(0, 100);
-      const courses =
+      const coursesData =
         coursesResponse.data?.content || coursesResponse.data || [];
 
+      setCourses(coursesData);
+
       let allLessons = [];
-      for (const course of courses) {
+      for (const course of coursesData) {
         try {
           const lessonsResponse = await adminAPI.lessons.getByCourse(
             course.id,
@@ -105,7 +108,13 @@ const AccessCodeManagement = () => {
           );
           const courseLessons =
             lessonsResponse.data?.content || lessonsResponse.data || [];
-          allLessons = [...allLessons, ...courseLessons];
+          // Add course information to each lesson
+          const lessonsWithCourse = courseLessons.map((lesson) => ({
+            ...lesson,
+            courseId: course.id,
+            courseName: course.name,
+          }));
+          allLessons = [...allLessons, ...lessonsWithCourse];
         } catch (error) {
           console.error(
             `Error fetching lessons for course ${course.id}:`,
@@ -118,6 +127,7 @@ const AccessCodeManagement = () => {
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
       setLessons([]);
+      setCourses([]);
     }
   };
 
@@ -292,11 +302,25 @@ const AccessCodeManagement = () => {
             className="px-4 py-3 border col-span-1 border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
           >
             <option value="">اختر الدرس</option>
-            {lessons.map((lesson) => (
-              <option key={lesson.id} value={lesson.id}>
-                {lesson.name}
-              </option>
-            ))}
+            {courses.map((course) => {
+              // Filter lessons that belong to this course
+              const courseLessons = lessons.filter(
+                (lesson) => lesson.courseId === course.id
+              );
+
+              // Only render optgroup if course has lessons
+              if (courseLessons.length === 0) return null;
+
+              return (
+                <optgroup key={course.id} label={`كورس: ${course.name}`}>
+                  {courseLessons.map((lesson) => (
+                    <option key={lesson.id} value={lesson.id}>
+                      {lesson.name}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            })}
           </select>
           <button
             onClick={handleSearch}

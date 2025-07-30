@@ -79,12 +79,12 @@ const Login = () => {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-2xl">
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
           {/* Header with gradient */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12 text-center">
             <Link href="/" className="inline-block mb-4">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto">
+              <div className="px-10 py-2 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center mx-auto">
                 <span className="text-2xl font-bold text-white">Pro</span>
               </div>
             </Link>
@@ -113,7 +113,7 @@ const Login = () => {
                     type="email"
                     autoComplete="email"
                     required
-                    className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-right"
+                    className="w-full pr-4 pl-9 py-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-right"
                     placeholder="أدخل بريدك الإلكتروني"
                     value={formData.email}
                     onChange={handleChange}
@@ -151,28 +151,15 @@ const Login = () => {
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
-                    className="w-full px-4 py-4 pl-12 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-right"
+                    className="w-full px-4 py-4 pl-9 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-right"
                     placeholder="أدخل كلمة المرور"
                     value={formData.password}
                     onChange={handleChange}
                   />
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-                    <svg
-                      className="h-5 w-5 text-gray-400 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                      />
-                    </svg>
                     <button
                       type="button"
-                      className="text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
+                      className="text-gray-500 cursor-pointer hover:text-gray-700 focus:outline-none transition-colors"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
@@ -211,7 +198,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
@@ -255,27 +242,11 @@ const Login = () => {
                 ليس لديك حساب؟{" "}
                 <Link
                   href="/signup"
-                  className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                  className="font-semibold hover:border-b hover:border-b-blue-700 border-b border-b-transparent text-blue-600 hover:text-blue-700 transition-colors"
                 >
                   سجل الآن مجاناً
                 </Link>
               </p>
-
-              <div className="pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-500">
-                  بتسجيل الدخول، أنت توافق على{" "}
-                  <Link href="/terms" className="text-blue-600 hover:underline">
-                    شروط الاستخدام
-                  </Link>{" "}
-                  و{" "}
-                  <Link
-                    href="/privacy"
-                    className="text-blue-600 hover:underline"
-                  >
-                    سياسة الخصوصية
-                  </Link>
-                </p>
-              </div>
             </div>
           </div>
         </div>

@@ -140,55 +140,12 @@ const CustomVideoPlayer = ({ videoUrl, onEnded, poster }) => {
       />
 
       {/* Video Player */}
-      <ReactPlayer
-        ref={playerRef}
-        url={embedUrl}
-        playing={isPlaying}
-        volume={isMuted ? 0 : volume}
-        playbackRate={playbackRate}
+      <iframe
+        src={''}
+        title="Example Website"
         width="100%"
-        height="100%"
-        onProgress={handleProgress}
-        onEnded={onEnded}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        config={{
-          youtube: {
-            playerVars: {
-              modestbranding: 1,
-              showinfo: 0,
-              rel: 0,
-              fs: 0,
-              disablekb: 1,
-              iv_load_policy: 3,
-              cc_load_policy: 0,
-              controls: 0,
-              autohide: 1,
-              wmode: "opaque",
-              origin:
-                typeof window !== "undefined" ? window.location.origin : "",
-            },
-          },
-          vimeo: {
-            playerOptions: {
-              controls: false,
-              title: false,
-              byline: false,
-              portrait: false,
-            },
-          },
-          dailymotion: {
-            params: {
-              controls: false,
-              "ui-highlight": "fff",
-              "ui-logo": false,
-            },
-          },
-          facebook: {
-            appId: "your-app-id",
-          },
-        }}
-        onDuration={handleDuration} // This is actually correct, keep it
+        height={400}
+        allowFullScreen
       />
 
       {/* Custom Controls */}

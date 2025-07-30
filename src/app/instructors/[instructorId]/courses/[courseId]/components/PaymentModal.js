@@ -52,8 +52,6 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
         data: response.data,
       });
 
-      toast.success("تم شراء الدرس بنجاح!");
-
       // Call success callback after a short delay
       setTimeout(() => {
         onSuccess();
@@ -174,23 +172,18 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
                 </label>
 
                 {/* Fawry Option */}
-                <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="FAWRY"
-                    checked={paymentMethod === "FAWRY"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-4 h-4 text-accent"
-                  />
+                <div className="flex items-center gap-3 p-4 border border-gray-200 rounded-lghover:bg-gray-50 transition-colors">
                   <FaCreditCard className="w-5 h-5 text-gray-600" />
                   <div className="flex-1">
-                    <p className="bold-14 text-gray-900">الدفع عبر فوري</p>
+                    <p className="bold-14 text-gray-900">
+                      الدفع عبر فوري{" "}
+                      <span className="text-sm text-gray-500">(قريبًا)</span>
+                    </p>
                     <p className="regular-12 text-gray-600">
                       ادفع باستخدام خدمة فوري
                     </p>
                   </div>
-                </label>
+                </div>
               </div>
             </div>
 

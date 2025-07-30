@@ -176,11 +176,6 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
                         : "hover:bg-white/80 hover:shadow-lg text-gray-700 hover:text-green-600"
                     }`}
                   >
-                    {/* Active indicator */}
-                    {isActive && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full"></div>
-                    )}
-
                     {/* Background decoration for active state */}
                     {isActive && (
                       <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>

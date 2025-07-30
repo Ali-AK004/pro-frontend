@@ -148,7 +148,6 @@ const InstructorExamManagement = () => {
       setIsLoading(true);
       const response = await instructorAPI.exams.getResults(exam.id);
       setExamResults(response.data);
-      console.log(response.data);
       setSelectedExam(exam);
       setShowResultsModal(true);
     } catch (error) {
@@ -204,7 +203,7 @@ const InstructorExamManagement = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
-          <div className="relative">
+          <div className="relative flex">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -246,7 +245,7 @@ const InstructorExamManagement = () => {
       </div>
 
       {/* Exams Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, index) => (
             <div
@@ -288,7 +287,7 @@ const InstructorExamManagement = () => {
                 </p>
 
                 {/* Exam Stats */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                   <div className="flex items-center gap-2">
                     <FiClock className="w-4 h-4 text-blue-500" />
                     <span className="regular-12 text-gray-600">
@@ -316,10 +315,10 @@ const InstructorExamManagement = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <button
                     onClick={() => handleViewResults(exam)}
-                    className="flex-1 bg-blue-50 text-blue-600 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2 cursor-pointer"
+                    className=" bg-blue-50 text-blue-600 py-2 px-4 border border-blue-600 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2 cursor-pointer"
                   >
                     <FiBarChart className="w-4 h-4" />
                     النتائج
@@ -329,16 +328,17 @@ const InstructorExamManagement = () => {
                       setSelectedExam(exam);
                       setShowEditModal(true);
                     }}
-                    className="flex-1 bg-green-50 text-green-600 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2 cursor-pointer"
+                    className=" bg-green-50 text-green-600 py-2 px-4 border border-green-600 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2 cursor-pointer"
                   >
                     <FiEdit className="w-4 h-4" />
                     تعديل
                   </button>
                   <button
                     onClick={() => openDeleteModal(exam)}
-                    className="bg-red-50 text-red-600 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
+                    className="bg-red-50 text-red-600 flexCenter py-2 px-4 gap-2 rounded-lg border border-red-600 hover:bg-red-100 transition-colors cursor-pointer"
                   >
                     <FiTrash2 className="w-4 h-4" />
+                     حذف
                   </button>
                 </div>
               </div>

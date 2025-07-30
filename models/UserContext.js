@@ -37,7 +37,6 @@ export function UserProvider({ children }) {
     } catch (error) {
       // Handle 401 specifically (unauthorized)
       if (error.response?.status === 401) {
-        console.log("No authenticated user");
         setUser(null);
         setError(null); // No error, just not logged in
       } else {

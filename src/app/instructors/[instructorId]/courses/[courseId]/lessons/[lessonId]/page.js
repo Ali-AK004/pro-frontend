@@ -16,12 +16,10 @@ import {
   FaBook,
   FaGraduationCap,
   FaEye,
-<<<<<<< HEAD
   FaDownload,
   FaStar,
   FaCheck,
-=======
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
+  FaClock,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import NavBar from "@/app/components/navBar";
@@ -33,7 +31,7 @@ import CustomVideoPlayer from "../../components/CustomVideoPlayer";
 const LessonPage = () => {
   const params = useParams();
   const router = useRouter();
-  const { lessonId } = params;
+  const { instructorId, courseId, lessonId } = params;
 
   // State management
   const [lessonData, setLessonData] = useState(null);
@@ -44,6 +42,8 @@ const LessonPage = () => {
   const [examResult, setExamResult] = useState(null);
   const [assignmentSubmission, setAssignmentSubmission] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [instructorData, setInstructorData] = useState(null);
+  const [accessExpiry, setAccessExpiry] = useState(null);
 
   // Exam timer states
   const [examStarted, setExamStarted] = useState(false);
@@ -57,6 +57,37 @@ const LessonPage = () => {
       fetchLessonData();
     }
   }, [lessonId]);
+
+  // Update URL hash when tab changes and read from hash on load
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (hash && ["overview", "exam", "video", "assignment"].includes(hash)) {
+        setActiveTab(hash);
+      } else if (!hash) {
+        // If no hash, default to overview
+        setActiveTab("overview");
+      }
+    };
+
+    // Read from hash on component mount
+    handleHashChange();
+
+    // Listen for hash changes (browser back/forward)
+    window.addEventListener("hashchange", handleHashChange);
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Update hash when tab changes (but avoid infinite loop)
+    const currentHash = window.location.hash.replace("#", "");
+    if (activeTab && activeTab !== currentHash) {
+      window.location.hash = activeTab;
+    }
+  }, [activeTab]);
 
   // Cleanup timer on component unmount
   useEffect(() => {
@@ -74,6 +105,25 @@ const LessonPage = () => {
 
       const response = await studentAPI.lessons.getLessonDetails(lessonId);
       setLessonData(response.data);
+
+      // Fetch instructor data using URL parameter (more reliable)
+      try {
+        const instructorResponse =
+          await studentAPI.profile.getInstructorFullProfile(instructorId);
+        setInstructorData(instructorResponse.data);
+      } catch (instructorError) {
+        console.error("Error fetching instructor data:", instructorError);
+        toast.error("فشل في تحميل بيانات المدرس");
+      }
+
+      try {
+        const accessResponse = await studentAPI.payments.checkAccess(lessonId);
+        if (accessResponse.data.expiryDate) {
+          setAccessExpiry(accessResponse.data.expiryDate);
+        }
+      } catch (accessError) {
+        console.error("Error fetching access info:", accessError);
+      }
 
       // Set initial tab based on access and progress
       setInitialTab(response.data);
@@ -295,9 +345,9 @@ const LessonPage = () => {
       <NavBar />
 
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-container padding-container py-6">
-          <div className="flex items-center justify-between">
+      <div className="bg-white shadow-sm">
+        <div className="max-container padding-container py-12 md:py-6">
+          <div className="flex items-center flex-col md:flex-row gap-6 justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
@@ -399,6 +449,8 @@ const LessonPage = () => {
                 hasAccess={hasAccess}
                 progressStatus={progressStatus}
                 accessError={accessError}
+                instructorData={instructorData}
+                accessExpiry={accessExpiry}
               />
             )}
 
@@ -461,13 +513,9 @@ const TabButton = ({
   return (
     <button
       onClick={() => canClick && setActiveTab(id)}
-<<<<<<< HEAD
-      className={`group relative flex items-center gap-3 px-6 py-4 rounded-t-2xl transition-all duration-300 font-semibold ${
-=======
-      className={`flex items-center cursor-pointer gap-2 px-4 py-3 border-b-2 transition-colors ${
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
+      className={`group relative flex items-center gap-3 px-6 py-4 rounded-t-2xl transition-all duration-300 font-semibold cursor-pointer ${
         isActive
-          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform -translate-y-1"
+          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
           : canClick
             ? "bg-white/80 backdrop-blur-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 shadow-sm hover:shadow-md border border-gray-200 hover:border-blue-300"
             : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-300"
@@ -516,6 +564,8 @@ const OverviewTab = ({
   hasAccess,
   progressStatus,
   accessError,
+  instructorData,
+  accessExpiry,
 }) => {
   const formatDate = (dateString) => {
     if (!dateString) return "غير محدد";
@@ -581,32 +631,6 @@ const OverviewTab = ({
             </p>
           </div>
         </div>
-
-        {/* Access Status */}
-        {!hasAccess && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <FaLock className="w-5 h-5 text-red-500" />
-              <h3 className="bold-18 text-red-800">الوصول مقيد</h3>
-            </div>
-            <p className="regular-14 text-red-700">
-              {accessError || "تحتاج إلى شراء هذا الدرس للوصول إلى المحتوى"}
-            </p>
-          </div>
-        )}
-
-        {/* Progress Status */}
-        {hasAccess && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <FaGraduationCap className="w-5 h-5 text-blue-500" />
-              <h3 className="bold-18 text-blue-800">حالة التقدم</h3>
-            </div>
-            <p className="regular-14 text-blue-700">
-              {getProgressStatusText(progressStatus)}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Sidebar */}
@@ -622,23 +646,24 @@ const OverviewTab = ({
               </span>
             </div>
 
-            {lesson.instructorName && (
+            {instructorData.fullname && (
               <div className="flex items-center gap-3">
                 <FaUser className="w-4 h-4 text-gray-500" />
                 <span className="regular-14 text-gray-700">
-                  المدرس: {lesson.instructorName}
+                  المدرس: {instructorData.fullname}
                 </span>
               </div>
             )}
 
-            {lesson.accessExpiryDate && (
+            {accessExpiry && (
               <div className="flex items-center gap-3">
                 <FaCalendarAlt className="w-4 h-4 text-gray-500" />
                 <span className="regular-14 text-gray-700">
-                  انتهاء الوصول: {formatDate(lesson.accessExpiryDate)}
+                  انتهاء الوصول: {formatDate(accessExpiry)}
                 </span>
               </div>
             )}
+            
           </div>
         </div>
 
@@ -679,6 +704,34 @@ const OverviewTab = ({
               </div>
             )}
           </div>
+        </div>
+
+        <div>
+          {/* Access Status */}
+          {!hasAccess && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <FaLock className="w-5 h-5 text-red-500" />
+                <h3 className="bold-18 text-red-800">الوصول مقيد</h3>
+              </div>
+              <p className="regular-14 text-red-700">
+                {accessError || "تحتاج إلى شراء هذا الدرس للوصول إلى المحتوى"}
+              </p>
+            </div>
+          )}
+
+          {/* Progress Status */}
+          {hasAccess && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <FaGraduationCap className="w-5 h-5 text-blue-500" />
+                <h3 className="bold-18 text-blue-800">حالة التقدم</h3>
+              </div>
+              <p className="regular-14 text-blue-700">
+                {getProgressStatusText(progressStatus)}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

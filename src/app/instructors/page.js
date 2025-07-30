@@ -6,7 +6,6 @@ import {
   FaChalkboardTeacher,
   FaUsers,
   FaBookOpen,
-  FaStar,
   FaArrowLeft,
 } from "react-icons/fa";
 import { studentAPI, handleAPIError } from "../services/studentAPI";
@@ -61,7 +60,7 @@ const Instructors = () => {
       </div>
 
       <NavBar />
-      <div className="relative max-container padding-container py-12">
+      <div className="relative max-container p-4 md:padding-container pt-8">
         {/* Back Button */}
         <div className="mb-8">
           <Link
@@ -75,16 +74,16 @@ const Instructors = () => {
 
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-4 mb-6">
+          <div className="inline-flex flex-col md:flex-row items-center gap-4 mb-6">
             <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center">
               <FaChalkboardTeacher className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              المدرسين
+            <h1 className="text-4xl md:text-5xl font-bold pb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              المعلمين
             </h1>
           </div>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            ابحث عن المدرس باستخدام ID الخاص به لعرض ملفه الشخصي ومعلوماته
+            ابحث عن المعلم باستخدام ID الخاص به لعرض ملفه الشخصي ومعلوماته
             التفصيلية والكورسات التي يقدمها
           </p>
         </div>
@@ -98,16 +97,16 @@ const Instructors = () => {
 
             <div className="relative">
               <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-3 mb-4">
+                <div className="inline-flex items-center flex-col md:flex-row gap-3 mb-4">
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
                     <FaSearch className="w-6 h-6 text-white" />
                   </div>
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-                    البحث عن مدرس
+                    البحث عن معلم
                   </h2>
                 </div>
                 <p className="text-gray-600">
-                  أدخل ID المدرس للوصول إلى ملفه الشخصي والكورسات المتاحة
+                  أدخل ID المعلم للوصول إلى ملفه الشخصي والكورسات المتاحة
                 </p>
               </div>
 
@@ -117,7 +116,7 @@ const Instructors = () => {
                     htmlFor="instructorId"
                     className="block text-lg font-semibold text-gray-700 mb-3"
                   >
-                    ID المدرس
+                    ID الملعم
                   </label>
                   <div className="relative">
                     <input
@@ -125,7 +124,7 @@ const Instructors = () => {
                       type="text"
                       value={instructorId}
                       onChange={handleInputChange}
-                      placeholder="أدخل ID المدرس (مثال: INST001)"
+                      placeholder="أدخل ID المعلم"
                       className="font-main w-full px-4 py-4 pr-12 border-2 border-gray-300 rounded-lg focus:border-accent focus:outline-none transition-colors regular-16"
                       disabled={isLoading}
                     />
@@ -149,7 +148,7 @@ const Instructors = () => {
                   ) : (
                     <>
                       <FaSearch className="w-4 h-4" />
-                      البحث عن المدرس
+                      البحث عن المعلم
                     </>
                   )}
                 </button>

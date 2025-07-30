@@ -27,6 +27,7 @@ const InstructorAssignmentManagement = () => {
   const { user } = useUserData();
   const [assignments, setAssignments] = useState([]);
   const [lessons, setLessons] = useState([]);
+  const [allLessons, setAllLessons] = useState([]); // All lessons for modal
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,7 +36,9 @@ const InstructorAssignmentManagement = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [assignmentToDelete, setAssignmentToDelete] = useState(null);
   const [assignmentSubmissions, setAssignmentSubmissions] = useState([]);
 
   const instructorId = getInstructorId(user);
@@ -44,6 +47,7 @@ const InstructorAssignmentManagement = () => {
   useEffect(() => {
     if (instructorId) {
       fetchCourses();
+      fetchAllLessons(); // Fetch all lessons for modal
     }
   }, [instructorId]);
 
@@ -57,7 +61,12 @@ const InstructorAssignmentManagement = () => {
   }, [selectedCourse]);
 
   useEffect(() => {
-    fetchAssignments();
+    if (selectedLesson) {
+      fetchAssignments();
+    } else {
+      // Clear assignments when no lesson is selected
+      setAssignments([]);
+    }
   }, [selectedLesson]);
 
   const fetchCourses = async () => {
@@ -79,20 +88,55 @@ const InstructorAssignmentManagement = () => {
     }
   };
 
+  const fetchAllLessons = async () => {
+    try {
+      const response =
+        await instructorAPI.courses.getByInstructor(instructorId);
+      const coursesData = response.data || [];
+
+      let allLessonsData = [];
+      for (const course of coursesData) {
+        try {
+          const lessonsResponse = await instructorAPI.courses.getLessons(
+            course.id
+          );
+          const courseLessons = lessonsResponse.data || [];
+          // Add course information to each lesson for optgroups
+          const lessonsWithCourse = courseLessons.map((lesson) => ({
+            ...lesson,
+            courseId: course.id,
+            courseName: course.name,
+          }));
+          allLessonsData = [...allLessonsData, ...lessonsWithCourse];
+        } catch (error) {
+          console.error(
+            `Error fetching lessons for course ${course.id}:`,
+            error
+          );
+        }
+      }
+
+      setAllLessons(allLessonsData);
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تحميل جميع الدروس"));
+      setAllLessons([]);
+    }
+  };
+
   const fetchAssignments = async () => {
+    if (!selectedLesson) {
+      setAssignments([]);
+      return;
+    }
+
     try {
       setIsLoading(true);
-      if (selectedLesson) {
-        const response =
-          await instructorAPI.assignments.getByLesson(selectedLesson);
-        setAssignments(response.data || []);
-      } else if (instructorId) {
-        const response =
-          await instructorAPI.assignments.getByInstructor(instructorId);
-        setAssignments(response.data || []);
-      }
+      const response =
+        await instructorAPI.assignments.getByLesson(selectedLesson);
+      setAssignments(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الواجبات"));
+      setAssignments([]);
     } finally {
       setIsLoading(false);
     }
@@ -130,15 +174,20 @@ const InstructorAssignmentManagement = () => {
     }
   };
 
-  const handleDeleteAssignment = async (assignmentId) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذا الواجب؟")) {
-      return;
-    }
+  const openDeleteModal = (assignment) => {
+    setAssignmentToDelete(assignment);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteAssignment = async () => {
+    if (!assignmentToDelete) return;
 
     try {
       setIsLoading(true);
-      await instructorAPI.assignments.delete(assignmentId);
+      await instructorAPI.assignments.delete(assignmentToDelete.id);
       toast.success("تم حذف الواجب بنجاح");
+      setShowDeleteModal(false);
+      setAssignmentToDelete(null);
       fetchAssignments();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف الواجب"));
@@ -158,6 +207,7 @@ const InstructorAssignmentManagement = () => {
       setShowSubmissionsModal(true);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل التسليمات"));
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -177,15 +227,9 @@ const InstructorAssignmentManagement = () => {
     }
   };
 
-  // Get lessons for the selected course or all lessons for instructor
+  // Get all lessons for modal (always return all lessons regardless of filter)
   const getAvailableLessons = () => {
-    if (selectedCourse) {
-      return lessons;
-    }
-    // Return all lessons from all courses
-    return courses.reduce((allLessons, course) => {
-      return [...allLessons, ...(course.lessons || [])];
-    }, []);
+    return allLessons;
   };
 
   const filteredAssignments = assignments.filter((assignment) =>
@@ -193,9 +237,9 @@ const InstructorAssignmentManagement = () => {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center flex-col gap-5 sm:flex-row md:gap-0 justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">إدارة الواجبات</h1>
           <p className="regular-16 text-gray-600">
@@ -215,7 +259,7 @@ const InstructorAssignmentManagement = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
-          <div className="relative">
+          <div className="relative flex">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -232,7 +276,7 @@ const InstructorAssignmentManagement = () => {
             onChange={(e) => setSelectedCourse(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
-            <option value="">جميع الكورسات</option>
+            <option value="">اختر كورس</option>
             {courses.map((course) => (
               <option key={course.id} value={course.id}>
                 {course.name}
@@ -246,7 +290,7 @@ const InstructorAssignmentManagement = () => {
             onChange={(e) => setSelectedLesson(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
-            <option value="">جميع الدروس</option>
+            <option value="">اختر درس</option>
             {lessons.map((lesson) => (
               <option key={lesson.id} value={lesson.id}>
                 {lesson.name}
@@ -257,7 +301,7 @@ const InstructorAssignmentManagement = () => {
       </div>
 
       {/* Assignments Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, index) => (
             <div
@@ -277,13 +321,28 @@ const InstructorAssignmentManagement = () => {
         ) : filteredAssignments.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <FiFileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="regular-16 text-gray-600">لا توجد واجبات للعرض</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="mt-4 bg-secondary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
-            >
-              إنشاء أول واجب
-            </button>
+            {!selectedLesson ? (
+              <>
+                <p className="regular-16 text-gray-600 mb-2">
+                  اختر درساً من القائمة أعلاه لعرض الواجبات
+                </p>
+                <p className="regular-14 text-gray-500">
+                  يمكنك البحث عن الدرس باستخدام شريط البحث
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="regular-16 text-gray-600">
+                  لا توجد واجبات لهذا الدرس
+                </p>
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="mt-4 bg-secondary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
+                >
+                  إنشاء أول واجب
+                </button>
+              </>
+            )}
           </div>
         ) : (
           filteredAssignments.map((assignment) => (
@@ -294,7 +353,7 @@ const InstructorAssignmentManagement = () => {
                 setSelectedAssignment(assignment);
                 setShowEditModal(true);
               }}
-              onDelete={handleDeleteAssignment}
+              onDelete={openDeleteModal}
               onViewSubmissions={handleViewSubmissions}
             />
           ))
@@ -326,6 +385,48 @@ const InstructorAssignmentManagement = () => {
           isLoading={isLoading}
           isEdit={true}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && assignmentToDelete && (
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <FiAlertCircle className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="bold-18 text-gray-900">تأكيد الحذف</h3>
+            </div>
+
+            <p className="regular-16 text-gray-600 mb-6">
+              هل أنت متأكد من حذف الواجب "{assignmentToDelete.title}"؟
+              <br />
+              <span className="text-red-600 bold-14">
+                لا يمكن التراجع عن هذا الإجراء.
+              </span>
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setAssignmentToDelete(null);
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                disabled={isLoading}
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={handleDeleteAssignment}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer disabled:opacity-50"
+                disabled={isLoading}
+              >
+                {isLoading ? "جاري الحذف..." : "حذف"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -362,7 +463,7 @@ const AssignmentCard = ({
         </p>
 
         {/* Assignment Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="flex items-center gap-2">
             <FiCalendar className="w-4 h-4 text-blue-500" />
             <span className="regular-12 text-gray-600">
@@ -394,26 +495,27 @@ const AssignmentCard = ({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <button
             onClick={() => onViewSubmissions(assignment)}
-            className="flex-1 bg-blue-50 text-blue-600 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
+            className="flex-1 bg-blue-50 text-blue-600 py-2 px-4 rounded-lg border border-blue-600 hover:bg-blue-100 transition-colors flexCenter gap-2 cursor-pointer"
           >
             <FiEye className="w-4 h-4" />
             التسليمات
           </button>
           <button
             onClick={() => onEdit(assignment)}
-            className="flex-1 bg-green-50 text-green-600 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2"
+            className="flex-1 bg-green-50 text-green-600 py-2 px-4 border border-green-600 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2 cursor-pointer"
           >
             <FiEdit className="w-4 h-4" />
             تعديل
           </button>
           <button
-            onClick={() => onDelete(assignment.id)}
-            className="bg-red-50 text-red-600 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors"
+            onClick={() => onDelete(assignment)}
+            className="bg-red-50 text-red-600 flexCenter gap-2 py-2 px-4 border border-red-600 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
           >
             <FiTrash2 className="w-4 h-4" />
+            حذف
           </button>
         </div>
       </div>

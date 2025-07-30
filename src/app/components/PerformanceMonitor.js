@@ -152,21 +152,21 @@ export const performanceUtils = {
   },
 };
 
-// Component for displaying performance metrics (development only)
-const PerformanceMonitor = () => {
+// Component for displaying performance metrics (ADMIN only)
+const PerformanceMonitor = ({ user }) => {
   const metrics = usePerformanceMonitor();
   const [showMetrics, setShowMetrics] = useState(false);
 
-  // Only show in development
-  if (process.env.NODE_ENV !== "development") {
+  // Only show for ADMIN users
+  if (!user || user.role !== "ADMIN") {
     return null;
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 right-1/2 -translate-x-1/2 z-50">
       <button
         onClick={() => setShowMetrics(!showMetrics)}
-        className="group bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 rounded-2xl text-sm font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
+        className="group cursor-pointer bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 rounded-2xl text-sm font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
       >
         <span className="text-lg">📊</span>
         <span>Performance</span>
@@ -287,6 +287,12 @@ const PerformanceMonitor = () => {
       )}
     </div>
   );
+};
+
+// Wrapper component that accesses user context
+export const AdminPerformanceMonitor = () => {
+  // This will be imported and used in layout.js
+  return null; // Placeholder - will be replaced by the actual implementation in layout.js
 };
 
 export default PerformanceMonitor;

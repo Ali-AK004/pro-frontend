@@ -16,10 +16,11 @@ import {
 
 const LessonManagement = () => {
   const [lessons, setLessons] = useState([]);
+  const [allLessons, setAllLessons] = useState([]);
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedLessonFilter, setSelectedLessonFilter] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -51,29 +52,26 @@ const LessonManagement = () => {
   });
 
   useEffect(() => {
-    fetchLessons();
+    // Only fetch courses and all lessons for the dropdown, don't load lessons for display
     fetchCourses();
-  }, [selectedCourse]);
+    fetchAllLessons();
+  }, []);
 
-  const fetchLessons = async () => {
-    try {
-      setIsLoading(true);
-      if (selectedCourse) {
-        const response = await adminAPI.lessons.getByCourse(selectedCourse);
-        // Handle paginated response
-        setLessons(response.data?.content || response.data || []);
-      } else {
-        // For now, if no course is selected, show empty list
-        // since we don't have a "get all lessons" endpoint
-        setLessons([]);
+  // Only load lessons when a specific lesson is selected
+  useEffect(() => {
+    if (selectedLessonFilter) {
+      // Load only the selected lesson
+      const selectedLesson = allLessons.find(
+        (lesson) => lesson.id === selectedLessonFilter
+      );
+      if (selectedLesson) {
+        setLessons([selectedLesson]);
       }
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
+    } else {
+      // Clear lessons when no specific lesson is selected
       setLessons([]);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [selectedLessonFilter, allLessons]);
 
   const fetchCourses = async () => {
     try {
@@ -83,6 +81,42 @@ const LessonManagement = () => {
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
       setCourses([]);
+    }
+  };
+
+  const fetchAllLessons = async () => {
+    try {
+      const coursesResponse = await adminAPI.courses.getAll();
+      const coursesData =
+        coursesResponse.data?.content || coursesResponse.data || [];
+
+      // Fetch lessons for each course
+      const allLessonsPromises = coursesData.map(async (course) => {
+        try {
+          const lessonsResponse = await adminAPI.lessons.getByCourse(course.id);
+          const courseLessons =
+            lessonsResponse.data?.content || lessonsResponse.data || [];
+          // Add course information to each lesson
+          return courseLessons.map((lesson) => ({
+            ...lesson,
+            courseName: course.name,
+            courseId: course.id,
+          }));
+        } catch (error) {
+          console.error(
+            `Error fetching lessons for course ${course.id}:`,
+            error
+          );
+          return [];
+        }
+      });
+
+      const allLessonsArrays = await Promise.all(allLessonsPromises);
+      const flattenedLessons = allLessonsArrays.flat();
+      setAllLessons(flattenedLessons);
+    } catch (error) {
+      console.error("Error fetching all lessons:", error);
+      setAllLessons([]);
     }
   };
 
@@ -101,7 +135,7 @@ const LessonManagement = () => {
         videoUrl: "",
         courseId: "",
       });
-      fetchLessons();
+      fetchAllLessons(); // Refresh the lessons dropdown data
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء الدرس"));
     } finally {
@@ -116,7 +150,7 @@ const LessonManagement = () => {
       await adminAPI.lessons.update(selectedLesson.id, editForm);
       toast.success("تم تحديث الدرس بنجاح");
       setShowEditModal(false);
-      fetchLessons();
+      fetchAllLessons(); // Refresh the lessons dropdown data
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
     } finally {
@@ -133,7 +167,14 @@ const LessonManagement = () => {
       toast.success("تم حذف الدرس بنجاح");
       setShowDeleteModal(false);
       setLessonToDelete(null);
-      fetchLessons();
+
+      // Clear the selected lesson filter if the deleted lesson was selected
+      if (selectedLessonFilter === lessonToDelete.id) {
+        setSelectedLessonFilter("");
+        setLessons([]); // Clear the displayed lessons immediately
+      }
+
+      fetchAllLessons(); // Refresh the lessons dropdown data
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف الدرس"));
     } finally {
@@ -147,17 +188,11 @@ const LessonManagement = () => {
   };
 
   const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      fetchLessons();
-      return;
+    // Since lessons are now only loaded when a specific lesson is selected,
+    // we don't need to filter here. The useEffect handles lesson loading.
+    if (!selectedLessonFilter) {
+      setLessons([]);
     }
-
-    const filteredLessons = lessons.filter(
-      (lesson) =>
-        lesson.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lesson.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setLessons(filteredLessons);
   };
 
   const fetchLessonStatus = async (lessonId) => {
@@ -217,8 +252,8 @@ const LessonManagement = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid gap-4 lg:grid-cols-5">
-          <div className="flex-1 flex col-span-3 relative">
+        <div className="grid lg:gap-4 grid-cols-1 gap-y-3 lg:grid-cols-3">
+          <div className="flex-1 flex col-span-2 relative">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
@@ -226,67 +261,82 @@ const LessonManagement = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
           </div>
           <select
-            value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
-            className="px-4 py-3 border flex-1 md:flex-none border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+            value={selectedLessonFilter}
+            onChange={(e) => setSelectedLessonFilter(e.target.value)}
+            className="px-4 py-3 border md:flex-none border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
           >
-            <option value="">اختر كورس</option>
-            {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.name}
-              </option>
-            ))}
+            <option value="">اختر درس</option>
+            {courses.map((course) => {
+              // Filter lessons that belong to this course
+              const courseLessons = allLessons.filter(
+                (lesson) => lesson.courseId === course.id
+              );
+
+              // Only render optgroup if course has lessons
+              if (courseLessons.length === 0) return null;
+
+              return (
+                <optgroup key={course.id} label={`كورس: ${course.name}`}>
+                  {courseLessons.map((lesson) => (
+                    <option key={lesson.id} value={lesson.id}>
+                      {lesson.name}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            })}
           </select>
-          <button
-            onClick={handleSearch}
-            className="bg-accent text-white flex-1 md:flex-none px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
-          >
-            بحث
-          </button>
         </div>
       </div>
 
-      {/* Lessons Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      {/* Lessons List */}
+      <div className="space-y-4">
         {isLoading ? (
           // Loading skeleton
-          Array.from({ length: 6 }).map((_, index) => (
+          Array.from({ length: 3 }).map((_, index) => (
             <div
               key={index}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 animate-pulse flex flex-col sm:flex-row"
             >
-              <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
-              <div className="bg-gray-200 h-6 rounded mb-2"></div>
-              <div className="bg-gray-200 h-4 rounded mb-4"></div>
-              <div className="flex gap-2">
-                <div className="bg-gray-200 h-8 rounded flex-1"></div>
-                <div className="bg-gray-200 h-8 rounded flex-1"></div>
+              <div className="bg-gray-200 w-full h-48 sm:w-48 sm:h-32 rounded-lg flex-shrink-0"></div>
+              <div className="mt-3 sm:mt-0 sm:ml-4 flex-1">
+                <div className="bg-gray-200 h-5 sm:h-6 rounded mb-2"></div>
+                <div className="bg-gray-200 h-3 sm:h-4 rounded mb-3"></div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="bg-gray-200 h-8 rounded w-full sm:w-16"></div>
+                  <div className="bg-gray-200 h-8 rounded w-full sm:w-16"></div>
+                  <div className="bg-gray-200 h-8 rounded w-full sm:w-16"></div>
+                </div>
               </div>
             </div>
           ))
         ) : lessons.length === 0 ? (
           <div className="text-center col-span-full py-12">
             <FiFileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="regular-16 text-gray-600">لا توجد دروس للعرض</p>
+            <p className="regular-16 text-gray-600">
+              {selectedLessonFilter
+                ? "الدرس المحدد غير موجود"
+                : "اختر درس محدد من القائمة المنسدلة لعرضه"}
+            </p>
             <button
               onClick={() => setShowCreateModal(true)}
               className="mt-4 bg-accent text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
             >
-              إنشاء أول درس
+              إنشاء درس جديد
             </button>
           </div>
         ) : (
           lessons.map((lesson) => (
             <div
               key={lesson.id}
-              className="bg-white rounded-lg flex flex-col shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
+              className="bg-white rounded-lg flex flex-col sm:flex-row shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 min-h-[200px]"
             >
               {/* Lesson Image/Video Thumbnail */}
-              <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-500 relative">
+              <div className="w-full h-48 sm:w-58 sm:h-auto bg-gradient-to-br from-purple-500 to-pink-500 relative flex-shrink-0">
                 {lesson.photoUrl ? (
                   <img
                     src={lesson.photoUrl}
@@ -295,63 +345,64 @@ const LessonManagement = () => {
                   />
                 ) : (
                   <div className="w-full h-full flexCenter">
-                    <FiPlay className="w-16 h-16 text-white opacity-50" />
+                    <FiPlay className="w-12 h-12 text-white opacity-50" />
                   </div>
                 )}
                 {lesson.price && (
-                  <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full bold-12">
+                  <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full bold-10">
                     {lesson.price} جنيه
                   </div>
                 )}
               </div>
 
               {/* Lesson Content */}
-              <div className="p-5 flex-1 flex flex-col">
-                <div className="flexBetween flex-1">
-                  <div className="flex flex-col">
-                    <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">
+              <div className="p-3 sm:p-4 flex-1 flex flex-col">
+                <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
+                    <h3 className="bold-16 sm:bold-18 text-gray-900 line-clamp-1 mb-1 sm:mb-0">
                       {lesson.name}
                     </h3>
-                    <p className="regular-14 text-gray-600 mb-4 line-clamp-3">
-                      {lesson.description || "لا يوجد وصف متاح"}
-                    </p>
-                  </div>
-                  {/* Lesson Stats */}
-                  <div className="text-sm min-w-[80px] text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <FiBook className="w-4 h-4" />
-                      <span>{lesson.courseName || "غير محدد"}</span>
+                    {/* Lesson Stats */}
+                    <div className="text-xs sm:text-sm text-gray-500 sm:ml-4">
+                      <div className="flex items-center gap-1">
+                        <FiBook className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="truncate">
+                          {lesson.courseName || "غير محدد"}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <p className="regular-12 sm:regular-14 text-gray-600 line-clamp-2 mb-3">
+                    {lesson.description || "لا يوجد وصف متاح"}
+                  </p>
                 </div>
-              </div>
 
-              {/* Actions - Moved to bottom */}
-              <div className="p-4 pt-0 border-t border-gray-100">
-                <div className="flex gap-2">
+                {/* Actions */}
+                <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     onClick={() => {
                       setSelectedLesson(lesson);
                       setShowViewModal(true);
                       fetchLessonStatus(lesson.id);
                     }}
-                    className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
+                    className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-2 sm:px-3 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-1 text-sm"
                   >
-                    <FiEye className="w-4 h-4" />
-                    عرض
+                    <FiEye className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">عرض</span>
                   </button>
                   <button
                     onClick={() => openEditModal(lesson)}
-                    className="cursor-pointer flex-1 bg-green-50 text-green-600 border border-green-300 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2"
+                    className="cursor-pointer flex-1 bg-green-50 text-green-600 border border-green-300 py-2 px-2 sm:px-3 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-1 text-sm"
                   >
-                    <FiEdit className="w-4 h-4" />
-                    تعديل
+                    <FiEdit className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">تعديل</span>
                   </button>
                   <button
                     onClick={() => openDeleteModal(lesson)}
-                    className="cursor-pointer flex-1 bg-red-50 text-red-400 py-2 border border-red-300 px-4 rounded-lg hover:bg-red-100 transition-colors flexCenter gap-2"
+                    className="cursor-pointer flex-1 bg-red-50 text-red-600 border border-red-300 py-2 px-2 sm:px-3 rounded-lg hover:bg-red-100 transition-colors flexCenter gap-1 text-sm"
                   >
-                    <FiTrash2 className="w-4 h-4" />
+                    <FiTrash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">حذف</span>
                   </button>
                 </div>
               </div>
@@ -427,6 +478,7 @@ const LessonManagement = () => {
                     placeholder="0"
                   />
                 </div>
+
                 <div>
                   <label className="block bold-14 text-gray-900 mb-2">
                     الكورس *

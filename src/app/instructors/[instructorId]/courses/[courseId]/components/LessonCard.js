@@ -15,11 +15,8 @@ import {
 import {
   studentAPI,
   LessonProgressStatus,
-  canAccessLessonPart,
   formatProgressStatus,
 } from "../../../../../services/studentAPI";
-import { adminAPI } from "../../../../../adminDashboard/services/adminAPI";
-import { instructorAPI } from "../../../../../instructorDashboard/services/instructorAPI";
 import { useUserData } from "../../../../../../../models/UserContext";
 
 const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
@@ -27,24 +24,14 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   const [accessStatus, setAccessStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lessonProgress, setLessonProgress] = useState(null);
-<<<<<<< HEAD
   const [hasExam, setHasExam] = useState(false);
   const [hasAssignment, setHasAssignment] = useState(false);
   const [componentsLoading, setComponentsLoading] = useState(true);
-=======
-  const [lessonStatus, setLessonStatus] = useState({
-    hasExam: false,
-    hasAssignment: false,
-    isLoading: true,
-  });
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
 
   useEffect(() => {
     checkLessonAccess();
-    fetchLessonStatus();
   }, [lesson.id, user]);
 
-<<<<<<< HEAD
   useEffect(() => {
     checkLessonComponents();
   }, [lesson.id]);
@@ -69,44 +56,6 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
       setHasAssignment(false);
     } finally {
       setComponentsLoading(false);
-=======
-  const fetchLessonStatus = async () => {
-    try {
-      setLessonStatus((prev) => ({ ...prev, isLoading: true }));
-
-      // Use appropriate API based on user role
-      let hasExamAPI, hasAssignmentAPI;
-
-      if (user?.role === "ADMIN") {
-        hasExamAPI = adminAPI.lessons.hasExam;
-        hasAssignmentAPI = adminAPI.lessons.hasAssignment;
-      } else if (user?.role === "INSTRUCTOR" || user?.role === "ASSISTANT") {
-        hasExamAPI = instructorAPI.lessons.hasExam;
-        hasAssignmentAPI = instructorAPI.lessons.hasAssignment;
-      } else {
-        // For students, we'll use the same endpoints but they might have different permissions
-        hasExamAPI = adminAPI.lessons.hasExam;
-        hasAssignmentAPI = adminAPI.lessons.hasAssignment;
-      }
-
-      const [examResponse, assignmentResponse] = await Promise.all([
-        hasExamAPI(lesson.id),
-        hasAssignmentAPI(lesson.id),
-      ]);
-
-      setLessonStatus({
-        hasExam: examResponse.data || false,
-        hasAssignment: assignmentResponse.data || false,
-        isLoading: false,
-      });
-    } catch (error) {
-      console.error("Error fetching lesson status:", error);
-      setLessonStatus({
-        hasExam: false,
-        hasAssignment: false,
-        isLoading: false,
-      });
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
     }
   };
 
@@ -120,9 +69,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
         // For non-students, try to get lesson details using the enhanced endpoint
         try {
-          const lessonDetails = await studentAPI.lessons.getLessonDetails(
-            lesson.id
-          );
+          await studentAPI.lessons.getLessonDetails(lesson.id);
           // For non-students, we don't need progress tracking, just set full access
           setLessonProgress({
             progressStatus: LessonProgressStatus.ASSIGNMENT_DONE, // Full access
@@ -238,7 +185,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
     switch (status) {
       case LessonProgressStatus.PURCHASED:
-        return `${baseStatus} - ابدأ الامتحان`;
+        return `${baseStatus} - إبدأ الامتحان`;
       case LessonProgressStatus.EXAM_PASSED:
         return `${baseStatus} - شاهد الفيديو`;
       case LessonProgressStatus.VIDEO_WATCHED:
@@ -275,45 +222,27 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
     if (accessStatus?.isEnhancedAccess) {
       switch (part) {
         case "exam":
-<<<<<<< HEAD
           return hasExam; // Can access if lesson has exam (from API)
         case "video":
           return true; // Always can access video
         case "assignment":
           return hasAssignment; // Can access if lesson has assignment (from API)
-=======
-          return lessonStatus.hasExam; // Can access if lesson has exam (real-time)
-        case "video":
-          return true; // Always can access video
-        case "assignment":
-          return lessonStatus.hasAssignment; // Can access if lesson has assignment (real-time)
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
         default:
           return false;
       }
     }
 
-<<<<<<< HEAD
     if (!lessonProgress) return false;
 
     // For students, use normal progress-based access
-=======
-    // For students, use normal progress-based access with real-time lesson status
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
     const status = lessonProgress.progressStatus;
 
     switch (part) {
       case "exam":
-<<<<<<< HEAD
         return hasExam && status === LessonProgressStatus.PURCHASED;
-=======
-        return (
-          lessonStatus.hasExam && status === LessonProgressStatus.PURCHASED
-        );
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
       case "video":
         // If lesson has exam, need to pass it first; otherwise can access after purchase
-        if (lessonStatus.hasExam) {
+        if (hasExam) {
           return [
             LessonProgressStatus.EXAM_PASSED,
             LessonProgressStatus.VIDEO_WATCHED,
@@ -328,11 +257,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
         }
       case "assignment":
         return (
-<<<<<<< HEAD
           hasAssignment &&
-=======
-          lessonStatus.hasAssignment &&
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
           [
             LessonProgressStatus.VIDEO_WATCHED,
             LessonProgressStatus.ASSIGNMENT_DONE,
@@ -340,29 +265,6 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
         );
       default:
         return false;
-    }
-  };
-
-  const getInitialTab = (progressStatus) => {
-    switch (progressStatus) {
-      case LessonProgressStatus.PURCHASED:
-        // If lesson has exam, start with exam; otherwise start with video
-        return hasExam ? "exam" : "video";
-
-      case LessonProgressStatus.EXAM_PASSED:
-        // Exam passed, go to video
-        return "video";
-
-      case LessonProgressStatus.VIDEO_WATCHED:
-        // Video watched, go to assignment if exists
-        return hasAssignment ? "assignment" : "video";
-
-      case LessonProgressStatus.ASSIGNMENT_DONE:
-        // Everything done, show video (or any tab user prefers)
-        return "video";
-
-      default:
-        return hasExam ? "exam" : "video";
     }
   };
 
@@ -378,21 +280,21 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   }
 
   return (
-    <div className="group bg-white/95 backdrop-blur-md border border-white/40 w-full rounded-3xl p-8 hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 relative overflow-hidden shadow-xl">
+    <div className="group bg-white/95 backdrop-blur-md border border-white/40 w-full rounded-2xl lg:rounded-3xl p-4 md:p-6 lg:p-8 hover:shadow-3xl transition-all duration-500 relative overflow-hidden shadow-xl">
       {/* Background decorations */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-xl"></div>
 
       {/* Enhanced Lesson Header */}
-      <div className="relative flex flex-col md:flex-row items-start gap-6 mb-6">
+      <div className="relative flex flex-col md:flex-row items-start gap-4 md:gap-6 mb-4 md:mb-6">
         {/* Lesson Photo */}
-        <div className="relative group/photo flex-shrink-0">
-          <div className="w-full md:w-32 h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-2 border-white shadow-lg">
+        <div className="relative group/photo flex-shrink-0 mx-auto md:mx-0">
+          <div className="w-45 h-40 md:w-32 md:h-32 rounded-xl md:rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-2 border-white shadow-lg">
             {lesson.photoUrl ? (
               <Image
                 src={lesson.photoUrl}
-                width={128}
-                height={128}
+                width={160}
+                height={160}
                 alt={lesson.name}
                 className="w-full h-full object-cover group-hover/photo:scale-110 transition-transform duration-300"
                 onError={(e) => {
@@ -401,40 +303,41 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
                   if (fallback) fallback.style.display = "flex";
                 }}
               />
-            ) : null}
-            <div className="w-full h-full flex items-center justify-center">
-              <FaBookOpen className="w-8 h-8 text-gray-400" />
-            </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <FaBookOpen className="w-8 h-8 hidden text-gray-400" />
+              </div>
+            )}
           </div>
           {/* Photo overlay on hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <h3 className="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-3 group-hover:text-blue-600 transition-colors duration-300">
+        <div className="flex-1 min-w-0 text-center mx-auto md:text-right">
+          <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 mb-2 md:mb-3 flex items-center justify-center md:justify-start gap-2 md:gap-3 group-hover:text-blue-600 transition-colors duration-300">
             {lesson.name}
             {accessStatus?.hasAccess &&
               getProgressIcon(lessonProgress?.progressStatus)}
           </h3>
-          <p className="text-gray-600 mb-4 leading-relaxed text-lg">
+          <p className="text-gray-600 overflow-hidden max-w-[850px] mb-3 md:mb-4 leading-relaxed text-sm md:text-base lg:text-lg">
             {lesson.description || "وصف الدرس غير متاح"}
           </p>
         </div>
 
         {/* Enhanced Badges */}
-        <div className="flex flex-col gap-2 items-end">
+        <div className="flex flex-col md:flex-col gap-2 items-center md:items-end w-full md:w-auto">
           {/* Enhanced Price Badge - Only show for students */}
           {user?.role === "STUDENT" && (
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <FaDollarSign className="w-4 h-4" />
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-sm md:text-base">
+              <FaDollarSign className="w-3 h-3 md:w-4 md:h-4" />
               {lesson.price} جنيه
             </div>
           )}
 
           {/* Enhanced Role Badge for non-students */}
           {user?.role !== "STUDENT" && accessStatus?.isEnhancedAccess && (
-            <div className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <FaEye className="w-4 h-4" />
+            <div className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-sm md:text-base">
+              <FaEye className="w-3 h-3 md:w-4 md:h-4" />
               {user?.role === "ADMIN"
                 ? "مدير"
                 : user?.role === "INSTRUCTOR"
@@ -448,27 +351,24 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
       {/* Enhanced Progress Status */}
       {accessStatus?.hasAccess && lessonProgress && (
         <div
-          className={`relative mb-6 px-5 py-4 rounded-2xl border-2 ${getProgressColor(lessonProgress.progressStatus)} backdrop-blur-sm shadow-lg`}
+          className={`relative mb-4 md:mb-6 px-4 md:px-5 py-1 rounded-xl md:rounded-2xl border-2 ${getProgressColor(lessonProgress.progressStatus)} backdrop-blur-sm shadow-lg`}
         >
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
+          <div className="flex items-center justify-center md:justify-start gap-3 md:gap-4">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/30 flex items-center justify-center">
               {getProgressIcon(lessonProgress.progressStatus)}
             </div>
-            <span className="font-bold text-base">
+            <span className="font-bold text-sm md:text-base">
               {getProgressText(lessonProgress.progressStatus)}
             </span>
           </div>
-          {/* Progress indicator line */}
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-b-2xl opacity-50"></div>
         </div>
       )}
 
       {/* Enhanced Lesson Components */}
-      <div className="relative grid grid-cols-3 gap-4 mb-8">
+      <div className="relative grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
         {/* Enhanced Exam */}
         <div
-<<<<<<< HEAD
-          className={`group/exam p-5 rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
+          className={`group/exam p-3 rounded-xl md:rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
             componentsLoading
               ? "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 animate-pulse"
               : hasExam
@@ -478,12 +378,12 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
                 : "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300"
           }`}
         >
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/60 flex items-center justify-center">
+          <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 rounded-full bg-white/60 flex items-center justify-center">
             {componentsLoading ? (
-              <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+              <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
             ) : (
               <FaQuestionCircle
-                className={`w-6 h-6 transition-all duration-300 ${
+                className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-300 ${
                   hasExam
                     ? canAccessPart("exam")
                       ? "text-blue-500 group-hover/exam:text-blue-600 group-hover/exam:scale-110"
@@ -493,39 +393,10 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
               />
             )}
           </div>
-          <p className="text-sm font-semibold text-gray-700">
+          <p className="text-xs md:text-sm font-semibold text-gray-700">
             {componentsLoading
               ? "جاري التحميل..."
               : hasExam
-=======
-          className={`p-3 rounded-lg border text-center ${
-            lessonStatus.isLoading
-              ? "bg-gray-50 border-gray-200"
-              : lessonStatus.hasExam
-                ? canAccessPart("exam")
-                  ? "bg-blue-50 border-blue-200"
-                  : "bg-gray-50 border-gray-200"
-                : "bg-gray-100 border-gray-300"
-          }`}
-        >
-          {lessonStatus.isLoading ? (
-            <div className="w-5 h-5 mx-auto mb-1 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500"></div>
-          ) : (
-            <FaQuestionCircle
-              className={`w-5 h-5 mx-auto mb-1 ${
-                lessonStatus.hasExam
-                  ? canAccessPart("exam")
-                    ? "text-blue-500"
-                    : "text-gray-400"
-                  : "text-gray-300"
-              }`}
-            />
-          )}
-          <p className="regular-12 text-gray-600">
-            {lessonStatus.isLoading
-              ? "جاري التحميل..."
-              : lessonStatus.hasExam
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
                 ? "امتحان"
                 : "لا يوجد امتحان"}
           </p>
@@ -533,28 +404,29 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
         {/* Enhanced Video */}
         <div
-          className={`group/video p-5 rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
+          className={`group/video p-3 md:p-4 lg:p-5 rounded-xl md:rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
             canAccessPart("video")
               ? "bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:border-green-300 shadow-md"
               : "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200"
           }`}
         >
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/60 flex items-center justify-center">
+          <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 rounded-full bg-white/60 flex items-center justify-center">
             <FaPlay
-              className={`w-6 h-6 transition-all duration-300 ${
+              className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-300 ${
                 canAccessPart("video")
                   ? "text-green-500 group-hover/video:text-green-600 group-hover/video:scale-110"
                   : "text-gray-400"
               }`}
             />
           </div>
-          <p className="text-sm font-semibold text-gray-700">فيديو</p>
+          <p className="text-xs md:text-sm font-semibold text-gray-700">
+            فيديو
+          </p>
         </div>
 
         {/* Enhanced Assignment */}
         <div
-<<<<<<< HEAD
-          className={`group/assignment p-5 rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
+          className={`group/assignment p-3 md:p-4 lg:p-5 rounded-xl md:rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
             componentsLoading
               ? "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 animate-pulse"
               : hasAssignment
@@ -564,12 +436,12 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
                 : "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300"
           }`}
         >
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/60 flex items-center justify-center">
+          <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 rounded-full bg-white/60 flex items-center justify-center">
             {componentsLoading ? (
-              <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+              <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
             ) : (
               <FaFileAlt
-                className={`w-6 h-6 transition-all duration-300 ${
+                className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-300 ${
                   hasAssignment
                     ? canAccessPart("assignment")
                       ? "text-purple-500 group-hover/assignment:text-purple-600 group-hover/assignment:scale-110"
@@ -579,39 +451,10 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
               />
             )}
           </div>
-          <p className="text-sm font-semibold text-gray-700">
+          <p className="text-xs md:text-sm font-semibold text-gray-700">
             {componentsLoading
               ? "جاري التحميل..."
               : hasAssignment
-=======
-          className={`p-3 rounded-lg border text-center ${
-            lessonStatus.isLoading
-              ? "bg-gray-50 border-gray-200"
-              : lessonStatus.hasAssignment
-                ? canAccessPart("assignment")
-                  ? "bg-purple-50 border-purple-200"
-                  : "bg-gray-50 border-gray-200"
-                : "bg-gray-100 border-gray-300"
-          }`}
-        >
-          {lessonStatus.isLoading ? (
-            <div className="w-5 h-5 mx-auto mb-1 animate-spin rounded-full border-2 border-gray-300 border-t-purple-500"></div>
-          ) : (
-            <FaFileAlt
-              className={`w-5 h-5 mx-auto mb-1 ${
-                lessonStatus.hasAssignment
-                  ? canAccessPart("assignment")
-                    ? "text-purple-500"
-                    : "text-gray-400"
-                  : "text-gray-300"
-              }`}
-            />
-          )}
-          <p className="regular-12 text-gray-600">
-            {lessonStatus.isLoading
-              ? "جاري التحميل..."
-              : lessonStatus.hasAssignment
->>>>>>> f2f5225ec071e45510f8396ff03bb616ce3aa1e7
                 ? "واجب"
                 : "لا يوجد واجب"}
           </p>
@@ -619,13 +462,13 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
       </div>
 
       {/* Enhanced Action Buttons */}
-      <div className="relative flex justify-end gap-4">
+      <div className="relative flex flex-col md:flex-row justify-center md:justify-end gap-3 md:gap-4">
         {shouldShowPurchaseButton() && (
           <button
             onClick={() => onPurchase(lesson)}
-            className="cursor-pointer bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 px-8 rounded-2xl font-bold hover:from-green-600 hover:to-emerald-700 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            className="cursor-pointer bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 md:py-4 px-6 md:px-8 rounded-xl md:rounded-2xl font-bold hover:from-green-600 hover:to-emerald-700 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm md:text-base"
           >
-            <FaShoppingCart className="w-5 h-5" />
+            <FaShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
             شراء الدرس
           </button>
         )}
@@ -635,9 +478,9 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
             onClick={() => {
               onViewLesson(lesson);
             }}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-2xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
+            className="w-full md:flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 md:py-4 px-6 rounded-xl md:rounded-2xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer text-sm md:text-base"
           >
-            <FaEye className="w-5 h-5" />
+            <FaEye className="w-4 h-4 md:w-5 md:h-5" />
             {accessStatus?.isEnhancedAccess ? "إدارة الدرس" : "عرض الدرس"}
           </button>
         )}
@@ -645,16 +488,16 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
         {!shouldShowPurchaseButton() &&
           !shouldShowViewButton() &&
           user?.role === "STUDENT" && (
-            <div className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-3 border-2 border-gray-300">
-              <FaLock className="w-5 h-5" />
+            <div className="w-full md:flex-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 py-3 md:py-4 px-6 rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 md:gap-3 border-2 border-gray-300 text-sm md:text-base">
+              <FaLock className="w-4 h-4 md:w-5 md:h-5" />
               غير متاح
             </div>
           )}
 
         {(user?.role === "INSTRUCTOR" || user?.role === "ASSISTANT") &&
           !shouldShowViewButton() && (
-            <div className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-3 border-2 border-gray-300">
-              <FaLock className="w-5 h-5" />
+            <div className="w-full md:flex-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 py-3 md:py-4 px-6 rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 md:gap-3 border-2 border-gray-300 text-sm md:text-base">
+              <FaLock className="w-4 h-4 md:w-5 md:h-5" />
               ليس من دروسك
             </div>
           )}
@@ -662,8 +505,8 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
       {/* Access Expiry Info */}
       {accessStatus?.hasAccess && accessStatus?.expiryDate && (
-        <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-center">
-          <p className="regular-12 text-yellow-700">
+        <div className="mt-3 p-2 md:p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+          <p className="text-xs md:text-sm text-yellow-700">
             ينتهي الوصول في:{" "}
             {new Date(accessStatus.expiryDate).toLocaleDateString("ar-EG")}
           </p>

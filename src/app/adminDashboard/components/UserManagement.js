@@ -11,6 +11,7 @@ import {
   FiPhone,
   FiMapPin,
   FiEye,
+  FiEyeOff,
   FiX,
 } from "react-icons/fi";
 import {
@@ -33,6 +34,10 @@ const UserManagement = () => {
   const [createUserType, setCreateUserType] = useState("instructor");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+
+  // Show password states
+  const [showInstructorPassword, setShowInstructorPassword] = useState(false);
+  const [showAssistantPassword, setShowAssistantPassword] = useState(false);
 
   // Form states
   const [instructorForm, setInstructorForm] = useState({
@@ -237,6 +242,11 @@ const UserManagement = () => {
       await adminAPI.users.deleteUser(userToDelete);
       toast.success("تم حذف المستخدم بنجاح");
       fetchUsers();
+
+      // If an instructor was deleted, refresh the instructors list for the assistant creation modal
+      if (activeUserType === "instructors") {
+        fetchInstructors();
+      }
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف المستخدم"));
     } finally {
@@ -600,19 +610,34 @@ const UserManagement = () => {
                     <label className="block bold-14 text-gray-900 mb-2">
                       كلمة المرور *
                     </label>
-                    <input
-                      type="password"
-                      required
-                      minLength={6}
-                      value={instructorForm.password}
-                      onChange={(e) =>
-                        setInstructorForm({
-                          ...instructorForm,
-                          password: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showInstructorPassword ? "text" : "password"}
+                        required
+                        minLength={6}
+                        value={instructorForm.password}
+                        onChange={(e) =>
+                          setInstructorForm({
+                            ...instructorForm,
+                            password: e.target.value,
+                          })
+                        }
+                        className="w-full px-4 py-3 pl-9 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowInstructorPassword(!showInstructorPassword)
+                        }
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                      >
+                        {showInstructorPassword ? (
+                          <FiEyeOff className="w-5 h-5" />
+                        ) : (
+                          <FiEye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="block bold-14 text-gray-900 mb-2">
@@ -688,8 +713,7 @@ const UserManagement = () => {
                     <label className="block bold-14 text-gray-900 mb-2">
                       المحافظة *
                     </label>
-                    <input
-                      type="text"
+                    <select
                       required
                       value={instructorForm.government}
                       onChange={(e) =>
@@ -699,7 +723,14 @@ const UserManagement = () => {
                         })
                       }
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                    />
+                    >
+                      <option value="">اختر المحافظة</option>
+                      {EGYPTIAN_GOVERNORATES.map((governorate) => (
+                        <option key={governorate} value={governorate}>
+                          {governorate}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block bold-14 text-gray-900 mb-2">
@@ -779,19 +810,34 @@ const UserManagement = () => {
                     <label className="block bold-14 text-gray-900 mb-2">
                       كلمة المرور *
                     </label>
-                    <input
-                      type="password"
-                      required
-                      minLength={6}
-                      value={assistantForm.password}
-                      onChange={(e) =>
-                        setAssistantForm({
-                          ...assistantForm,
-                          password: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showAssistantPassword ? "text" : "password"}
+                        required
+                        minLength={6}
+                        value={assistantForm.password}
+                        onChange={(e) =>
+                          setAssistantForm({
+                            ...assistantForm,
+                            password: e.target.value,
+                          })
+                        }
+                        className="w-full px-4 py-3 pl-9 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowAssistantPassword(!showAssistantPassword)
+                        }
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                      >
+                        {showAssistantPassword ? (
+                          <FiEyeOff className="w-5 h-5" />
+                        ) : (
+                          <FiEye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="block bold-14 text-gray-900 mb-2">
@@ -867,8 +913,7 @@ const UserManagement = () => {
                     <label className="block bold-14 text-gray-900 mb-2">
                       المحافظة *
                     </label>
-                    <input
-                      type="text"
+                    <select
                       required
                       value={assistantForm.government}
                       onChange={(e) =>
@@ -878,7 +923,14 @@ const UserManagement = () => {
                         })
                       }
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                    />
+                    >
+                      <option value="">اختر المحافظة</option>
+                      {EGYPTIAN_GOVERNORATES.map((governorate) => (
+                        <option key={governorate} value={governorate}>
+                          {governorate}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block bold-14 text-gray-900 mb-2">

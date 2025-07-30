@@ -1,6 +1,6 @@
 import { UserProvider } from "../../models/UserContext";
 import FloatingChatButton from "./components/FloatingChatButton";
-import PerformanceMonitor from "./components/PerformanceMonitor";
+import AdminPerformanceWrapper from "./components/AdminPerformanceWrapper";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
@@ -36,6 +36,7 @@ export default function RootLayout({ children }) {
         <UserProvider>
           {children}
           <FloatingChatButton />
+          <AdminPerformanceWrapper />
           <ToastContainer
             position="top-right"
             autoClose={5000}

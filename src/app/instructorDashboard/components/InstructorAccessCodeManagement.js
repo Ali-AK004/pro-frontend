@@ -335,11 +335,22 @@ const InstructorAccessCodeManagement = () => {
             className="px-4 py-3 border flex-1/4 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
             <option value="">اختر الدرس</option>
-            {lessons.map((lesson) => (
-              <option key={lesson.id} value={lesson.id}>
-                {lesson.name}
-              </option>
-            ))}
+            {courses.map((course) => {
+              const courseLessons = lessons.filter(
+                (lesson) => lesson.course?.id === course.id
+              );
+              if (courseLessons.length === 0) return null;
+
+              return (
+                <optgroup key={course.id} label={`كورس: ${course.name}`}>
+                  {courseLessons.map((lesson) => (
+                    <option key={lesson.id} value={lesson.id}>
+                      {lesson.name}
+                    </option>
+                  ))}
+                </optgroup>
+              );
+            })}
           </select>
 
           <div className="flex gap-2">

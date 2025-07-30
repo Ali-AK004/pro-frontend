@@ -217,21 +217,27 @@ const ExamManagement = () => {
         </div>
       </div>
 
-      {/* Exams Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Exams List */}
+      <div className="space-y-4">
         {isLoading ? (
-          Array.from({ length: 6 }).map((_, index) => (
+          Array.from({ length: 3 }).map((_, index) => (
             <div
               key={index}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 animate-pulse"
             >
-              <div className="h-4 bg-gray-200 rounded mb-4"></div>
-              <div className="h-3 bg-gray-200 rounded mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded mb-4"></div>
-              <div className="flex gap-2">
+              <div className="h-5 sm:h-6 bg-gray-200 rounded mb-3"></div>
+              <div className="h-3 sm:h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-3 sm:h-4 bg-gray-200 rounded mb-4"></div>
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="h-3 bg-gray-200 rounded"></div>
+                <div className="h-3 bg-gray-200 rounded"></div>
+                <div className="h-3 bg-gray-200 rounded"></div>
+                <div className="h-3 bg-gray-200 rounded"></div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
                 <div className="h-8 bg-gray-200 rounded flex-1"></div>
                 <div className="h-8 bg-gray-200 rounded flex-1"></div>
-                <div className="h-8 bg-gray-200 rounded w-8"></div>
+                <div className="h-8 bg-gray-200 rounded w-full sm:w-12"></div>
               </div>
             </div>
           ))
@@ -253,64 +259,71 @@ const ExamManagement = () => {
               className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
             >
               {/* Exam Header */}
-              <div className="p-6">
-                <h3 className="bold-18 text-gray-900 mb-2">{exam.title}</h3>
-                <p className="regular-14 text-gray-600 mb-4">
-                  {exam.lessonName || "درس غير محدد"}
-                </p>
+              <div className="p-3 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="bold-16 sm:bold-18 text-gray-900 mb-2">
+                      {exam.title}
+                    </h3>
+                    <p className="regular-12 sm:regular-14 text-gray-600 mb-3 sm:mb-4 line-clamp-2">
+                      {exam.lessonName || "درس غير محدد"}
+                    </p>
+                  </div>
+                </div>
 
                 {/* Exam Stats */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
                   <div className="flex items-center gap-2">
-                    <FiClock className="w-4 h-4 text-blue-500" />
-                    <span className="regular-12 text-gray-600">
+                    <FiClock className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+                    <span className="regular-10 sm:regular-12 text-gray-600">
                       {exam.timeLimitMinutes} دقيقة
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <FiAward className="w-4 h-4 text-green-500" />
-                    <span className="regular-12 text-gray-600">
+                    <FiAward className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
+                    <span className="regular-10 sm:regular-12 text-gray-600">
                       {exam.passingScore}% للنجاح
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <FiBook className="w-4 h-4 text-purple-500" />
-                    <span className="regular-12 text-gray-600">
+                    <FiBook className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500" />
+                    <span className="regular-10 sm:regular-12 text-gray-600">
                       {exam.questions?.length || 0} سؤال
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <FiUsers className="w-4 h-4 text-orange-500" />
-                    <span className="regular-12 text-gray-600">
+                    <FiUsers className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500" />
+                    <span className="regular-10 sm:regular-12 text-gray-600">
                       {exam.submissionCount || 0} محاولة
                     </span>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     onClick={() => handleViewResults(exam)}
-                    className="flex-1 bg-blue-50 text-blue-600 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2 cursor-pointer"
+                    className="flex-1 bg-blue-50 text-blue-600 py-3 border border-blue-600 px-2 sm:px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
                   >
-                    <FiBarChart className="w-4 h-4" />
-                    النتائج
+                    <FiBarChart className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">النتائج</span>
                   </button>
                   <button
                     onClick={() => {
                       setSelectedExam(exam);
                       setShowEditModal(true);
                     }}
-                    className="flex-1 bg-green-50 text-green-600 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2 cursor-pointer"
+                    className="flex-1 bg-green-50 text-green-600 py-3 border border-green-600 px-2 sm:px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
                   >
-                    <FiEdit className="w-4 h-4" />
-                    تعديل
+                    <FiEdit className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">تعديل</span>
                   </button>
                   <button
                     onClick={() => openDeleteModal(exam)}
-                    className="bg-red-50 text-red-600 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
+                    className="bg-red-50 flex-1 text-red-600 border border-red-600 py-3 px-2 sm:px-4 rounded-lg hover:bg-red-100 transition-colors cursor-pointer flexCenter"
                   >
-                    <FiTrash2 className="w-4 h-4" />
+                    <FiTrash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline ml-1">حذف</span>
                   </button>
                 </div>
               </div>
