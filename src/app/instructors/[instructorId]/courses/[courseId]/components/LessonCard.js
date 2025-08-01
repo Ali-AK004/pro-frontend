@@ -113,7 +113,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
       if (user?.role === "STUDENT") {
         setAccessStatus({ hasAccess: false });
       } else {
-        // For other roles, might be access denied, so no access
+        // For other roles, might be access denied, Soono access
         setAccessStatus({ hasAccess: false });
       }
     } finally {

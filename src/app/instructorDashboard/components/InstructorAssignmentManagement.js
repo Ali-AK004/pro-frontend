@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { instructorAPI, handleAPIError } from "../services/instructorAPI";
 import { assignmentAPI } from "../../services/assignmentAPI";
 import { useUserData } from "../../../../models/UserContext";
@@ -23,7 +23,7 @@ import {
 import AssignmentCreationModal from "../../adminDashboard/components/Modal/AssignmentCreationModal";
 import { getInstructorId, getRolePermissions } from "../../utils/roleHelpers";
 
-const InstructorAssignmentManagement = () => {
+const InstructorAssignmentManagement = React.memo(() => {
   const { user } = useUserData();
   const [assignments, setAssignments] = useState([]);
   const [lessons, setLessons] = useState([]);
@@ -202,12 +202,23 @@ const InstructorAssignmentManagement = () => {
       const response = await instructorAPI.assignments.getSubmissions(
         assignment.id
       );
-      setAssignmentSubmissions(response.data || []);
+
+      // Handle paginated response - submissions are in the 'content' field
+      const submissions = response.data?.content || response.data;
+      if (Array.isArray(submissions)) {
+        setAssignmentSubmissions(submissions);
+        console.log("Loaded submissions:", submissions);
+      } else {
+        console.warn("API response is not an array:", response.data);
+        setAssignmentSubmissions([]);
+      }
+
       setSelectedAssignment(assignment);
       setShowSubmissionsModal(true);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل التسليمات"));
-      console.error(error);
+      console.error("Error fetching submissions:", error);
+      setAssignmentSubmissions([]); // Set empty array on error
     } finally {
       setIsLoading(false);
     }
@@ -428,9 +439,157 @@ const InstructorAssignmentManagement = () => {
           </div>
         </div>
       )}
+
+      {/* Submissions Modal */}
+      {showSubmissionsModal && selectedAssignment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-bold">تسليمات الواجب</h3>
+                  <p className="text-blue-100 mt-1">
+                    {selectedAssignment.title}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowSubmissionsModal(false);
+                    setSelectedAssignment(null);
+                    setAssignmentSubmissions([]);
+                  }}
+                  className="text-white hover:text-gray-200 transition-colors"
+                >
+                  <FiX className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              {!Array.isArray(assignmentSubmissions) ||
+              assignmentSubmissions.length === 0 ? (
+                <div className="text-center py-12">
+                  <FiFileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h4 className="text-lg font-semibold text-gray-600 mb-2">
+                    لا توجد تسليمات
+                  </h4>
+                  <p className="text-gray-500">
+                    لم يقم أي طالب بتسليم هذا الواجب بعد
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center mb-6">
+                    <h4 className="text-lg font-semibold text-gray-800">
+                      التسليمات ({assignmentSubmissions.length})
+                    </h4>
+                  </div>
+
+                  {assignmentSubmissions.map((submission) => (
+                    <div
+                      key={submission.submissionId || submission.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h5 className="font-semibold text-gray-800">
+                            {submission.studentName ||
+                              `طالب ${submission.studentName}`}
+                          </h5>
+                          <p className="text-sm text-gray-500">
+                            تاريخ التسليم:{" "}
+                            {new Date(
+                              submission.submissionDate
+                            ).toLocaleDateString("ar-EG")}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            ID: {submission.submissionId}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {submission.grade ? (
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
+                              الدرجة: {submission.grade}
+                            </span>
+                          ) : (
+                            <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-medium">
+                              لم يتم التقييم
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                        <h6 className="font-medium text-gray-700 mb-2">
+                          المحتوى:
+                        </h6>
+                        <div className="max-h-40 overflow-y-auto border border-gray-200 rounded p-2 bg-white">
+                          <p className="text-gray-600 whitespace-pre-wrap break-words">
+                            {submission.submissionText || "لا يوجد محتوى"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {submission.feedback && (
+                        <div className="bg-blue-50 rounded-lg p-3 mb-3">
+                          <h6 className="font-medium text-blue-700 mb-2">
+                            التعليق:
+                          </h6>
+                          <p className="text-blue-600">{submission.feedback}</p>
+                        </div>
+                      )}
+
+                      {!submission.grade && (
+                        <div className="flex gap-2 mt-3">
+                          <input
+                            type="number"
+                            placeholder="الدرجة"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            min="0"
+                            max="100"
+                            id={`grade-${submission.submissionId || submission.id}`}
+                          />
+                          <input
+                            type="text"
+                            placeholder="تعليق (اختياري)"
+                            className="flex-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            id={`feedback-${submission.submissionId || submission.id}`}
+                          />
+                          <button
+                            onClick={() => {
+                              const submissionId =
+                                submission.submissionId || submission.id;
+                              const grade = document.getElementById(
+                                `grade-${submissionId}`
+                              ).value;
+                              const feedback = document.getElementById(
+                                `feedback-${submissionId}`
+                              ).value;
+                              if (grade) {
+                                handleGradeSubmission(
+                                  submissionId,
+                                  parseFloat(grade),
+                                  feedback
+                                );
+                              }
+                            }}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                          >
+                            تقييم
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+});
 
 // Assignment Card Component (reused from admin)
 const AssignmentCard = ({

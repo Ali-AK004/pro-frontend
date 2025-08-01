@@ -4,6 +4,51 @@ import { sanitizeInput, validateSearchTerm } from "../../utils/security";
 const BASE_URL = "http://localhost:8080/api/instructors";
 const API_BASE_URL = "http://localhost:8080/api";
 
+// Simple cache for API responses
+const apiCache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Request deduplication - prevent multiple identical requests
+const pendingRequests = new Map();
+
+const getCachedResponse = (key) => {
+  const cached = apiCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  return null;
+};
+
+const setCachedResponse = (key, data) => {
+  apiCache.set(key, { data, timestamp: Date.now() });
+};
+
+const deduplicateRequest = async (key, requestFn) => {
+  // Check cache first
+  const cached = getCachedResponse(key);
+  if (cached) return cached;
+
+  // Check if request is already pending
+  if (pendingRequests.has(key)) {
+    return pendingRequests.get(key);
+  }
+
+  // Make new request
+  const requestPromise = requestFn()
+    .then((response) => {
+      setCachedResponse(key, response);
+      pendingRequests.delete(key);
+      return response;
+    })
+    .catch((error) => {
+      pendingRequests.delete(key);
+      throw error;
+    });
+
+  pendingRequests.set(key, requestPromise);
+  return requestPromise;
+};
+
 // Create axios instance with default config for instructor endpoints
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -75,16 +120,29 @@ export const instructorAPI = {
     create: (instructorId, data) =>
       apiClient.post(`/${instructorId}/courses`, data),
 
-    // Get instructor's courses
-    getByInstructor: (instructorId) =>
-      apiClient.get(`/${instructorId}/courses`),
+    // Get instructor's courses with caching and deduplication
+    getByInstructor: (instructorId) => {
+      const cacheKey = `courses_${instructorId}`;
+      return deduplicateRequest(cacheKey, () =>
+        apiClient.get(`/${instructorId}/courses`)
+      );
+    },
 
     // Update instructor's own course
     update: (instructorId, courseId, data) =>
       apiClient.put(`/${instructorId}/courses/${courseId}`, data),
 
-    // Get course lessons
-    getLessons: (courseId) => apiClient.get(`/courses/${courseId}/lessons`),
+    // Get course lessons with caching and deduplication
+    getLessons: (courseId) => {
+      if (!courseId) {
+        throw new Error("Course ID is required");
+      }
+
+      const cacheKey = `lessons_${courseId}`;
+      return deduplicateRequest(cacheKey, () =>
+        apiClient.get(`/courses/${courseId}/lessons`)
+      );
+    },
 
     // Delete course
     delete: (instructorId, courseId) =>
@@ -107,6 +165,23 @@ export const instructorAPI = {
     // Create lesson for course
     create: (courseId, data) =>
       apiClient.post(`/courses/${courseId}/lessons`, data),
+
+    // Create lesson with video upload
+    createWithVideo: (courseId, formData, onUploadProgress = null) =>
+      apiClient.post(`/courses/${courseId}/lessons/with-video`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 300000, // 5 minutes timeout for video uploads
+        onUploadProgress: onUploadProgress
+          ? (progressEvent) => {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              onUploadProgress(percentCompleted);
+            }
+          : undefined,
+      }),
 
     // Delete lesson
     delete: (instructorId, lessonId) =>
@@ -306,6 +381,95 @@ export const instructorAPI = {
       } catch (error) {
         throw error;
       }
+    },
+  },
+
+  // Video Management
+  videos: {
+    // Upload a new video
+    upload: (
+      file,
+      title,
+      description = "",
+      tags = [],
+      onUploadProgress = null
+    ) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("title", title);
+      if (description) formData.append("description", description);
+      if (tags && tags.length > 0) {
+        tags.forEach((tag) => formData.append("tags", tag));
+      }
+
+      return generalApiClient.post("/videos/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 300000, // 5 minutes timeout for video uploads
+        onUploadProgress: onUploadProgress
+          ? (progressEvent) => {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              onUploadProgress(percentCompleted);
+            }
+          : undefined,
+      });
+    },
+
+    // Get video by ID
+    getVideo: (videoId) => generalApiClient.get(`/videos/${videoId}`),
+
+    // Update video information
+    updateVideo: (videoId, updateData) =>
+      generalApiClient.put(`/videos/${videoId}`, updateData),
+
+    // Delete video
+    deleteVideo: (videoId) => generalApiClient.delete(`/videos/${videoId}`),
+
+    // Get all videos with pagination
+    getVideos: (page = 0, size = 20) =>
+      generalApiClient.get(`/videos?page=${page}&size=${size}`),
+
+    // Search videos
+    searchVideos: (query, page = 0, size = 20) =>
+      generalApiClient.get(
+        `/videos/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`
+      ),
+
+    // Generate secure streaming URL
+    getStreamingUrl: (videoId, expirationSeconds = 3600) =>
+      generalApiClient.get(
+        `/videos/${videoId}/stream-url?expirationSeconds=${expirationSeconds}`
+      ),
+
+    // Get video thumbnail URL
+    getThumbnailUrl: (videoId, width = 320, height = 180) =>
+      generalApiClient.get(
+        `/videos/${videoId}/thumbnail?width=${width}&height=${height}`
+      ),
+
+    // Get video embed code
+    getEmbedCode: (videoId, width = 800, height = 450, autoplay = false) =>
+      generalApiClient.get(
+        `/videos/${videoId}/embed?width=${width}&height=${height}&autoplay=${autoplay}`
+      ),
+
+    // Get upload progress
+    getUploadProgress: (videoId) =>
+      generalApiClient.get(`/videos/${videoId}/progress`),
+
+    // Get video analytics
+    getVideoAnalytics: (videoId, dateFrom = null, dateTo = null) => {
+      const params = new URLSearchParams();
+      if (dateFrom) params.append("dateFrom", dateFrom);
+      if (dateTo) params.append("dateTo", dateTo);
+
+      const queryString = params.toString();
+      return generalApiClient.get(
+        `/videos/${videoId}/analytics${queryString ? `?${queryString}` : ""}`
+      );
     },
   },
 };

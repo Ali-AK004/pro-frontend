@@ -22,6 +22,7 @@ const SignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const router = useRouter();
 
   // قائمة المحافظات المصرية
@@ -57,18 +58,60 @@ const SignUp = () => {
 
   // if (user) router.push('/')
 
+  // Debounced username check
+  const checkUsernameAvailability = async (username) => {
+    if (!username || username.length < 3) return;
+
+    setIsCheckingUsername(true);
+    try {
+      // You can implement this endpoint in your backend
+      const response = await axios.get(
+        `http://localhost:8080/api/auth/check-username/${username}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (!response.data.available) {
+        setErrors((prev) => ({
+          ...prev,
+          username: "اسم المستخدم غير متاح",
+        }));
+      }
+    } catch (error) {
+      // If endpoint doesn't exist, we'll handle it in the main form submission
+      console.log("Username check endpoint not available");
+    } finally {
+      setIsCheckingUsername(false);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
         [name]: "",
       }));
+    }
+
+    // Check username availability with debounce
+    if (name === "username" && value.length >= 3) {
+      // Clear any existing timeout
+      if (window.usernameTimeout) {
+        clearTimeout(window.usernameTimeout);
+      }
+
+      // Set new timeout
+      window.usernameTimeout = setTimeout(() => {
+        checkUsernameAvailability(value);
+      }, 1000); // 1 second delay
     }
   };
 
@@ -200,7 +243,60 @@ const SignUp = () => {
       return response.data;
     } catch (error) {
       console.error("خطأ في إنشاء الحساب:", error);
-      setErrors({ general: "حدث خطأ أثناء إنشاء الحساب" });
+
+      // Handle specific backend errors
+      if (error.response && error.response.data && error.response.data.error) {
+        const backendError = error.response.data.error;
+
+        // Map specific backend errors to form fields
+        if (
+          backendError.includes("اسم المستخدم مستخدم بالفعل") ||
+          backendError.includes("Username already exists") ||
+          backendError.includes("username")
+        ) {
+          setErrors({ username: backendError });
+        } else if (
+          backendError.includes("البريد الإلكتروني مستخدم بالفعل") ||
+          backendError.includes("Email already exists") ||
+          backendError.includes("email")
+        ) {
+          setErrors({ email: backendError });
+        } else if (
+          backendError.includes("الرقم القومي مستخدم بالفعل") ||
+          backendError.includes("National ID already exists") ||
+          backendError.includes("nationalId") ||
+          backendError.includes("national")
+        ) {
+          setErrors({
+            nationalId:
+              "الرقم القومي مستخدم بالفعل. يرجى التأكد من صحة الرقم أو التواصل مع الدعم الفني.",
+          });
+        } else if (
+          backendError.includes("رقم الهاتف مستخدم بالفعل") ||
+          backendError.includes("Phone number already exists") ||
+          backendError.includes("phoneNumber")
+        ) {
+          setErrors({ phoneNumber: backendError });
+        } else {
+          // Generic backend error
+          setErrors({ general: backendError });
+        }
+      } else if (error.response && error.response.status === 400) {
+        setErrors({
+          general:
+            "البيانات المدخلة غير صحيحة. يرجى المراجعة والمحاولة مرة أخرى.",
+        });
+      } else if (error.response && error.response.status === 429) {
+        setErrors({
+          general: "تم تجاوز الحد المسموح من المحاولات. يرجى المحاولة لاحقاً.",
+        });
+      } else if (error.code === "NETWORK_ERROR" || !error.response) {
+        setErrors({
+          general: "خطأ في الاتصال بالخادم. يرجى التأكد من الاتصال بالإنترنت.",
+        });
+      } else {
+        setErrors({ general: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى." });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -309,26 +405,67 @@ const SignUp = () => {
                   >
                     اسم المستخدم
                   </label>
-                  <input
-                    id="username"
-                    name="username"
-                    type="text"
-                    autoComplete="username"
-                    required
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                      errors.username
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                    }`}
-                    placeholder="أدخل اسم المستخدم"
-                    value={formData.username}
-                    onChange={handleChange}
-                  />
+                  <div className="relative">
+                    <input
+                      id="username"
+                      name="username"
+                      type="text"
+                      autoComplete="username"
+                      required
+                      className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
+                        errors.username
+                          ? "border-red-300 focus:ring-red-500"
+                          : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
+                      }`}
+                      placeholder="أدخل اسم المستخدم"
+                      value={formData.username}
+                      onChange={handleChange}
+                    />
+                    {isCheckingUsername && (
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      </div>
+                    )}
+                  </div>
                   {errors.username && (
-                    <p className="mt-2 regular-14 text-red-600">
+                    <p className="mt-2 regular-14 text-red-600 flex items-center">
+                      <svg
+                        className="h-4 w-4 ml-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
                       {errors.username}
                     </p>
                   )}
+                  {formData.username &&
+                    formData.username.length >= 3 &&
+                    !errors.username &&
+                    !isCheckingUsername && (
+                      <p className="mt-2 regular-14 text-green-600 flex items-center">
+                        <svg
+                          className="h-4 w-4 ml-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        اسم المستخدم متاح
+                      </p>
+                    )}
                 </div>
 
                 {/* البريد الإلكتروني */}
@@ -473,9 +610,34 @@ const SignUp = () => {
                     onChange={handleChange}
                   />
                   {errors.nationalId && (
-                    <p className="mt-2 regular-14 text-red-600">
-                      {errors.nationalId}
-                    </p>
+                    <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-start">
+                        <svg
+                          className="h-5 w-5 text-red-500 mt-0.5 ml-2 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-red-800">
+                            {errors.nationalId}
+                          </p>
+                          {errors.nationalId.includes("مستخدم بالفعل") && (
+                            <p className="text-xs text-red-600 mt-1">
+                              إذا كان هذا الرقم صحيحاً وتواجه مشكلة، يرجى
+                              التواصل مع الدعم الفني
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
 

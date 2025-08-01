@@ -8,6 +8,7 @@ import {
   FiBook,
   FiFileText,
   FiCode,
+  FiClock,
   FiLogOut,
   FiUser,
   FiSettings,
@@ -91,6 +92,12 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       label: "أكواد الوصول",
       icon: FiCode,
       description: "إنشاء وإدارة أكواد الوصول",
+    },
+    {
+      id: "lesson-expiration",
+      label: "انتهاء صلاحية الدروس",
+      icon: FiClock,
+      description: "إدارة ومراقبة انتهاء صلاحية الدروس",
     },
     {
       id: "ai-chat",

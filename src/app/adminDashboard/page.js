@@ -14,6 +14,7 @@ import LessonManagement from "./components/LessonManagement";
 import ExamManagement from "./components/ExamManagement";
 import AssignmentManagement from "./components/AssignmentManagement";
 import AccessCodeManagement from "./components/AccessCodeManagement";
+import LessonExpirationManagement from "./components/LessonExpirationManagement";
 import AIChat from "../components/AIChat";
 import PerformanceMonitor from "../components/PerformanceMonitor";
 
@@ -31,9 +32,9 @@ const AdminDashboard = () => {
       return;
     }
 
-    if (user.role !== 'ADMIN') {
-      toast.error('غير مصرح لك بالوصول لهذه الصفحة');
-      router.push('/');
+    if (user.role !== "ADMIN") {
+      toast.error("غير مصرح لك بالوصول لهذه الصفحة");
+      router.push("/");
       return;
     }
   }, [user, loading, router]);
@@ -78,6 +79,8 @@ const AdminDashboard = () => {
         );
       case "access-codes":
         return <AccessCodeManagement />;
+      case "lesson-expiration":
+        return <LessonExpirationManagement />;
       case "analytics":
         return <DashboardOverview />; // For now, use the same component
       default:

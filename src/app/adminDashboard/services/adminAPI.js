@@ -136,6 +136,23 @@ export const adminAPI = {
     // Create lesson
     create: (courseId, data) => apiClient.post(`/lessons/${courseId}`, data),
 
+    // Create lesson with video upload
+    createWithVideo: (courseId, formData, onUploadProgress = null) =>
+      apiClient.post(`/lessons/${courseId}/with-video`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 300000, // 5 minutes timeout for video uploads
+        onUploadProgress: onUploadProgress
+          ? (progressEvent) => {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              onUploadProgress(percentCompleted);
+            }
+          : undefined,
+      }),
+
     // Update lesson
     update: (lessonId, data) => apiClient.put(`/lessons/${lessonId}`, data),
 
@@ -285,6 +302,128 @@ export const adminAPI = {
       } catch (error) {
         throw error;
       }
+    },
+  },
+
+  // Lesson Expiration Management
+  lessonExpiration: {
+    // Manually trigger processing of expired lessons
+    processExpiredLessons: () =>
+      apiClient.post("/lesson-expiration/process-expired"),
+
+    // Get lessons expiring soon
+    getLessonsExpiringSoon: (days = 7) =>
+      apiClient.get(`/lesson-expiration/expiring-soon?days=${days}`),
+
+    // Get expiration statistics
+    getExpirationStatistics: () =>
+      apiClient.get("/lesson-expiration/statistics"),
+
+    // Reset student data for a specific lesson
+    resetStudentLessonData: (studentId, lessonId) =>
+      apiClient.post(
+        `/lesson-expiration/reset-student-data?studentId=${studentId}&lessonId=${lessonId}`
+      ),
+
+    // Extend lesson access for a student
+    extendLessonAccess: (studentId, lessonId, additionalDays = 7) =>
+      apiClient.post(
+        `/lesson-expiration/extend-access?studentId=${studentId}&lessonId=${lessonId}&additionalDays=${additionalDays}`
+      ),
+
+    // Check if student can repurchase a lesson
+    canRepurchaseLesson: (studentId, lessonId) =>
+      apiClient.get(
+        `/lesson-expiration/can-repurchase?studentId=${studentId}&lessonId=${lessonId}`
+      ),
+  },
+
+  // Video Management
+  videos: {
+    // Upload a new video
+    upload: (
+      file,
+      title,
+      description = "",
+      tags = [],
+      onUploadProgress = null
+    ) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("title", title);
+      if (description) formData.append("description", description);
+      if (tags && tags.length > 0) {
+        tags.forEach((tag) => formData.append("tags", tag));
+      }
+
+      return generalApiClient.post("/videos/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 300000, // 5 minutes timeout for video uploads
+        onUploadProgress: onUploadProgress
+          ? (progressEvent) => {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              onUploadProgress(percentCompleted);
+            }
+          : undefined,
+      });
+    },
+
+    // Get video by ID
+    getVideo: (videoId) => generalApiClient.get(`/videos/${videoId}`),
+
+    // Update video information
+    updateVideo: (videoId, updateData) =>
+      generalApiClient.put(`/videos/${videoId}`, updateData),
+
+    // Delete video
+    deleteVideo: (videoId) => generalApiClient.delete(`/videos/${videoId}`),
+
+    // Get all videos with pagination
+    getVideos: (page = 0, size = 20) =>
+      generalApiClient.get(`/videos?page=${page}&size=${size}`),
+
+    // Search videos
+    searchVideos: (query, page = 0, size = 20) =>
+      generalApiClient.get(
+        `/videos/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`
+      ),
+
+    // Generate secure streaming URL
+    getStreamingUrl: (videoId, expirationSeconds = 3600) =>
+      generalApiClient.get(
+        `/videos/${videoId}/stream-url?expirationSeconds=${expirationSeconds}`
+      ),
+
+    // Get video thumbnail URL
+    getThumbnailUrl: (videoId, width = 320, height = 180) =>
+      generalApiClient.get(
+        `/videos/${videoId}/thumbnail?width=${width}&height=${height}`
+      ),
+
+    // Get video embed code
+    getEmbedCode: (videoId, width = 800, height = 450, autoplay = false) =>
+      generalApiClient.get(
+        `/videos/${videoId}/embed?width=${width}&height=${height}&autoplay=${autoplay}`
+      ),
+
+    // Get upload progress
+    getUploadProgress: (videoId) =>
+      generalApiClient.get(`/videos/${videoId}/progress`),
+
+    // Get video analytics
+    getVideoAnalytics: (videoId, dateFrom = null, dateTo = null) => {
+      const params = new URLSearchParams();
+      if (dateFrom) params.append("dateFrom", dateFrom);
+      if (dateTo) params.append("dateTo", dateTo);
+
+      const queryString = params.toString();
+      return generalApiClient.get(
+        `/videos/${videoId}/analytics${queryString ? `?${queryString}` : ""}`
+      );
     },
   },
 };

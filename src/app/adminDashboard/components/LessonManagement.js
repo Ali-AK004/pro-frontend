@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { adminAPI, handleAPIError } from "../services/adminAPI";
 import { toast } from "react-toastify";
+import VideoUpload from "../../components/VideoUpload";
+import VideoFileSelector from "../../components/VideoFileSelector";
 import {
   FiPlus,
   FiSearch,
@@ -12,6 +14,7 @@ import {
   FiEye,
   FiX,
   FiBook,
+  FiVideo,
 } from "react-icons/fi";
 
 const LessonManagement = () => {
@@ -19,6 +22,7 @@ const LessonManagement = () => {
   const [allLessons, setAllLessons] = useState([]);
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLessonFilter, setSelectedLessonFilter] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -40,6 +44,7 @@ const LessonManagement = () => {
     photoUrl: "",
     price: "",
     videoUrl: "",
+    videoId: "",
     courseId: "",
   });
 
@@ -49,7 +54,12 @@ const LessonManagement = () => {
     photoUrl: "",
     price: "",
     videoUrl: "",
+    videoId: "",
   });
+
+  // Video file states for direct upload
+  const [selectedVideoFile, setSelectedVideoFile] = useState(null);
+  const [editVideoFile, setEditVideoFile] = useState(null);
 
   useEffect(() => {
     // Only fetch courses and all lessons for the dropdown, don't load lessons for display
@@ -124,7 +134,32 @@ const LessonManagement = () => {
     e.preventDefault();
     try {
       setIsLoading(true);
-      await adminAPI.lessons.create(lessonForm.courseId, lessonForm);
+
+      // Check if we have a video file for direct upload
+      if (selectedVideoFile) {
+        // Use direct video upload endpoint
+        const formData = new FormData();
+        formData.append("file", selectedVideoFile);
+        formData.append("name", lessonForm.name);
+        formData.append("description", lessonForm.description);
+        formData.append("price", lessonForm.price);
+        if (lessonForm.photoUrl)
+          formData.append("photoUrl", lessonForm.photoUrl);
+        formData.append("videoTitle", lessonForm.name); // Use lesson name as video title
+        formData.append("videoDescription", lessonForm.description);
+
+        await adminAPI.lessons.createWithVideo(
+          lessonForm.courseId,
+          formData,
+          (progress) => {
+            setUploadProgress(progress);
+          }
+        );
+      } else {
+        // Use regular lesson creation (for URL-based videos)
+        await adminAPI.lessons.create(lessonForm.courseId, lessonForm);
+      }
+
       toast.success("تم إنشاء الدرس بنجاح");
       setShowCreateModal(false);
       setLessonForm({
@@ -133,13 +168,16 @@ const LessonManagement = () => {
         photoUrl: "",
         price: "",
         videoUrl: "",
+        videoId: "",
         courseId: "",
       });
+      setSelectedVideoFile(null);
       fetchAllLessons(); // Refresh the lessons dropdown data
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء الدرس"));
     } finally {
       setIsLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -187,6 +225,52 @@ const LessonManagement = () => {
     setShowDeleteModal(true);
   };
 
+  // Video upload handlers
+  const handleVideoUploaded = (videoData, isEdit = false) => {
+    if (isEdit) {
+      setEditForm((prev) => ({
+        ...prev,
+        videoId: videoData.id,
+        videoUrl: videoData.streamingUrl || videoData.playbackUrl || "",
+      }));
+    } else {
+      setLessonForm((prev) => ({
+        ...prev,
+        videoId: videoData.id,
+        videoUrl: videoData.streamingUrl || videoData.playbackUrl || "",
+      }));
+    }
+    toast.success("تم رفع الفيديو بنجاح");
+  };
+
+  const handleVideoRemoved = (isEdit = false) => {
+    if (isEdit) {
+      setEditVideoFile(null);
+      setEditForm((prev) => ({
+        ...prev,
+        videoId: "",
+        videoUrl: "",
+      }));
+    } else {
+      setSelectedVideoFile(null);
+      setLessonForm((prev) => ({
+        ...prev,
+        videoId: "",
+        videoUrl: "",
+      }));
+    }
+    toast.success("تم حذف الفيديو");
+  };
+
+  // Video file selection handler for direct upload
+  const handleVideoFileSelected = (file, isEdit = false) => {
+    if (isEdit) {
+      setEditVideoFile(file);
+    } else {
+      setSelectedVideoFile(file);
+    }
+  };
+
   const handleSearch = () => {
     // Since lessons are now only loaded when a specific lesson is selected,
     // we don't need to filter here. The useEffect handles lesson loading.
@@ -227,6 +311,7 @@ const LessonManagement = () => {
       photoUrl: lesson.photoUrl || "",
       price: lesson.price?.toString() || "",
       videoUrl: lesson.videoUrl || "",
+      videoId: lesson.videoId || "",
     });
     setShowEditModal(true);
   };
@@ -503,17 +588,15 @@ const LessonManagement = () => {
 
               <div>
                 <label className="block bold-14 text-gray-900 mb-2">
-                  رابط الفيديو *
+                  فيديو الدرس *
                 </label>
-                <input
-                  type="url"
-                  required
-                  value={lessonForm.videoUrl}
-                  onChange={(e) =>
-                    setLessonForm({ ...lessonForm, videoUrl: e.target.value })
+                <VideoFileSelector
+                  onFileSelected={(file) =>
+                    handleVideoFileSelected(file, false)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  placeholder="https://example.com/video.mp4"
+                  onFileRemoved={() => handleVideoRemoved(false)}
+                  selectedFile={selectedVideoFile}
+                  isRequired={true}
                 />
               </div>
 
@@ -532,6 +615,29 @@ const LessonManagement = () => {
                 />
               </div>
 
+              {/* Upload Progress */}
+              {isLoading && selectedVideoFile && uploadProgress > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-blue-700">
+                      جاري رفع الفيديو...
+                    </span>
+                    <span className="text-sm font-medium text-blue-700">
+                      {uploadProgress}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-blue-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-2">
+                    يرجى عدم إغلاق النافذة أثناء رفع الفيديو
+                  </p>
+                </div>
+              )}
+
               <div className="flex gap-4 pt-4">
                 <button
                   type="submit"
@@ -543,7 +649,8 @@ const LessonManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
+                  disabled={isLoading}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   إلغاء
                 </button>
@@ -634,18 +741,20 @@ const LessonManagement = () => {
                 />
               </div>
 
-              {/* Video URL */}
+              {/* Video Upload */}
               <div>
                 <label className="block bold-14 text-gray-700 mb-2">
-                  رابط الفيديو
+                  فيديو الدرس
                 </label>
-                <input
-                  type="url"
-                  value={editForm.videoUrl}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, videoUrl: e.target.value })
+                <VideoUpload
+                  onVideoUploaded={(videoData) =>
+                    handleVideoUploaded(videoData, true)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                  onVideoRemoved={() => handleVideoRemoved(true)}
+                  currentVideoId={editForm.videoId}
+                  currentVideoUrl={editForm.videoUrl}
+                  isRequired={false}
+                  uploadAPI={adminAPI.videos}
                 />
               </div>
 

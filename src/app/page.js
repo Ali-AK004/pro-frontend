@@ -175,7 +175,7 @@ export default function Home() {
                       <FaRobot className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-gray-900">24/7</p>
+                      <p className="text-2xl font-bold text-gray-900">Soo</p>
                       <p className="text-sm text-gray-600">مساعدة ذكية</p>
                     </div>
                   </div>
@@ -249,7 +249,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 24/7 Support */}
+              {/* Soo Support */}
               <div className="group">
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/20 group-hover:transform group-hover:-translate-y-2">
                   <div className="text-center space-y-4">
@@ -258,7 +258,7 @@ export default function Home() {
                     </div>
                     <div className="space-y-2">
                       <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                        24/7
+                        Soo
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900">
                         مساعدة فورية
@@ -342,7 +342,7 @@ export default function Home() {
                 </h3>
                 <p className="regular-14 text-gray-600 mb-4">
                   احصل على إجابات فورية لأسئلتك، شرح مبسط للمفاهيم الصعبة،
-                  ونصائح للمذاكرة - متاح 24/7 مجاناً!
+                  ونصائح للمذاكرة - متاح Sooمجاناً!
                 </p>
                 <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
                   مجاني تماماً
@@ -422,8 +422,8 @@ export default function Home() {
                   تعلم في أي وقت ومكان
                 </h3>
                 <p className="regular-14 text-gray-600 mb-4">
-                  ادرس من البيت، المدرسة، أو أي مكان تريده. منصتنا متاحة 24/7
-                  على جميع الأجهزة
+                  ادرس من البيت، المدرسة، أو أي مكان تريده. منصتنا متاحة Soo على
+                  جميع الأجهزة
                 </p>
                 <div className="bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-sm font-semibold">
                   مرونة كاملة

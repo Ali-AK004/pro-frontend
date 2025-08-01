@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { instructorAPI, handleAPIError } from "../services/instructorAPI";
 import { useUserData } from "../../../../models/UserContext";
 import { Slide } from "react-toastify";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import VideoUpload from "../../components/VideoUpload";
+import VideoFileSelector from "../../components/VideoFileSelector";
 import {
   FiPlus,
   FiSearch,
@@ -16,6 +18,7 @@ import {
   FiDollarSign,
   FiX,
   FiBook,
+  FiVideo,
 } from "react-icons/fi";
 import Image from "next/image";
 import { MdDeleteForever } from "react-icons/md";
@@ -26,6 +29,14 @@ const InstructorLessonManagement = () => {
   const [courses, setCourses] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStates, setLoadingStates] = useState({
+    courses: false,
+    lessons: false,
+    creating: false,
+    updating: false,
+    deleting: false,
+  });
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -50,6 +61,7 @@ const InstructorLessonManagement = () => {
     photoUrl: "",
     price: "",
     videoUrl: "",
+    videoId: "",
     courseId: "",
   });
 
@@ -59,7 +71,12 @@ const InstructorLessonManagement = () => {
     photoUrl: "",
     price: "",
     videoUrl: "",
+    videoId: "",
   });
+
+  // Video file states for direct upload
+  const [selectedVideoFile, setSelectedVideoFile] = useState(null);
+  const [editVideoFile, setEditVideoFile] = useState(null);
 
   useEffect(() => {
     if (instructorId) {
@@ -70,6 +87,8 @@ const InstructorLessonManagement = () => {
   useEffect(() => {
     if (selectedCourse) {
       fetchLessons();
+    } else {
+      setLessons([]);
     }
   }, [selectedCourse]);
 
@@ -84,10 +103,18 @@ const InstructorLessonManagement = () => {
   };
 
   const fetchLessons = async () => {
+    if (!selectedCourse) {
+      setLessons([]);
+      setOriginalLessons([]);
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await instructorAPI.courses.getLessons(selectedCourse);
-      setLessons(response.data || []);
+      const lessonsData = response.data || [];
+      setLessons(lessonsData);
+      setOriginalLessons(lessonsData); // Store original for search
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
     } finally {
@@ -105,7 +132,32 @@ const InstructorLessonManagement = () => {
 
     try {
       setIsLoading(true);
-      await instructorAPI.lessons.create(lessonForm.courseId, lessonForm);
+
+      // Check if we have a video file for direct upload
+      if (selectedVideoFile) {
+        // Use direct video upload endpoint
+        const formData = new FormData();
+        formData.append("file", selectedVideoFile);
+        formData.append("name", lessonForm.name);
+        formData.append("description", lessonForm.description);
+        formData.append("price", lessonForm.price);
+        if (lessonForm.photoUrl)
+          formData.append("photoUrl", lessonForm.photoUrl);
+        formData.append("videoTitle", lessonForm.name); // Use lesson name as video title
+        formData.append("videoDescription", lessonForm.description);
+
+        await instructorAPI.lessons.createWithVideo(
+          lessonForm.courseId,
+          formData,
+          (progress) => {
+            setUploadProgress(progress);
+          }
+        );
+      } else {
+        // Use regular lesson creation (for URL-based videos)
+        await instructorAPI.lessons.create(lessonForm.courseId, lessonForm);
+      }
+
       toast.success("تم إنشاء الدرس بنجاح");
       setShowCreateModal(false);
       setLessonForm({
@@ -114,13 +166,16 @@ const InstructorLessonManagement = () => {
         photoUrl: "",
         price: "",
         videoUrl: "",
+        videoId: "",
         courseId: "",
       });
+      setSelectedVideoFile(null);
       fetchLessons();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء الدرس"));
     } finally {
       setIsLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -149,21 +204,41 @@ const InstructorLessonManagement = () => {
     }
   };
 
-  const handleSearch = () => {
+  // Debounced search to avoid excessive filtering
+  const [originalLessons, setOriginalLessons] = useState([]);
+
+  const handleSearch = useCallback(() => {
     if (!searchTerm.trim()) {
-      fetchLessons();
+      setLessons(originalLessons);
       return;
     }
 
-    const filteredLessons = lessons.filter(
+    const filteredLessons = originalLessons.filter(
       (lesson) =>
         lesson.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lesson.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setLessons(filteredLessons);
-  };
+  }, [searchTerm, originalLessons]);
+
+  // Debounce search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      handleSearch();
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [handleSearch]);
+
+  // Cache lesson status to avoid repeated API calls
+  const [lessonStatusCache, setLessonStatusCache] = useState({});
 
   const fetchLessonStatus = async (lessonId) => {
+    // Check cache first
+    if (lessonStatusCache[lessonId]) {
+      setLessonStatus(lessonStatusCache[lessonId]);
+      return;
+    }
+
     try {
       setLessonStatus((prev) => ({ ...prev, isLoading: true }));
 
@@ -172,18 +247,24 @@ const InstructorLessonManagement = () => {
         instructorAPI.lessons.hasAssignment(lessonId),
       ]);
 
-      setLessonStatus({
+      const status = {
         hasExam: examResponse.data || false,
         hasAssignment: assignmentResponse.data || false,
         isLoading: false,
-      });
+      };
+
+      setLessonStatus(status);
+      // Cache the result
+      setLessonStatusCache((prev) => ({ ...prev, [lessonId]: status }));
     } catch (error) {
       console.error("Error fetching lesson status:", error);
-      setLessonStatus({
+      const errorStatus = {
         hasExam: false,
         hasAssignment: false,
         isLoading: false,
-      });
+      };
+      setLessonStatus(errorStatus);
+      setLessonStatusCache((prev) => ({ ...prev, [lessonId]: errorStatus }));
     }
   };
 
@@ -195,6 +276,7 @@ const InstructorLessonManagement = () => {
       photoUrl: lesson.photoUrl || "",
       price: lesson.price?.toString() || "",
       videoUrl: lesson.videoUrl || "",
+      videoId: lesson.videoId || "",
     });
     setShowEditModal(true);
   };
@@ -229,6 +311,52 @@ const InstructorLessonManagement = () => {
   const cancelDeleteLesson = () => {
     setShowDeleteModal(false);
     setLessonToDelete(null);
+  };
+
+  // Video upload handlers
+  const handleVideoUploaded = (videoData, isEdit = false) => {
+    if (isEdit) {
+      setEditForm((prev) => ({
+        ...prev,
+        videoId: videoData.id,
+        videoUrl: videoData.streamingUrl || videoData.playbackUrl || "",
+      }));
+    } else {
+      setLessonForm((prev) => ({
+        ...prev,
+        videoId: videoData.id,
+        videoUrl: videoData.streamingUrl || videoData.playbackUrl || "",
+      }));
+    }
+    toast.success("تم رفع الفيديو بنجاح");
+  };
+
+  const handleVideoRemoved = (isEdit = false) => {
+    if (isEdit) {
+      setEditVideoFile(null);
+      setEditForm((prev) => ({
+        ...prev,
+        videoId: "",
+        videoUrl: "",
+      }));
+    } else {
+      setSelectedVideoFile(null);
+      setLessonForm((prev) => ({
+        ...prev,
+        videoId: "",
+        videoUrl: "",
+      }));
+    }
+    toast.success("تم حذف الفيديو");
+  };
+
+  // Video file selection handler for direct upload
+  const handleVideoFileSelected = (file, isEdit = false) => {
+    if (isEdit) {
+      setEditVideoFile(file);
+    } else {
+      setSelectedVideoFile(file);
+    }
   };
 
   return (
@@ -280,7 +408,7 @@ const InstructorLessonManagement = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
           </div>
           <select
@@ -518,17 +646,15 @@ const InstructorLessonManagement = () => {
 
               <div>
                 <label className="block bold-14 text-gray-900 mb-2">
-                  رابط الفيديو *
+                  فيديو الدرس *
                 </label>
-                <input
-                  type="url"
-                  required
-                  value={lessonForm.videoUrl}
-                  onChange={(e) =>
-                    setLessonForm({ ...lessonForm, videoUrl: e.target.value })
+                <VideoFileSelector
+                  onFileSelected={(file) =>
+                    handleVideoFileSelected(file, false)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                  placeholder="https://example.com/video.mp4"
+                  onFileRemoved={() => handleVideoRemoved(false)}
+                  selectedFile={selectedVideoFile}
+                  isRequired={true}
                 />
               </div>
 
@@ -547,6 +673,29 @@ const InstructorLessonManagement = () => {
                 />
               </div>
 
+              {/* Upload Progress */}
+              {isLoading && selectedVideoFile && uploadProgress > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-blue-700">
+                      جاري رفع الفيديو...
+                    </span>
+                    <span className="text-sm font-medium text-blue-700">
+                      {uploadProgress}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-blue-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-2">
+                    يرجى عدم إغلاق النافذة أثناء رفع الفيديو
+                  </p>
+                </div>
+              )}
+
               <div className="flex gap-4 pt-4">
                 <button
                   type="submit"
@@ -558,7 +707,8 @@ const InstructorLessonManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="cursor-pointer flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
+                  disabled={isLoading}
+                  className="cursor-pointer flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   إلغاء
                 </button>
@@ -631,16 +781,17 @@ const InstructorLessonManagement = () => {
 
               <div>
                 <label className="block bold-14 text-gray-900 mb-2">
-                  رابط الفيديو *
+                  فيديو الدرس *
                 </label>
-                <input
-                  type="url"
-                  required
-                  value={editForm.videoUrl}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, videoUrl: e.target.value })
+                <VideoUpload
+                  onVideoUploaded={(videoData) =>
+                    handleVideoUploaded(videoData, true)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  onVideoRemoved={() => handleVideoRemoved(true)}
+                  currentVideoId={editForm.videoId}
+                  currentVideoUrl={editForm.videoUrl}
+                  isRequired={true}
+                  uploadAPI={instructorAPI.videos}
                 />
               </div>
 

@@ -66,6 +66,11 @@ const InstructorExamManagement = () => {
   };
 
   const fetchLessons = async () => {
+    if (!selectedCourse) {
+      setLessons([]);
+      return;
+    }
+
     try {
       const response = await instructorAPI.courses.getLessons(selectedCourse);
       setLessons(response.data || []);
@@ -338,7 +343,7 @@ const InstructorExamManagement = () => {
                     className="bg-red-50 text-red-600 flexCenter py-2 px-4 gap-2 rounded-lg border border-red-600 hover:bg-red-100 transition-colors cursor-pointer"
                   >
                     <FiTrash2 className="w-4 h-4" />
-                     حذف
+                    حذف
                   </button>
                 </div>
               </div>

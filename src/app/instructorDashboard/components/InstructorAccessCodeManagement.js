@@ -82,6 +82,10 @@ const InstructorAccessCodeManagement = () => {
   };
 
   const fetchLessonsForCourse = async (courseId) => {
+    if (!courseId) {
+      return;
+    }
+
     try {
       const response = await instructorAPI.courses.getLessons(courseId);
       setLessons((prev) => {

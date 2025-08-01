@@ -1,20 +1,43 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useUserData } from "../../../models/UserContext";
 import "react-toastify/dist/ReactToastify.css";
-// Import components
+// Import only essential components
 import InstructorSidebar from "./components/InstructorSidebar";
 import InstructorDashboardOverview from "./components/InstructorDashboardOverview";
-import InstructorCourseManagement from "./components/InstructorCourseManagement";
-import InstructorLessonManagement from "./components/InstructorLessonManagement";
-import InstructorExamManagement from "./components/InstructorExamManagement";
-import InstructorAssignmentManagement from "./components/InstructorAssignmentManagement";
-import InstructorAccessCodeManagement from "./components/InstructorAccessCodeManagement";
-import InstructorProfileManagement from "./components/InstructorProfileManagement";
-import AIChat from "../components/AIChat";
+import PerformanceMonitor from "./components/PerformanceMonitor";
 import { canAccessInstructorDashboard } from "../utils/roleHelpers";
 import { toast } from "react-toastify";
+
+// Lazy load heavy components
+const InstructorCourseManagement = lazy(
+  () => import("./components/InstructorCourseManagement")
+);
+const InstructorLessonManagement = lazy(
+  () => import("./components/InstructorLessonManagement")
+);
+const InstructorExamManagement = lazy(
+  () => import("./components/InstructorExamManagement")
+);
+const InstructorAssignmentManagement = lazy(
+  () => import("./components/InstructorAssignmentManagement")
+);
+const InstructorAccessCodeManagement = lazy(
+  () => import("./components/InstructorAccessCodeManagement")
+);
+const InstructorProfileManagement = lazy(
+  () => import("./components/InstructorProfileManagement")
+);
+const AIChat = lazy(() => import("../components/AIChat"));
+
+// Loading component for lazy-loaded components
+const ComponentLoader = () => (
+  <div className="flex items-center justify-center p-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <span className="mr-3 text-gray-600">جاري التحميل...</span>
+  </div>
+);
 
 const InstructorDashboard = () => {
   const router = useRouter();
@@ -51,33 +74,55 @@ const InstructorDashboard = () => {
     );
   }
 
-  // Render main content
+  // Render main content with lazy loading
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
         return <InstructorDashboardOverview setActiveTab={setActiveTab} />;
       case "courses":
-        return <InstructorCourseManagement />;
+        return (
+          <Suspense fallback={<ComponentLoader />}>
+            <InstructorCourseManagement />
+          </Suspense>
+        );
       case "lessons":
-        return <InstructorLessonManagement />;
+        return (
+          <Suspense fallback={<ComponentLoader />}>
+            <InstructorLessonManagement />
+          </Suspense>
+        );
       case "exams":
-        return <InstructorExamManagement />;
+        return (
+          <Suspense fallback={<ComponentLoader />}>
+            <InstructorExamManagement />
+          </Suspense>
+        );
       case "assignments":
-        return <InstructorAssignmentManagement />;
+        return (
+          <Suspense fallback={<ComponentLoader />}>
+            <InstructorAssignmentManagement />
+          </Suspense>
+        );
       case "ai-chat":
         return (
-          <div className="overflow-hidden p-4" style={{ height: "100vh" }}>
-            <AIChat isOpen={true} onClose={() => {}} />
-          </div>
+          <Suspense fallback={<ComponentLoader />}>
+            <div className="overflow-hidden p-4" style={{ height: "100vh" }}>
+              <AIChat isOpen={true} onClose={() => {}} />
+            </div>
+          </Suspense>
         );
       case "access-codes":
-        return <InstructorAccessCodeManagement />;
-      case "students":
-        return <InstructorStudentsView />;
-      case "analytics":
-        return <InstructorAnalytics />;
+        return (
+          <Suspense fallback={<ComponentLoader />}>
+            <InstructorAccessCodeManagement />
+          </Suspense>
+        );
       case "profile":
-        return <InstructorProfileManagement />;
+        return (
+          <Suspense fallback={<ComponentLoader />}>
+            <InstructorProfileManagement />
+          </Suspense>
+        );
       default:
         return <InstructorDashboardOverview setActiveTab={setActiveTab} />;
     }
@@ -99,6 +144,9 @@ const InstructorDashboard = () => {
           <div className="max-w-7xl mx-auto">{renderContent()}</div>
         </div>
       </div>
+
+      {/* Performance Monitor (development only) */}
+      <PerformanceMonitor />
     </div>
   );
 };

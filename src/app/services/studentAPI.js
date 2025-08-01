@@ -85,6 +85,12 @@ export const studentAPI = {
     // Get assignment for lesson
     getAssignment: (lessonId) =>
       apiClient.get(`/assignments/lessons/${lessonId}/assignment`),
+
+    // Get secure video URL for lesson
+    getSecureVideoUrl: (lessonId, expirationSeconds = 3600) =>
+      apiClient.get(
+        `/students/lessons/${lessonId}/video-url?expirationSeconds=${expirationSeconds}`
+      ),
   },
 
   // Payment Management

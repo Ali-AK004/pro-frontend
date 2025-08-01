@@ -21,6 +21,7 @@ import {
 import { examAPI } from "../../../../../services/examAPI";
 import { assignmentAPI } from "../../../../../services/assignmentAPI";
 import { toast } from "react-toastify";
+import LessonVideoPlayer from "../../../../../components/LessonVideoPlayer";
 
 const LessonViewer = ({
   lesson,
@@ -104,7 +105,24 @@ const LessonViewer = ({
   const handleExamSubmit = async () => {
     try {
       setIsLoading(true);
-      const response = await examAPI.exams.submit(lesson.exam.id, examAnswers);
+
+      // Convert exam answers to the format expected by backend
+      const formattedAnswers = {};
+      Object.keys(examAnswers).forEach((questionId) => {
+        const answer = examAnswers[questionId];
+        if (Array.isArray(answer)) {
+          // Multiple choice: convert array to comma-separated string
+          formattedAnswers[questionId] = answer.join(",");
+        } else {
+          // Single choice or true/false: use as is
+          formattedAnswers[questionId] = answer;
+        }
+      });
+
+      const response = await examAPI.exams.submit(
+        lesson.exam.id,
+        formattedAnswers
+      );
       setExamResult(response.data);
 
       if (response.data.passed) {
@@ -644,20 +662,52 @@ const VideoTab = ({ lesson, onVideoEnd, videoWatched }) => (
   <div className="bg-white rounded-lg shadow-sm p-6">
     <h2 className="bold-24 text-gray-900 mb-6">فيديو الدرس</h2>
 
-    <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4">
-      <video
-        src={lesson.videoUrl}
-        controls
-        className="w-full h-full"
-        onEnded={onVideoEnd}
-        poster={lesson.photoUrl}
-      >
-        متصفحك لا يدعم تشغيل الفيديو
-      </video>
+    <div className="w-full mb-4">
+      <LessonVideoPlayer
+        lesson={{
+          id: lesson.id,
+          name: lesson.name,
+          description: lesson.description,
+          videoUrl: lesson.videoUrl,
+          videoThumbnailUrl: lesson.videoThumbnailUrl,
+          videoDuration: lesson.videoDuration,
+          videoStatus: lesson.videoStatus,
+          hasVideo: !!lesson.videoUrl,
+        }}
+        onVideoEnd={onVideoEnd}
+        autoplay={false}
+        showVideoInfo={true}
+        className="w-full"
+      />
+    </div>
+
+    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <FaEye className="w-5 h-5 text-blue-500" />
+          <div>
+            <h4 className="bold-14 text-blue-800">تتبع المشاهدة</h4>
+            <p className="regular-12 text-blue-600">
+              اضغط على الزر بعد مشاهدة الفيديو لفتح الواجب
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onVideoEnd}
+          disabled={videoWatched}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            videoWatched
+              ? "bg-green-100 text-green-700 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          }`}
+        >
+          {videoWatched ? "✓ تم المشاهدة" : "تم المشاهدة"}
+        </button>
+      </div>
     </div>
 
     {videoWatched && (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center mt-4">
         <FaCheckCircle className="w-6 h-6 text-green-500 mx-auto mb-2" />
         <p className="bold-14 text-green-700">تم تسجيل مشاهدة الفيديو بنجاح</p>
       </div>
