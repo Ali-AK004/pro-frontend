@@ -1,118 +1,122 @@
 "use client";
-import { useRef, useState } from "react";
-import {
-  FaPause,
-  FaPlay,
-  FaVolumeMute,
-  FaVolumeUp,
-  FaExpand,
-} from "react-icons/fa";
-import { IoIosSpeedometer } from "react-icons/io";
-import { IoSettingsSharp } from "react-icons/io5";
-import ReactPlayer from "react-player";
-import screenfull from "screenfull";
+import { useRef, useEffect, useState } from "react";
+import { useUserData } from "../../../../../../../models/UserContext";
 
-const CustomVideoPlayer = ({ videoUrl, onEnded, poster }) => {
-  const playerRef = useRef(null);
+const convertBunnyUrl = (url) => {
+  if (!url) return null;
+  
+  // Convert from play to embed format
+  const embedUrl = url.replace('/play/', '/embed/');
+  
+  // Add required parameters
+  return `${embedUrl}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`;
+};
+
+const CustomVideoPlayer = ({ videoUrl }) => {
+  const { user } = useUserData();
   const playerContainerRef = useRef(null);
-  const progressRef = useRef(null);
-  const [volume, setVolume] = useState(0.8);
-  const [playbackRate, setPlaybackRate] = useState(1);
-  const [isMuted, setIsMuted] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [played, setPlayed] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [seeking, setSeeking] = useState(false);
-  const [showControls, setShowControls] = useState(true);
-  const [speedValue, setSpeedValue] = useState("1x");
-  const [openSettings, setOpenSettings] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const watermarkRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [containerDimensions, setContainerDimensions] = useState({ width: 0, height: 0 });
+  
+  // Convert the URL
+  const embedUrl = convertBunnyUrl(videoUrl);
 
-  // Extract YouTube ID from URL
-  const getYouTubeId = (url) => {
-    if (!url) return null;
-    const regExp =
-      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return match && match[2].length === 11 ? match[2] : null;
-  };
+  // Check if mobile on mount and on resize
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+    return () => window.removeEventListener("resize", checkIfMobile);
+  }, []);
 
-  const youtubeId = getYouTubeId(videoUrl);
-  const embedUrl = youtubeId
-    ? `https://www.youtube.com/embed/${youtubeId}`
-    : null;
+  // Track container dimensions
+  useEffect(() => {
+    if (!playerContainerRef.current) return;
 
-  // Format time (seconds to MM:SS)
-  const formatTime = (seconds) => {
-    const date = new Date(seconds * 1000);
-    const mm = date.getUTCMinutes();
-    const ss = date.getUTCSeconds().toString().padStart(2, "0");
-    return `${mm}:${ss}`;
-  };
-
-  // Player event handlers
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleVolumeChange = (e) => {
-    const newVolume = parseFloat(e.target.value);
-    setVolume(newVolume);
-    setIsMuted(newVolume === 0);
-  };
-
-  const handleToggleMute = () => {
-    setIsMuted(!isMuted);
-  };
-
-  const handlePlaybackRateChange = (rate) => {
-    setPlaybackRate(rate);
-    setSpeedValue(`${rate}x`);
-    setOpenSettings(false);
-  };
-
-  const handleProgress = (state) => {
-    if (!seeking) {
-      setPlayed(state.played);
-    }
-  };
-
-  const handleSeekMouseDown = () => {
-    setSeeking(true);
-  };
-
-  const handleSeekChange = (e) => {
-    const seekValue = parseFloat(e.target.value);
-    setPlayed(seekValue);
-  };
-
-  const handleSeekMouseUp = (e) => {
-    setSeeking(false);
-    playerRef.current.seekTo(parseFloat(e.target.value));
-  };
-
-  const handleDuration = (duration) => {
-    setDuration(duration);
-  };
-
-  const handleMouseMove = () => {
-    setShowControls(true);
-    clearTimeout(hideControlsTimeout.current);
-    hideControlsTimeout.current = setTimeout(() => {
-      if (isPlaying) {
-        setShowControls(false);
+    const updateDimensions = () => {
+      if (playerContainerRef.current) {
+        setContainerDimensions({
+          width: playerContainerRef.current.clientWidth,
+          height: playerContainerRef.current.clientHeight
+        });
       }
-    }, 3000);
-  };
+    };
 
-  const handleToggleFullscreen = () => {
-    if (screenfull.isEnabled && playerContainerRef.current) {
-      screenfull.toggle(playerContainerRef.current);
-      setIsFullscreen(!isFullscreen);
-    }
-  };
+    // Initial measurement
+    updateDimensions();
 
-  const hideControlsTimeout = useRef();
+    // Set up ResizeObserver
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    resizeObserver.observe(playerContainerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  // Watermark animation
+  useEffect(() => {
+    if (!watermarkRef.current || !user?.id || !containerDimensions.width) return;
+
+    const watermark = watermarkRef.current;
+    const container = playerContainerRef.current;
+    if (!container) return;
+
+    // Get watermark dimensions
+    const watermarkWidth = watermark.clientWidth;
+    const watermarkHeight = watermark.clientHeight;
+
+    // Calculate safe boundaries
+    const maxX = containerDimensions.width - watermarkWidth;
+    const maxY = containerDimensions.height - watermarkHeight;
+
+    // Initial position (centered if first render)
+    let posX = Math.max(10, Math.min(maxX - 10, maxX / 2));
+    let posY = Math.max(10, Math.min(maxY - 10, maxY / 2));
+    
+    let directionX = 1;
+    let directionY = 1;
+    const speed = 0.4; // Slightly faster on mobile to compensate for smaller container
+
+    const moveWatermark = () => {
+      // Calculate new position
+      posX += directionX * speed;
+      posY += directionY * speed;
+
+      // Check boundaries with buffer to prevent squishing
+      if (posX >= maxX - 5) {
+        directionX = -1;
+        posX = maxX - 5;
+      } else if (posX <= 5) {
+        directionX = 1;
+        posX = 5;
+      }
+
+      if (posY >= maxY - 5) {
+        directionY = -1;
+        posY = maxY - 5;
+      } else if (posY <= 5) {
+        directionY = 1;
+        posY = 5;
+      }
+
+      // Apply new position
+      watermark.style.left = `${posX}px`;
+      watermark.style.top = `${posY}px`;
+
+      requestAnimationFrame(moveWatermark);
+    };
+
+    // Set initial position
+    watermark.style.left = `${posX}px`;
+    watermark.style.top = `${posY}px`;
+
+    const animationId = requestAnimationFrame(moveWatermark);
+    return () => cancelAnimationFrame(animationId);
+  }, [user?.id, isMobile, containerDimensions]);
 
   if (!embedUrl) {
     return (
@@ -123,146 +127,83 @@ const CustomVideoPlayer = ({ videoUrl, onEnded, poster }) => {
   }
 
   return (
-    <div
-      ref={playerContainerRef}
-      className="relative w-full aspect-video bg-black rounded-lg overflow-hidden"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => isPlaying && setShowControls(false)}
-    >
-      {/* Overlay to prevent YouTube controls access */}
-      <div className="absolute left-0 top-0 h-[65px] w-full cursor-not-allowed bg-transparent z-10" />
-
-      {/* Click area for play/pause */}
-      <div
-        className="absolute left-0 top-[65px] w-full bg-transparent cursor-pointer z-10"
-        style={{ height: "calc(100% - 120px)" }}
-        onClick={handlePlayPause}
-      />
-
-      {/* Video Player */}
-      <iframe
-        src={''}
-        title="Example Website"
-        width="100%"
-        height={400}
-        allowFullScreen
-      />
-
-      {/* Custom Controls */}
-      {showControls && (
-        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/70 to-transparent">
-          {/* Progress Bar */}
-          <div className="px-2 pb-1">
-            <div className="relative h-1 w-full bg-gray-600 rounded-full">
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step="any"
-                value={played}
-                onChange={handleSeekChange}
-                onMouseDown={handleSeekMouseDown}
-                onMouseUp={handleSeekMouseUp}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
+    <>
+      {/* Mobile version - full width */}
+      {isMobile && (
+        <div className="fixed left-0 w-full" style={{ top: 'var(--header-height, 0)' }}>
+          <div
+            ref={playerContainerRef}
+            className="relative w-full aspect-video bg-black"
+          >
+            <iframe
+              src={embedUrl}
+              title="Video Player"
+              allow="accelerometer; gyroscope; autoplay; encrypted-media;"
+              className="absolute top-0 left-0 w-full h-full border-0"
+              allowFullScreen
+              loading="lazy"
+            />
+            {/* User Watermark for mobile */}
+            {user?.id && (
               <div
-                className="absolute h-full bg-red-600 rounded-full"
-                style={{ width: `${played * 100}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Bottom Controls Bar */}
-          <div className="flex items-center justify-between px-4 py-2">
-            {/* Left Controls */}
-            <div className="flex items-center space-x-4">
-              {/* Play/Pause Button */}
-              <button
-                onClick={handlePlayPause}
-                className="text-white text-lg"
-                aria-label={isPlaying ? "إيقاف" : "تشغيل"}
+                ref={watermarkRef}
+                className="absolute text-white/20 pointer-events-none whitespace-nowrap"
+                style={{
+                  fontSize: "0.6rem",
+                  fontFamily: "monospace",
+                  textShadow: "1px 1px 1px rgba(0,0,0,0.5)",
+                  transition: "left 0.1s linear, top 0.1s linear",
+                  zIndex: 10,
+                  padding: "2px 4px",
+                  backgroundColor: "rgba(0,0,0,0.2)",
+                  borderRadius: "2px",
+                }}
               >
-                {isPlaying ? <FaPause /> : <FaPlay />}
-              </button>
-
-              {/* Volume Controls */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handleToggleMute}
-                  className="text-white text-lg"
-                  aria-label={isMuted ? "إلغاء كتم الصوت" : "كتم الصوت"}
-                >
-                  {isMuted || volume === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
-                </button>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={isMuted ? 0 : volume}
-                  onChange={handleVolumeChange}
-                  className="w-20 accent-red-600 cursor-pointer"
-                />
+                User: {user.fullname}
               </div>
-
-              {/* Time Display */}
-              <div className="text-white text-sm font-medium">
-                {formatTime(duration * played)} / {formatTime(duration)}
-              </div>
-            </div>
-
-            {/* Right Controls */}
-            <div className="flex items-center space-x-4">
-              {/* Playback Speed */}
-              <div className="relative">
-                <button
-                  onClick={() => setOpenSettings(!openSettings)}
-                  className="text-white text-lg"
-                  aria-label="إعدادات السرعة"
-                >
-                  <IoSettingsSharp />
-                </button>
-                {openSettings && (
-                  <div className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-md p-2 shadow-lg">
-                    {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                      <button
-                        key={rate}
-                        onClick={() => handlePlaybackRateChange(rate)}
-                        className={`block w-full text-right px-3 py-1 text-white hover:bg-red-600 rounded ${
-                          playbackRate === rate ? "bg-red-600" : ""
-                        }`}
-                      >
-                        {rate}x
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Fullscreen Button */}
-              <button
-                onClick={handleToggleFullscreen}
-                className="text-white text-lg"
-                aria-label="ملء الشاشة"
-              >
-                <FaExpand />
-              </button>
-            </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Play/Pause Overlay */}
-      {!isPlaying && (
-        <button
-          onClick={handlePlayPause}
-          className="absolute inset-0 flex items-center justify-center w-full h-full bg-black/30"
-          aria-label="تشغيل"
+      {/* Desktop version - normal container */}
+      {!isMobile && (
+        <div
+          ref={playerContainerRef}
+          className="relative w-full aspect-video bg-black rounded-lg overflow-hidden"
         >
-          <FaPlay className="text-white text-4xl" />
-        </button>
+          <div className="relative w-full h-full">
+            <iframe
+              src={embedUrl}
+              title="Video Player"
+              allow="accelerometer; gyroscope; autoplay; encrypted-media;"
+              className="absolute top-0 left-0 w-full h-full border-0"
+              allowFullScreen
+              loading="lazy"
+            />
+            {/* User Watermark for desktop */}
+            {user?.id && (
+              <div
+                ref={watermarkRef}
+                className="absolute text-white/20 pointer-events-none whitespace-nowrap"
+                style={{
+                  fontSize: "0.7rem",
+                  fontFamily: "monospace",
+                  textShadow: "1px 1px 1px rgba(0,0,0,0.5)",
+                  transition: "left 0.1s linear, top 0.1s linear",
+                  zIndex: 10,
+                  padding: "2px 4px",
+                  backgroundColor: "rgba(0,0,0,0.2)",
+                  borderRadius: "2px",
+                }}
+              >
+                User: {user.fullname}
+              </div>
+            )}
+          </div>
+        </div>
       )}
-    </div>
+    </>
   );
 };
 

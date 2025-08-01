@@ -13,6 +13,8 @@ import {
   FaPlay,
   FaImage,
   FaStar,
+  FaChalkboardTeacher,
+  FaUserShield,
 } from "react-icons/fa";
 import { useUserData } from "../../../models/UserContext";
 import Image from "next/image";

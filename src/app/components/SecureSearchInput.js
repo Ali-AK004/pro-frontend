@@ -4,7 +4,7 @@ import { FiSearch } from 'react-icons/fi';
 import { sanitizeInput, validateSearchTerm, debounce } from '../utils/security';
 import { toast } from 'react-toastify';
 
-const SecureSearchInput = ({ 
+const SecureSearchInput = ({
   placeholder,
   onSearch,
   className = "",
