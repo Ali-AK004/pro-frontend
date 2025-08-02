@@ -448,7 +448,7 @@ const LessonPage = () => {
 
       {/* Enhanced Content */}
       <div className="max-container padding-container py-8">
-        <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-xl border border-white/30 p-8 relative overflow-hidden">
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/30 p-8 relative overflow-hidden">
           {/* Background decoration */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30"></div>
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-2xl"></div>
@@ -1250,11 +1250,24 @@ const VideoTab = ({
     );
   }
 
+  // if (!lesson.videoUrl) {
+  //   return (
+  //     <div className="bg-white rounded-lg shadow-sm p-6">
+  //       <div className="text-center">
+  //         <FaExclamationTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+  //         <h3 className="bold-18 text-gray-600 mb-2">الفيديو غير متاح</h3>
+  //         <p className="regular-14 text-gray-500">
+  //           لم يتم رفع فيديو لهذا الدرس بعد
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
   return (
-    <div className="bg-white rounded-lg min-h-[400px] shadow-sm p-6">
+    <div className="bg-white rounded-lg shadow-sm p-6">
       <h2 className="bold-24 text-gray-900 mb-6">فيديو الدرس</h2>
 
-<<<<<<< HEAD
       <div className="w-full max-w-4xl mx-auto mb-4">
         <LessonVideoPlayer
           lesson={{
@@ -1271,12 +1284,6 @@ const VideoTab = ({
           autoplay={false}
           showVideoInfo={true}
           className="w-full"
-=======
-      <div className="aspect-video rounded-lg w-full mx-auto mb-4">
-        <CustomVideoPlayer
-          videoUrl={videoUrl || lesson?.videoUrl}
-          onEnded={onVideoComplete}
->>>>>>> 2bded171d2381a24745368223cf781298d78f609
         />
       </div>
 

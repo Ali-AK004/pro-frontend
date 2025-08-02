@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { FaEyeSlash, FaRegEye } from "react-icons/fa";
-import axios from "axios";
+import authAPI from "../services/authAPI";
 import { useRouter } from "next/navigation";
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -64,13 +64,8 @@ const SignUp = () => {
 
     setIsCheckingUsername(true);
     try {
-      // You can implement this endpoint in your backend
-      const response = await axios.get(
-        `http://localhost:8080/api/auth/check-username/${username}`,
-        {
-          withCredentials: true,
-        }
-      );
+      // Check username availability via API
+      const response = await authAPI.checkUsername(username);
 
       if (!response.data.available) {
         setErrors((prev) => ({
@@ -218,26 +213,17 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:8080/api/auth/signup",
-        {
-          fullname: formData.fullname,
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          nationalId: formData.nationalId,
-          phoneNumber: formData.phoneNumber,
-          parentPhoneNumber: formData.parentPhoneNumber,
-          dateOfBirth: formData.dateOfBirth,
-          government: formData.government,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await authAPI.signup({
+        fullname: formData.fullname,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        nationalId: formData.nationalId,
+        phoneNumber: formData.phoneNumber,
+        parentPhoneNumber: formData.parentPhoneNumber,
+        dateOfBirth: formData.dateOfBirth,
+        government: formData.government,
+      });
       // TODO ensure he logs in first (safety)
       router.push("/login");
       return response.data;
