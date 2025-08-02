@@ -8,7 +8,12 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    domains: ["images.unsplash.com", "localhost"],
+    domains: [
+      "images.unsplash.com",
+      "localhost",
+      "academitna.b-cdn.net",
+      "academitna.online",
+    ],
     formats: ["image/webp", "image/avif"],
     minimumCacheTTL: 60,
   },

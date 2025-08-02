@@ -1,8 +1,9 @@
 import axios from "axios";
 import { validateSearchTerm } from "../../utils/security";
+import { apiConfig } from "../../../config/api";
 
-const BASE_URL = "http://localhost:8080/api/admin";
-const API_BASE_URL = "http://localhost:8080/api";
+const BASE_URL = `${apiConfig.baseURL}/admin`;
+const API_BASE_URL = apiConfig.baseURL;
 
 // Create axios instance with default config for admin endpoints
 const apiClient = axios.create({

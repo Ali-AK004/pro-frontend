@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 
 export const metadata = {
-  title: "Pro Academy - منصة التعليم الذكي",
+  title: "أكاديميتنا - منصة التعليم الذكي",
   description:
     "منصة تعليمية متطورة تجمع بين الذكاء الاصطناعي والتعلم التفاعلي لتحقيق أفضل النتائج الأكاديمية",
   keywords: "تعليم, ذكاء اصطناعي, امتحانات, واجبات, مدرسين, طلاب",
@@ -23,8 +23,20 @@ export default function RootLayout({ children }) {
     <html lang="ar" dir="rtl">
       <head>
         {/* Preload critical resources */}
-        <link rel="preconnect" href="http://localhost:8080" />
-        <link rel="dns-prefetch" href="http://localhost:8080" />
+        <link
+          rel="preconnect"
+          href={
+            process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") ||
+            "https://academitna.online"
+          }
+        />
+        <link
+          rel="dns-prefetch"
+          href={
+            process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api", "") ||
+            "https://academitna.online"
+          }
+        />
 
         {/* Performance optimizations */}
         <meta name="format-detection" content="telephone=no" />

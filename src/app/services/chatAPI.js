@@ -1,14 +1,15 @@
-import axios from 'axios';
+import axios from "axios";
+import { apiConfig } from "../../config/api";
 
-const BASE_URL = 'http://localhost:8080/api';
+const BASE_URL = apiConfig.baseURL;
 
 // Create axios instance with default config
 const apiClient = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    "Content-Type": "application/json",
+    Accept: "application/json",
   },
 });
 
@@ -17,14 +18,14 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
 );
 
 // Error handling utility
-export const handleAPIError = (error, defaultMessage = 'حدث خطأ غير متوقع') => {
+export const handleAPIError = (error, defaultMessage = "حدث خطأ غير متوقع") => {
   if (error.response?.data?.message) {
     return error.response.data.message;
   }
@@ -41,21 +42,19 @@ export const chatAPI = {
   // Chat Session Management
   sessions: {
     // Start a new chat session
-    startNewSession: () =>
-      apiClient.post('/chat/start'),
+    startNewSession: () => apiClient.post("/chat/start"),
 
     // Get chat history for a session
-    getChatHistory: (sessionId) =>
-      apiClient.get(`/chat/history/${sessionId}`),
+    getChatHistory: (sessionId) => apiClient.get(`/chat/history/${sessionId}`),
   },
 
   // Message Management
   messages: {
     // Send a message in a chat session
     sendMessage: (sessionId, message) =>
-      apiClient.post('/chat/send', {
+      apiClient.post("/chat/send", {
         sessionId,
-        message
+        message,
       }),
   },
 
@@ -63,26 +62,27 @@ export const chatAPI = {
   utils: {
     // Format timestamp for display
     formatTimestamp: (timestamp) => {
-      if (!timestamp) return '';
-      
+      if (!timestamp) return "";
+
       const date = new Date(timestamp);
       const now = new Date();
       const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-      
+
       if (diffInMinutes < 1) {
-        return 'الآن';
+        return "الآن";
       } else if (diffInMinutes < 60) {
         return `منذ ${diffInMinutes} دقيقة`;
-      } else if (diffInMinutes < 1440) { // Less than 24 hours
+      } else if (diffInMinutes < 1440) {
+        // Less than 24 hours
         const hours = Math.floor(diffInMinutes / 60);
         return `منذ ${hours} ساعة`;
       } else {
-        return date.toLocaleDateString('ar-EG', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
+        return date.toLocaleDateString("ar-EG", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
         });
       }
     },
@@ -92,16 +92,16 @@ export const chatAPI = {
       const errors = {};
 
       if (!message?.trim()) {
-        errors.message = 'الرسالة مطلوبة';
+        errors.message = "الرسالة مطلوبة";
       } else if (message.trim().length < 1) {
-        errors.message = 'الرسالة يجب أن تحتوي على حرف واحد على الأقل';
+        errors.message = "الرسالة يجب أن تحتوي على حرف واحد على الأقل";
       } else if (message.trim().length > 1000) {
-        errors.message = 'الرسالة طويلة جداً (الحد الأقصى 1000 حرف)';
+        errors.message = "الرسالة طويلة جداً (الحد الأقصى 1000 حرف)";
       }
 
       return {
         isValid: Object.keys(errors).length === 0,
-        errors
+        errors,
       };
     },
 
@@ -112,7 +112,7 @@ export const chatAPI = {
 
     // Get message display text
     getMessageDisplayText: (message) => {
-      return message.message || '';
+      return message.message || "";
     },
 
     // Get session ID from message
@@ -123,10 +123,10 @@ export const chatAPI = {
     // Create typing indicator message
     createTypingMessage: (sessionId) => ({
       sessionId,
-      message: 'يكتب...',
+      message: "يكتب...",
       isUser: false,
       timestamp: new Date(),
-      isTyping: true
+      isTyping: true,
     }),
 
     // Process message for display
@@ -136,21 +136,21 @@ export const chatAPI = {
         displayText: message.message,
         formattedTime: chatAPI.utils.formatTimestamp(message.timestamp),
         isFromUser: message.isUser,
-        id: `${message.sessionId}-${message.timestamp}-${message.isUser ? 'user' : 'ai'}`
+        id: `${message.sessionId}-${message.timestamp}-${message.isUser ? "user" : "ai"}`,
       };
     },
 
     // Get welcome message
     getWelcomeMessage: () => ({
-      message: 'مرحباً! أنا مساعدك الذكي للتعلم. كيف يمكنني مساعدتك اليوم؟',
+      message: "مرحباً! أنا مساعدك الذكي للتعلم. كيف يمكنني مساعدتك اليوم؟",
       isUser: false,
       timestamp: new Date(),
-      isWelcome: true
+      isWelcome: true,
     }),
 
     // Check if session is valid
     isValidSession: (sessionId) => {
-      return sessionId && typeof sessionId === 'string' && sessionId.length > 0;
+      return sessionId && typeof sessionId === "string" && sessionId.length > 0;
     },
 
     // Generate temporary message ID
@@ -168,8 +168,8 @@ export const chatAPI = {
     // Auto-resize textarea
     autoResizeTextarea: (textarea) => {
       if (textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        textarea.style.height = "auto";
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + "px";
       }
     },
 
@@ -177,41 +177,61 @@ export const chatAPI = {
     extractKeywords: (message) => {
       const keywords = [];
       const text = message.toLowerCase();
-      
+
       // Educational keywords
       const educationalTerms = [
-        'درس', 'شرح', 'تعلم', 'فهم', 'مساعدة', 'سؤال', 'إجابة',
-        'امتحان', 'واجب', 'كورس', 'محاضرة', 'تمرين', 'حل', 'مشكلة'
+        "درس",
+        "شرح",
+        "تعلم",
+        "فهم",
+        "مساعدة",
+        "سؤال",
+        "إجابة",
+        "امتحان",
+        "واجب",
+        "كورس",
+        "محاضرة",
+        "تمرين",
+        "حل",
+        "مشكلة",
       ];
-      
-      educationalTerms.forEach(term => {
+
+      educationalTerms.forEach((term) => {
         if (text.includes(term)) {
           keywords.push(term);
         }
       });
-      
+
       return keywords;
     },
 
     // Get message intent (for future AI improvements)
     getMessageIntent: (message) => {
       const text = message.toLowerCase();
-      
-      if (text.includes('شرح') || text.includes('اشرح') || text.includes('وضح')) {
-        return 'explanation';
-      } else if (text.includes('حل') || text.includes('ساعد') || text.includes('مساعدة')) {
-        return 'help';
-      } else if (text.includes('امتحان') || text.includes('اختبار')) {
-        return 'exam';
-      } else if (text.includes('واجب') || text.includes('تمرين')) {
-        return 'assignment';
-      } else if (text.includes('شكرا') || text.includes('شكراً')) {
-        return 'thanks';
+
+      if (
+        text.includes("شرح") ||
+        text.includes("اشرح") ||
+        text.includes("وضح")
+      ) {
+        return "explanation";
+      } else if (
+        text.includes("حل") ||
+        text.includes("ساعد") ||
+        text.includes("مساعدة")
+      ) {
+        return "help";
+      } else if (text.includes("امتحان") || text.includes("اختبار")) {
+        return "exam";
+      } else if (text.includes("واجب") || text.includes("تمرين")) {
+        return "assignment";
+      } else if (text.includes("شكرا") || text.includes("شكراً")) {
+        return "thanks";
       } else {
-        return 'general';
+        return "general";
       }
-    }
-  }
+    },
+  },
 };
 
 export default chatAPI;

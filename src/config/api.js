@@ -9,7 +9,7 @@ const getApiConfig = () => {
   return {
     // Base API URL
     baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 
-             (isDevelopment ? 'http://localhost:8080/api' : 'https://academitna.online/api'),
+            (isDevelopment ? 'http://localhost:8080/api' : 'https://academitna.online/api'),
     
     // Request timeout
     timeout: parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT) || 30000,

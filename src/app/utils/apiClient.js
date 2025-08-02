@@ -1,10 +1,11 @@
 import axios from "axios";
+import { apiConfig } from "../../config/api";
 
 // Base configuration for all API clients
 const BASE_CONFIG = {
-  baseURL: "http://localhost:8080/api",
+  baseURL: apiConfig.baseURL,
   withCredentials: true,
-  timeout: 10000, // 10 seconds timeout
+  timeout: apiConfig.timeout,
   headers: {
     "Content-Type": "application/json",
   },
@@ -88,10 +89,14 @@ const createOptimizedClient = (baseURL = BASE_CONFIG.baseURL) => {
 
 // Specialized API clients for different services
 export const authAPI = createOptimizedClient();
-export const adminAPI = createOptimizedClient("/api/admin");
-export const instructorAPI = createOptimizedClient("/api/instructors");
-export const studentAPI = createOptimizedClient("/api/students");
-export const chatAPI = createOptimizedClient("/api/chat");
+export const adminAPI = createOptimizedClient(`${apiConfig.baseURL}/admin`);
+export const instructorAPI = createOptimizedClient(
+  `${apiConfig.baseURL}/instructors`
+);
+export const studentAPI = createOptimizedClient(
+  `${apiConfig.baseURL}/students`
+);
+export const chatAPI = createOptimizedClient(`${apiConfig.baseURL}/chat`);
 
 // Generic API client
 export const apiClient = createOptimizedClient();

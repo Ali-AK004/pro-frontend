@@ -1,8 +1,9 @@
 import axios from "axios";
 import { sanitizeInput, validateSearchTerm } from "../../utils/security";
+import { apiConfig } from "../../../config/api";
 
-const BASE_URL = "http://localhost:8080/api/instructors";
-const API_BASE_URL = "http://localhost:8080/api";
+const BASE_URL = `${apiConfig.baseURL}/instructors`;
+const API_BASE_URL = apiConfig.baseURL;
 
 // Simple cache for API responses
 const apiCache = new Map();
