@@ -3,9 +3,6 @@ const nextConfig = {
   // Enable React Strict Mode
   reactStrictMode: true,
 
-  // Enable SWC minification for better performance
-  swcMinify: true,
-
   // Image optimization configuration
   images: {
     // Allow images from Bunny.net CDN
@@ -36,13 +33,13 @@ const nextConfig = {
     CUSTOM_KEY: "academitna_production",
   },
 
+  // Server external packages (moved from experimental)
+  serverExternalPackages: [],
+
   // Experimental features
   experimental: {
-    // Enable app directory (if using Next.js 13+)
-    appDir: true,
-
-    // Enable server components
-    serverComponentsExternalPackages: [],
+    // Disabled optimizeCss due to critters dependency issue
+    // optimizeCss: true,
   },
 
   // Compiler options
@@ -163,21 +160,16 @@ const nextConfig = {
     ignoreDuringBuilds: false,
   },
 
-  // Internationalization (if needed)
-  i18n: {
-    locales: ["ar", "en"],
-    defaultLocale: "ar",
-    localeDetection: true,
-  },
-
   // API routes configuration
   async rewrites() {
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "https://academitna.online/api";
     return [
       {
         source: "/api/:path*",
         destination:
           process.env.NODE_ENV === "production"
-            ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/:path*`
+            ? `${apiBaseUrl}/:path*`
             : "http://localhost:8080/api/:path*",
       },
     ];
@@ -201,7 +193,6 @@ const nextConfig = {
   ...(process.env.NODE_ENV === "production" && {
     // Production-specific configurations
     productionBrowserSourceMaps: false,
-    optimizeFonts: true,
   }),
 };
 
