@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import axios from "axios";
-import { useUserData } from "../../../models/UserContext";
 import { FaEyeSlash, FaRegEye } from "react-icons/fa";
+import authAPI from "../services/authAPI";
+import { useUserData } from "../../../models/UserContext";
 import { useRouter } from "next/navigation";
 
 const Login = () => {
@@ -32,24 +32,14 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:8080/api/auth/signin",
-        {
-          email: formData.email,
-          password: formData.password,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
+      // Use the authAPI service for signin
+      await authAPI.signin({
+        email: formData.email,
+        password: formData.password,
+      });
 
       // Small delay to ensure backend has processed the login
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -58,12 +48,12 @@ const Login = () => {
       await fetchCurrentUser(false); // Don't use cache, get fresh data
 
       router.push("/");
-      return response.data;
     } catch (error) {
-      console.error(error);
+      console.error("Login error:", error);
       const errorMessage =
         error.response?.data?.error ||
         error.response?.data?.message ||
+        error.message ||
         "حدث خطأ أثناء تسجيل الدخول";
       setError(errorMessage);
     } finally {
@@ -113,7 +103,11 @@ const Login = () => {
                     type="email"
                     autoComplete="email"
                     required
-                    className="w-full pr-4 pl-9 py-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-right"
+                    className={`w-full pr-4 pl-9 py-4 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 text-right ${
+                      error
+                        ? "border-red-300 focus:ring-red-500"
+                        : "border-gray-200 focus:ring-blue-500"
+                    }`}
                     placeholder="أدخل بريدك الإلكتروني"
                     value={formData.email}
                     onChange={handleChange}
@@ -151,7 +145,11 @@ const Login = () => {
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
-                    className="w-full px-4 py-4 pl-9 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-right"
+                    className={`w-full px-4 py-4 pl-9 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 text-right ${
+                      error
+                        ? "border-red-300 focus:ring-red-500"
+                        : "border-gray-200 focus:ring-blue-500"
+                    }`}
                     placeholder="أدخل كلمة المرور"
                     value={formData.password}
                     onChange={handleChange}
