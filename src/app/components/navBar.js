@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import axios from "axios";
 import { useUserData } from "../../../models/UserContext";
+import apiConfig, { API_ENDPOINTS } from "@/config/api";
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,7 +27,7 @@ const NavBar = () => {
       // Make logout request (don't wait for response)
       axios
         .post(
-          "http://localhost:8080/api/auth/signout",
+          `${apiConfig.baseURL}${API_ENDPOINTS.AUTH.LOGOUT}`,
           {},
           {
             withCredentials: true,

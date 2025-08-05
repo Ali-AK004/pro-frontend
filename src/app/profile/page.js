@@ -22,6 +22,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import NavBar from "../components/navBar";
+import apiConfig, { API_ENDPOINTS } from "@/config/api";
 
 const Profile = () => {
   const { user } = useUserData();
@@ -45,7 +46,7 @@ const Profile = () => {
         setLessonsError(null);
 
         const response = await axios.get(
-          "http://localhost:8080/api/students/my-lessons",
+          `${apiConfig.baseURL}${API_ENDPOINTS.STUDENTS.MY_LESSONS}`,
           {
             withCredentials: true,
           }

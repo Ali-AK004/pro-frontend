@@ -19,6 +19,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import Link from "next/link";
+import apiConfig, { API_ENDPOINTS } from "@/config/api";
 
 const AdminSidebar = ({ activeTab, setActiveTab }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -33,7 +34,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       // Make logout request (don't wait for response)
       axios
         .post(
-          "http://localhost:8080/api/auth/signout",
+          `${apiConfig.baseURL}${API_ENDPOINTS.AUTH.LOGOUT}`,
           {},
           {
             withCredentials: true,

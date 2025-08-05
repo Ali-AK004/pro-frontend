@@ -18,6 +18,7 @@ import {
   FiClipboard,
   FiMessageCircle,
 } from "react-icons/fi";
+import apiConfig, { API_ENDPOINTS } from "@/config/api";
 
 const InstructorSidebar = ({ activeTab, setActiveTab }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -32,7 +33,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
       // Make logout request (don't wait for response)
       axios
         .post(
-          "http://localhost:8080/api/auth/signout",
+          `${apiConfig.baseURL}${API_ENDPOINTS.AUTH.LOGOUT}`,
           {},
           {
             withCredentials: true,

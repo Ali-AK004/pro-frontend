@@ -15,7 +15,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { setUser, fetchCurrentUser } = useUserData();
+  const { fetchCurrentUser } = useUserData();
   const router = useRouter();
 
   const handleChange = (e) => {
