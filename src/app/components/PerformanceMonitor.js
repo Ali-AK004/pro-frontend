@@ -80,82 +80,21 @@ export const usePerformanceMonitor = () => {
   return metrics;
 };
 
-// Performance optimization utilities
-export const performanceUtils = {
-  // Debounce function for search inputs
-  debounce: (func, wait) => {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  },
-
-  // Throttle function for scroll events
-  throttle: (func, limit) => {
-    let inThrottle;
-    return function () {
-      const args = arguments;
-      const context = this;
-      if (!inThrottle) {
-        func.apply(context, args);
-        inThrottle = true;
-        setTimeout(() => (inThrottle = false), limit);
-      }
-    };
-  },
-
-  // Lazy loading for images
-  lazyLoadImage: (imgElement, src) => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.src = src;
-          entry.target.classList.remove("lazy");
-          observer.unobserve(entry.target);
-        }
-      });
-    });
-
-    observer.observe(imgElement);
-  },
-
-  // Preload critical resources
-  preloadResource: (href, as = "fetch") => {
-    if (typeof window !== "undefined") {
-      const link = document.createElement("link");
-      link.rel = "preload";
-      link.href = href;
-      link.as = as;
-      document.head.appendChild(link);
-    }
-  },
-
-  // Memory usage monitoring
-  getMemoryUsage: () => {
-    if (
-      typeof window !== "undefined" &&
-      window.performance &&
-      window.performance.memory
-    ) {
-      return {
-        used: Math.round(window.performance.memory.usedJSHeapSize / 1048576),
-        total: Math.round(window.performance.memory.totalJSHeapSize / 1048576),
-        limit: Math.round(window.performance.memory.jsHeapSizeLimit / 1048576),
-      };
-    }
-    return null;
-  },
-};
-
 // Component for displaying performance metrics (ADMIN only)
 const PerformanceMonitor = ({ user }) => {
   const metrics = usePerformanceMonitor();
   const [showMetrics, setShowMetrics] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    handleResize(); // Set initial value
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Only show for ADMIN users
   if (!user || user.role !== "ADMIN") {
@@ -163,23 +102,39 @@ const PerformanceMonitor = ({ user }) => {
   }
 
   return (
-    <div className="fixed bottom-4 right-1/2 -translate-x-1/2 z-50">
+    <div
+      className={`fixed ${isMobile ? "bottom-2 right-2" : "bottom-4 right-4"} z-50`}
+    >
       <button
         onClick={() => setShowMetrics(!showMetrics)}
-        className="group cursor-pointer bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 rounded-2xl text-sm font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2"
+        className={`group cursor-pointer bg-gradient-to-r from-blue-500 to-purple-600 text-white ${
+          isMobile
+            ? "px-3 py-2 rounded-xl text-xs"
+            : "px-4 py-3 rounded-2xl text-sm"
+        } font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2`}
       >
-        <span className="text-lg">📊</span>
-        <span>Performance</span>
+        <span className={isMobile ? "text-sm" : "text-lg"}>📊</span>
+        {!isMobile && <span>Performance</span>}
         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
       </button>
 
       {showMetrics && (
-        <div className="absolute bottom-16 right-0 bg-white/95 backdrop-blur-md border border-gray-200/50 rounded-2xl shadow-2xl p-6 min-w-80 max-w-sm">
+        <div
+          className={`
+          absolute ${isMobile ? "bottom-12 right-0" : "bottom-16 right-0"}
+          bg-white/95 backdrop-blur-md border border-gray-200/50 rounded-2xl shadow-2xl
+          ${isMobile ? "p-3 min-w-[280px] max-w-[90vw]" : "p-6 min-w-80 max-w-sm"}
+        `}
+        >
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <div
+              className={`${isMobile ? "w-6 h-6" : "w-8 h-8"} bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center`}
+            >
               <span className="text-white text-sm">📊</span>
             </div>
-            <h3 className="font-bold text-lg text-gray-900">
+            <h3
+              className={`font-bold ${isMobile ? "text-base" : "text-lg"} text-gray-900`}
+            >
               Performance Metrics
             </h3>
           </div>
@@ -188,11 +143,13 @@ const PerformanceMonitor = ({ user }) => {
             {/* Load Time */}
             <div className="bg-gray-50 rounded-xl p-3">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">
+                <span
+                  className={`${isMobile ? "text-xs" : "text-sm"} font-medium text-gray-700`}
+                >
                   Load Time
                 </span>
                 <span
-                  className={`text-sm font-bold px-2 py-1 rounded-lg ${
+                  className={`${isMobile ? "text-xs px-1 py-0.5" : "text-sm px-2 py-1"} font-bold rounded-lg ${
                     metrics.loadTime > 3000
                       ? "text-red-600 bg-red-100"
                       : metrics.loadTime > 1000
@@ -222,11 +179,13 @@ const PerformanceMonitor = ({ user }) => {
             {/* Render Time */}
             <div className="bg-gray-50 rounded-xl p-3">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">
+                <span
+                  className={`${isMobile ? "text-xs" : "text-sm"} font-medium text-gray-700`}
+                >
                   Render Time
                 </span>
                 <span
-                  className={`text-sm font-bold px-2 py-1 rounded-lg ${
+                  className={`${isMobile ? "text-xs px-1 py-0.5" : "text-sm px-2 py-1"} font-bold rounded-lg ${
                     metrics.renderTime > 16
                       ? "text-red-600 bg-red-100"
                       : metrics.renderTime > 8
@@ -253,12 +212,16 @@ const PerformanceMonitor = ({ user }) => {
               </div>
             </div>
 
-            <div className="flex justify-between">
+            <div
+              className={`flex justify-between ${isMobile ? "text-xs" : "text-sm"}`}
+            >
               <span>API Calls:</span>
               <span>{metrics.apiCalls}</span>
             </div>
 
-            <div className="flex justify-between">
+            <div
+              className={`flex justify-between ${isMobile ? "text-xs" : "text-sm"}`}
+            >
               <span>Slow Queries:</span>
               <span
                 className={
@@ -273,9 +236,16 @@ const PerformanceMonitor = ({ user }) => {
 
             {metrics.slowQueries.length > 0 && (
               <div className="mt-2 pt-2 border-t border-gray-200">
-                <div className="text-xs font-semibold mb-1">Slow Queries:</div>
+                <div
+                  className={`${isMobile ? "text-xs" : "text-sm"} font-semibold mb-1`}
+                >
+                  Slow Queries:
+                </div>
                 {metrics.slowQueries.slice(-3).map((query, index) => (
-                  <div key={index} className="text-xs text-red-600 truncate">
+                  <div
+                    key={index}
+                    className={`${isMobile ? "text-xs" : "text-sm"} text-red-600 truncate`}
+                  >
                     {String(query.url).split("/").pop()}:{" "}
                     {query.duration.toFixed(0)}ms
                   </div>
