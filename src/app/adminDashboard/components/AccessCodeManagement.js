@@ -253,7 +253,9 @@ const AccessCodeManagement = () => {
       {/* Header */}
       <div className="flex items-center flex-col gap-5 lg:gap-0 lg:flex-row justify-between mb-8">
         <div>
-          <h1 className="bold-24 md:bold-32 text-gray-900 mb-2">إدارة أكواد الوصول</h1>
+          <h1 className="bold-24 md:bold-32 text-gray-900 mb-2">
+            إدارة أكواد الوصول
+          </h1>
           <p className="regular-14 md:regular-16 text-gray-600">
             إجمالي الأكواد: {pagination.totalElements} | المعروض:{" "}
             {accessCodes.length}
@@ -648,7 +650,9 @@ const AccessCodeManagement = () => {
         <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-20 md:bold-24 text-gray-900">إنشاء أكواد وصول جديدة</h2>
+              <h2 className="bold-20 md:bold-24 text-gray-900">
+                إنشاء أكواد وصول جديدة
+              </h2>
               <button
                 onClick={() => setShowGenerateModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
@@ -657,7 +661,10 @@ const AccessCodeManagement = () => {
               </button>
             </div>
 
-            <form onSubmit={handleGenerateAccessCodes} className="space-y-4 md:space-y-6">
+            <form
+              onSubmit={handleGenerateAccessCodes}
+              className="space-y-4 md:space-y-6"
+            >
               <div>
                 <label className="block bold-14 md:bold-16 text-gray-900 mb-2">
                   الدرس *
@@ -732,7 +739,9 @@ const AccessCodeManagement = () => {
         <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-20 md:bold-24 text-gray-900">تأكيد حذف كود الوصول</h2>
+              <h2 className="bold-20 md:bold-24 text-gray-900">
+                تأكيد حذف كود الوصول
+              </h2>
               <button
                 onClick={() => {
                   setShowDeleteModal(false);

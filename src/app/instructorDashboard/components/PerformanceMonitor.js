@@ -1,7 +1,9 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-const PerformanceMonitor = ({ enabled = process.env.NODE_ENV === 'development' }) => {
+const PerformanceMonitor = ({
+  enabled = process.env.NODE_ENV === "development",
+}) => {
   const [metrics, setMetrics] = useState({
     loadTime: 0,
     renderTime: 0,
@@ -15,23 +17,35 @@ const PerformanceMonitor = ({ enabled = process.env.NODE_ENV === 'development' }
     if (!enabled) return;
 
     const measureLoadTime = () => {
-      if (typeof window !== 'undefined' && window.performance) {
-        const loadTime = window.performance.timing.loadEventEnd - window.performance.timing.navigationStart;
-        setMetrics(prev => ({ ...prev, loadTime }));
+      if (typeof window !== "undefined" && window.performance) {
+        const loadTime =
+          window.performance.timing.loadEventEnd -
+          window.performance.timing.navigationStart;
+        setMetrics((prev) => ({ ...prev, loadTime }));
       }
     };
 
     const measureRenderTime = () => {
-      if (typeof window !== 'undefined' && window.performance) {
-        const renderTime = window.performance.timing.domContentLoadedEventEnd - window.performance.timing.domLoading;
-        setMetrics(prev => ({ ...prev, renderTime }));
+      if (typeof window !== "undefined" && window.performance) {
+        const renderTime =
+          window.performance.timing.domContentLoadedEventEnd -
+          window.performance.timing.domLoading;
+        setMetrics((prev) => ({ ...prev, renderTime }));
       }
     };
 
     const measureMemoryUsage = () => {
-      if (typeof window !== 'undefined' && window.performance && window.performance.memory) {
-        const memoryUsage = window.performance.memory.usedJSHeapSize / 1024 / 1024; // MB
-        setMetrics(prev => ({ ...prev, memoryUsage: Math.round(memoryUsage) }));
+      if (
+        typeof window !== "undefined" &&
+        window.performance &&
+        window.performance.memory
+      ) {
+        const memoryUsage =
+          window.performance.memory.usedJSHeapSize / 1024 / 1024; // MB
+        setMetrics((prev) => ({
+          ...prev,
+          memoryUsage: Math.round(memoryUsage),
+        }));
       }
     };
 
@@ -54,13 +68,13 @@ const PerformanceMonitor = ({ enabled = process.env.NODE_ENV === 'development' }
 
         if (duration > 1000) {
           slowQueries.push({
-            url: typeof args[0] === 'string' ? args[0] : String(args[0]),
+            url: typeof args[0] === "string" ? args[0] : String(args[0]),
             duration: Math.round(duration),
             timestamp: new Date().toISOString(),
           });
         }
 
-        setMetrics(prev => ({
+        setMetrics((prev) => ({
           ...prev,
           apiCalls: apiCallCount,
           slowQueries: [...slowQueries],
@@ -86,7 +100,7 @@ const PerformanceMonitor = ({ enabled = process.env.NODE_ENV === 'development' }
     <div className="fixed bottom-4 left-4 bg-black bg-opacity-80 text-white p-3 rounded-lg text-xs font-mono z-50 max-w-xs">
       <div className="flex justify-between items-center mb-2">
         <div className="font-bold">Performance Monitor</div>
-        <button 
+        <button
           onClick={() => setIsVisible(false)}
           className="text-gray-400 hover:text-white"
           aria-label="Close monitor"
@@ -94,17 +108,17 @@ const PerformanceMonitor = ({ enabled = process.env.NODE_ENV === 'development' }
           ×
         </button>
       </div>
-      
+
       <div className="grid grid-cols-2 gap-x-4 gap-y-1">
         <div>Load Time:</div>
         <div className="text-right">{metrics.loadTime}ms</div>
-        
+
         <div>Render Time:</div>
         <div className="text-right">{metrics.renderTime}ms</div>
-        
+
         <div>API Calls:</div>
         <div className="text-right">{metrics.apiCalls}</div>
-        
+
         <div>Memory Usage:</div>
         <div className="text-right">{metrics.memoryUsage}MB</div>
       </div>
@@ -117,7 +131,8 @@ const PerformanceMonitor = ({ enabled = process.env.NODE_ENV === 'development' }
           <div className="space-y-1 max-h-40 overflow-y-auto">
             {metrics.slowQueries.slice(-3).map((query, index) => (
               <div key={index} className="truncate">
-                <span className="text-red-400">{query.duration}ms</span>: {query.url.split('/').pop()}
+                <span className="text-red-400">{query.duration}ms</span>:{" "}
+                {query.url.split("/").pop()}
               </div>
             ))}
           </div>
