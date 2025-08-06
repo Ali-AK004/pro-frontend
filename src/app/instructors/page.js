@@ -12,21 +12,15 @@ import { studentAPI, handleAPIError } from "../services/studentAPI";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import NavBar from "../components/navBar";
+import SecureSearchInput from "../components/SecureSearchInput";
+import InstructorSearchInput from "../components/InstructorSearchInput";
 
 const Instructors = () => {
-  const [instructorId, setInstructorId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-
-    if (!instructorId.trim()) {
-      setError("يرجى إدخال ID المدرس");
-      return;
-    }
-
+ const handleSearch = async (instructorId) => {
     setIsLoading(true);
     setError(null);
 
@@ -34,22 +28,51 @@ const Instructors = () => {
       const response = await studentAPI.profile.getInstructorFullProfile(
         instructorId.trim()
       );
-
-      // Navigate to instructor profile page
+      
+      // Check if response contains valid data
+      if (!response.data) {
+        throw new Error("no-data");
+      }
+      
       router.push(`/instructors/${instructorId.trim()}`);
     } catch (error) {
       console.error("Error fetching instructor profile:", error);
-      setError(handleAPIError(error, "حدث خطأ أثناء جلب بيانات المدرس"));
+      
+      let errorMessage = "حدث خطأ أثناء جلب بيانات المدرس";
+      
+      if (error.response) {
+        // Server responded with error status
+        switch (error.response.status) {
+          case 400:
+            errorMessage = "طلب غير صالح. يرجى التحقق من ID المدرس";
+            break;
+          case 401:
+            errorMessage = "غير مصرح لك بالوصول إلى هذه البيانات";
+            break;
+          case 404:
+            errorMessage = "لم يتم العثور على المدرس";
+            break;
+          case 500:
+            errorMessage = "حدث خطأ في الخادم الداخلي ، قم بإدخال ID صحيح";
+            break;
+          default:
+            errorMessage = "حدث خطأ في الاتصال بالخادم";
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        errorMessage = "لا يمكن الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت";
+      } else if (error.message === "no-data") {
+        errorMessage = "لا يوجد بيانات متاحة لهذا المدرس";
+      } else {
+        // Something happened in setting up the request
+        errorMessage = "حدث خطأ غير متوقع";
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handleInputChange = (e) => {
-    setInstructorId(e.target.value);
-    if (error) setError(null); // Clear error when typing
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
       {/* Background decorations */}
@@ -109,50 +132,11 @@ const Instructors = () => {
                   أدخل ID المعلم للوصول إلى ملفه الشخصي والكورسات المتاحة
                 </p>
               </div>
-
-              <form onSubmit={handleSearch} className="space-y-6">
-                <div>
-                  <label
-                    htmlFor="instructorId"
-                    className="block text-lg font-semibold text-gray-700 mb-3"
-                  >
-                    ID الملعم
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="instructorId"
-                      type="text"
-                      value={instructorId}
-                      onChange={handleInputChange}
-                      placeholder="أدخل ID المعلم"
-                      className="font-main w-full px-4 py-4 pr-12 border-2 border-gray-300 rounded-lg focus:border-accent focus:outline-none transition-colors regular-16"
-                      disabled={isLoading}
-                    />
-                    <FaSearch className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  </div>
-                </div>
-
-                {/* Error message */}
-                {error && <p className="text-red-500 regular-14">{error}</p>}
-
-                <button
-                  type="submit"
-                  disabled={isLoading || !instructorId.trim()}
-                  className="w-full bg-accent cursor-pointer text-white py-4 rounded-lg bold-16 hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flexCenter gap-2 shadow-md hover:shadow-lg"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      جاري البحث...
-                    </>
-                  ) : (
-                    <>
-                      <FaSearch className="w-4 h-4" />
-                      البحث عن المعلم
-                    </>
-                  )}
-                </button>
-              </form>
+              <InstructorSearchInput
+                onSearch={handleSearch}
+                loading={isLoading}
+                error={error}
+              />
             </div>
           </div>
         </div>

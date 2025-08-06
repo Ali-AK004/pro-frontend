@@ -23,6 +23,7 @@ import {
 import Image from "next/image";
 import { MdDeleteForever } from "react-icons/md";
 import { getInstructorId, getRolePermissions } from "../../utils/roleHelpers";
+import SecureSearchInput from "@/app/components/SecureSearchInput";
 
 const InstructorLessonManagement = () => {
   const { user } = useUserData();
@@ -400,17 +401,12 @@ const InstructorLessonManagement = () => {
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <div className="flex md:col-span-3 relative">
-            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="البحث في الدروس..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            />
-          </div>
+          <SecureSearchInput
+            placeholder="البحث في الواجبات..."
+            onSearch={(term) => setSearchTerm(term)}
+            className="border border-gray-300 focus:ring-secondary"
+            maxLength={100}
+          />
           <select
             value={selectedCourse}
             onChange={(e) => setSelectedCourse(e.target.value)}

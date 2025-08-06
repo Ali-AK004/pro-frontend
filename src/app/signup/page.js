@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FaEyeSlash, FaRegEye } from "react-icons/fa";
 import authAPI from "../services/authAPI";
 import { useRouter } from "next/navigation";
+
 const SignUp = () => {
   const [formData, setFormData] = useState({
     fullname: "",
@@ -56,17 +57,13 @@ const SignUp = () => {
     "سوهاج",
   ];
 
-  // if (user) router.push('/')
-
   // Debounced username check
   const checkUsernameAvailability = async (username) => {
     if (!username || username.length < 3) return;
 
     setIsCheckingUsername(true);
     try {
-      // Check username availability via API
       const response = await authAPI.checkUsername(username);
-
       if (!response.data.available) {
         setErrors((prev) => ({
           ...prev,
@@ -74,8 +71,7 @@ const SignUp = () => {
         }));
       }
     } catch (error) {
-      // If endpoint doesn't exist, we'll handle it in the main form submission
-      console.log("Username check endpoint not available");
+      console.error("Username check endpoint not available");
     } finally {
       setIsCheckingUsername(false);
     }
@@ -88,129 +84,94 @@ const SignUp = () => {
       [name]: value,
     }));
 
-    // Clear error when user starts typing
+    // Clear error when user starts typing in any field
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
         [name]: "",
+        // Clear both phone errors if either phone field changes
+        ...(name === "phoneNumber" || name === "parentPhoneNumber"
+          ? {
+              phoneNumber: "",
+              parentPhoneNumber: "",
+            }
+          : {}),
+        // Clear confirm password error if password changes
+        ...(name === "password" ? { confirmPassword: "" } : {}),
       }));
     }
 
     // Check username availability with debounce
     if (name === "username" && value.length >= 3) {
-      // Clear any existing timeout
       if (window.usernameTimeout) {
         clearTimeout(window.usernameTimeout);
       }
-
-      // Set new timeout
       window.usernameTimeout = setTimeout(() => {
         checkUsernameAvailability(value);
-      }, 1000); // 1 second delay
+      }, 1000);
+    }
+
+    // Validate password match in real-time
+    if (name === "password" || name === "confirmPassword") {
+      if (
+        formData.password &&
+        formData.confirmPassword &&
+        formData.password !== formData.confirmPassword
+      ) {
+        setErrors((prev) => ({
+          ...prev,
+          confirmPassword: "كلمة المرور غير متطابقة",
+        }));
+      } else if (errors.confirmPassword) {
+        setErrors((prev) => ({
+          ...prev,
+          confirmPassword: "",
+        }));
+      }
+    }
+
+    // Validate phone numbers in real-time
+    if (
+      (name === "phoneNumber" || name === "parentPhoneNumber") &&
+      formData.phoneNumber &&
+      formData.parentPhoneNumber &&
+      formData.phoneNumber === formData.parentPhoneNumber
+    ) {
+      setErrors((prev) => ({
+        ...prev,
+        phoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
+        parentPhoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
+      }));
+    } else if (
+      errors.phoneNumber &&
+      errors.parentPhoneNumber &&
+      formData.phoneNumber !== formData.parentPhoneNumber
+    ) {
+      setErrors((prev) => ({
+        ...prev,
+        phoneNumber: "",
+        parentPhoneNumber: "",
+      }));
     }
   };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    // التحقق من الاسم
-    if (!formData.fullname.trim()) {
-      newErrors.fullname = "الاسم مطلوب";
-    } else if (formData.fullname.trim().length < 2) {
-      newErrors.fullname = "الاسم يجب أن يكون حرفين على الأقل";
-    }
-
-    // التحقق من البريد الإلكتروني
-    if (!formData.email) {
-      newErrors.email = "البريد الإلكتروني مطلوب";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "البريد الإلكتروني غير صحيح";
-    }
-
-    // التحقق من كلمة المرور
-    if (!formData.password) {
-      newErrors.password = "كلمة المرور مطلوبة";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
-    }
-
-    // التحقق من تأكيد كلمة المرور
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "تأكيد كلمة المرور مطلوب";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "كلمة المرور غير متطابقة";
-    }
-
-    // التحقق من الرقم القومي
-    if (!formData.nationalId) {
-      newErrors.nationalId = "الرقم القومي مطلوب";
-    } else if (!/^\d{14}$/.test(formData.nationalId)) {
-      newErrors.nationalId = "الرقم القومي يجب أن يكون 14 رقم";
-    }
-
-    // التحقق من هاتف الطالب
-    if (!formData.phoneNumber) {
-      newErrors.phoneNumber = "هاتف الطالب مطلوب";
-    } else if (!/^01[0-2,5]\d{8}$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = "رقم الهاتف غير صحيح";
-    }
-
-    // التحقق من هاتف ولي الأمر
-    if (!formData.parentPhoneNumber) {
-      newErrors.parentPhoneNumber = "هاتف ولي الأمر مطلوب";
-    } else if (!/^01[0-2,5]\d{8}$/.test(formData.parentPhoneNumber)) {
-      newErrors.parentPhoneNumber = "رقم الهاتف غير صحيح";
+    if (formData.password !== formData.confirmPassword) {
+      setErrors({ confirmPassword: "كلمة المرور غير متطابقة" });
+      return;
     }
 
     if (formData.phoneNumber === formData.parentPhoneNumber) {
-      newErrors.phoneNumber = newErrors.parentPhoneNumber =
-        "يجب أن تكون الأرقام مختلفة";
-    }
-
-    // التحقق من تاريخ الميلاد
-    if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = "تاريخ الميلاد مطلوب";
-    } else {
-      const birthDate = new Date(formData.dateOfBirth);
-      const today = new Date();
-
-      // Calculate age
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-
-      if (
-        monthDiff < 0 ||
-        (monthDiff === 0 && today.getDate() < birthDate.getDate())
-      ) {
-        age--;
-      }
-
-      // Validate age range
-      if (age < 5) {
-        newErrors.dateOfBirth = "يجب أن يكون العمر 5 سنوات على الأقل";
-      } else if (age > 100) {
-        newErrors.dateOfBirth = "يجب أن يكون العمر أقل من 100 سنة";
-      }
-    }
-
-    // التحقق من المحافظة
-    if (!formData.government) {
-      newErrors.government = "المحافظة مطلوبة";
-    }
-
-    return newErrors;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newErrors = validateForm();
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+      setErrors({
+        phoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
+        parentPhoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
+      });
       return;
     }
 
     setIsLoading(true);
+    setErrors({}); // Clear previous errors
 
     try {
       const response = await authAPI.signup({
@@ -224,65 +185,11 @@ const SignUp = () => {
         dateOfBirth: formData.dateOfBirth,
         government: formData.government,
       });
-      // TODO ensure he logs in first (safety)
       router.push("/login");
       return response.data;
     } catch (error) {
       console.error("خطأ في إنشاء الحساب:", error);
-
-      // Handle specific backend errors
-      if (error.response && error.response.data && error.response.data.error) {
-        const backendError = error.response.data.error;
-
-        // Map specific backend errors to form fields
-        if (
-          backendError.includes("اسم المستخدم مستخدم بالفعل") ||
-          backendError.includes("Username already exists") ||
-          backendError.includes("username")
-        ) {
-          setErrors({ username: backendError });
-        } else if (
-          backendError.includes("البريد الإلكتروني مستخدم بالفعل") ||
-          backendError.includes("Email already exists") ||
-          backendError.includes("email")
-        ) {
-          setErrors({ email: backendError });
-        } else if (
-          backendError.includes("الرقم القومي مستخدم بالفعل") ||
-          backendError.includes("National ID already exists") ||
-          backendError.includes("nationalId") ||
-          backendError.includes("national")
-        ) {
-          setErrors({
-            nationalId:
-              "الرقم القومي مستخدم بالفعل. يرجى التأكد من صحة الرقم أو التواصل مع الدعم الفني.",
-          });
-        } else if (
-          backendError.includes("رقم الهاتف مستخدم بالفعل") ||
-          backendError.includes("Phone number already exists") ||
-          backendError.includes("phoneNumber")
-        ) {
-          setErrors({ phoneNumber: backendError });
-        } else {
-          // Generic backend error
-          setErrors({ general: backendError });
-        }
-      } else if (error.response && error.response.status === 400) {
-        setErrors({
-          general:
-            "البيانات المدخلة غير صحيحة. يرجى المراجعة والمحاولة مرة أخرى.",
-        });
-      } else if (error.response && error.response.status === 429) {
-        setErrors({
-          general: "تم تجاوز الحد المسموح من المحاولات. يرجى المحاولة لاحقاً.",
-        });
-      } else if (error.code === "NETWORK_ERROR" || !error.response) {
-        setErrors({
-          general: "خطأ في الاتصال بالخادم. يرجى التأكد من الاتصال بالإنترنت.",
-        });
-      } else {
-        setErrors({ general: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى." });
-      }
+      setErrors({ general: error.message || "حدث خطأ أثناء إنشاء الحساب" });
     } finally {
       setIsLoading(false);
     }
@@ -317,28 +224,6 @@ const SignUp = () => {
           <div className="px-8 py-8">
             {/* Form */}
             <form className="space-y-6" onSubmit={handleSubmit}>
-              {/* General Error */}
-              {errors.general && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                  <div className="flex items-center">
-                    <svg
-                      className="h-5 w-5 text-red-400 ml-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <p className="text-sm text-red-700">{errors.general}</p>
-                  </div>
-                </div>
-              )}
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Full Name */}
                 <div className="md:col-span-2">
@@ -352,8 +237,8 @@ const SignUp = () => {
                     id="fullname"
                     name="fullname"
                     type="text"
-                    autoComplete="name"
                     required
+                    autoComplete="name"
                     className={`w-full px-4 py-4 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 text-right ${
                       errors.fullname
                         ? "border-red-300 focus:ring-red-500 bg-red-50"
@@ -363,24 +248,6 @@ const SignUp = () => {
                     value={formData.fullname}
                     onChange={handleChange}
                   />
-                  {errors.fullname && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center">
-                      <svg
-                        className="h-4 w-4 ml-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      {errors.fullname}
-                    </p>
-                  )}
                 </div>
 
                 {/* اسم المستخدم */}
@@ -396,8 +263,8 @@ const SignUp = () => {
                       id="username"
                       name="username"
                       type="text"
-                      autoComplete="username"
                       required
+                      autoComplete="username"
                       className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
                         errors.username
                           ? "border-red-300 focus:ring-red-500"
@@ -466,22 +333,13 @@ const SignUp = () => {
                     id="email"
                     name="email"
                     type="email"
-                    autoComplete="email"
                     required
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                      errors.email
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                    }`}
+                    autoComplete="email"
+                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
                     placeholder="أدخل بريدك الإلكتروني"
                     value={formData.email}
                     onChange={handleChange}
                   />
-                  {errors.email && (
-                    <p className="mt-2 regular-14 text-red-600">
-                      {errors.email}
-                    </p>
-                  )}
                 </div>
 
                 {/* كلمة المرور */}
@@ -495,15 +353,11 @@ const SignUp = () => {
                   <div className="relative">
                     <input
                       id="password"
+                      required
                       name="password"
                       type={showPassword ? "text" : "password"}
                       autoComplete="new-password"
-                      required
-                      className={`font-main appearance-none relative block w-full pr-4 pl-10 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                        errors.password
-                          ? "border-red-300 focus:ring-red-500"
-                          : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                      }`}
+                      className={`font-main appearance-none relative block w-full pr-4 pl-10 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
                       placeholder="أدخل كلمة المرور"
                       value={formData.password}
                       onChange={handleChange}
@@ -520,11 +374,6 @@ const SignUp = () => {
                       )}
                     </button>
                   </div>
-                  {errors.password && (
-                    <p className="mt-2 regular-14 text-red-600">
-                      {errors.password}
-                    </p>
-                  )}
                 </div>
 
                 {/* تأكيد كلمة المرور */}
@@ -541,8 +390,7 @@ const SignUp = () => {
                       name="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       autoComplete="new-password"
-                      required
-                      className={`font-main appearance-none relative block w-full pr-4 pl-10 py-3  border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
+                      className={`font-main appearance-none relative block w-full pr-4 pl-10 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
                         errors.confirmPassword
                           ? "border-red-300 focus:ring-red-500"
                           : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
@@ -566,7 +414,20 @@ const SignUp = () => {
                     </button>
                   </div>
                   {errors.confirmPassword && (
-                    <p className="mt-2 regular-14 text-red-600">
+                    <p className="mt-2 regular-14 text-red-600 flex items-center">
+                      <svg
+                        className="h-4 w-4 ml-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
                       {errors.confirmPassword}
                     </p>
                   )}
@@ -584,47 +445,13 @@ const SignUp = () => {
                     id="nationalId"
                     name="nationalId"
                     type="text"
-                    maxLength="14"
                     required
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                      errors.nationalId
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                    }`}
+                    maxLength="14"
+                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
                     placeholder="أدخل الرقم القومي (14 رقم)"
                     value={formData.nationalId}
                     onChange={handleChange}
                   />
-                  {errors.nationalId && (
-                    <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <div className="flex items-start">
-                        <svg
-                          className="h-5 w-5 text-red-500 mt-0.5 ml-2 flex-shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-red-800">
-                            {errors.nationalId}
-                          </p>
-                          {errors.nationalId.includes("مستخدم بالفعل") && (
-                            <p className="text-xs text-red-600 mt-1">
-                              إذا كان هذا الرقم صحيحاً وتواجه مشكلة، يرجى
-                              التواصل مع الدعم الفني
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* تاريخ الميلاد */}
@@ -640,22 +467,12 @@ const SignUp = () => {
                     name="dateOfBirth"
                     type="date"
                     required
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                      errors.dateOfBirth
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                    }`}
+                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
                     value={formData.dateOfBirth}
                     onChange={handleChange}
                   />
-                  {errors.dateOfBirth && (
-                    <p className="mt-2 regular-14 text-red-600">
-                      {errors.dateOfBirth}
-                    </p>
-                  )}
                 </div>
 
-                {/* هاتف الطالب */}
                 <div>
                   <label
                     htmlFor="phoneNumber"
@@ -668,7 +485,6 @@ const SignUp = () => {
                     name="phoneNumber"
                     type="tel"
                     maxLength="11"
-                    required
                     className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
                       errors.phoneNumber
                         ? "border-red-300 focus:ring-red-500"
@@ -698,7 +514,6 @@ const SignUp = () => {
                     name="parentPhoneNumber"
                     type="tel"
                     maxLength="11"
-                    required
                     className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
                       errors.parentPhoneNumber
                         ? "border-red-300 focus:ring-red-500"
@@ -726,7 +541,6 @@ const SignUp = () => {
                   <select
                     id="government"
                     name="government"
-                    required
                     className={`font-main relative block w-full px-4 py-3 border rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
                       errors.government
                         ? "border-red-300 focus:ring-red-500"
@@ -742,18 +556,28 @@ const SignUp = () => {
                       </option>
                     ))}
                   </select>
-                  {errors.government && (
-                    <p className="mt-2 regular-14 text-red-600">
-                      {errors.government}
-                    </p>
-                  )}
                 </div>
               </div>
 
               {/* General Error */}
               {errors.general && (
-                <div className="text-center">
-                  <p className="regular-14 text-red-600">{errors.general}</p>
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <div className="flex items-center">
+                    <svg
+                      className="h-5 w-5 text-red-400 ml-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <p className="text-sm text-red-700">{errors.general}</p>
+                  </div>
                 </div>
               )}
 

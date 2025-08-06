@@ -19,6 +19,7 @@ import {
 } from "react-icons/fi";
 import Link from "next/link";
 import { getInstructorId, getRolePermissions } from "../../utils/roleHelpers";
+import SecureSearchInput from "@/app/components/SecureSearchInput";
 
 const InstructorCourseManagement = () => {
   const { user } = useUserData();
@@ -224,17 +225,12 @@ const InstructorCourseManagement = () => {
       {/* Search Bar */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="البحث في الكورسات..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-            />
-          </div>
+          <SecureSearchInput
+            placeholder="البحث في الواجبات..."
+            onSearch={(term) => setSearchTerm(term)}
+            className="border border-gray-300 focus:ring-secondary"
+            maxLength={100}
+          />
           <button
             onClick={handleSearch}
             className="cursor-pointer bg-secondary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"

@@ -807,8 +807,9 @@ const LessonManagement = () => {
                 {/* Lesson Image */}
                 <div>
                   {selectedLesson.photoUrl ? (
-                    <img
+                    <Image
                       src={selectedLesson.photoUrl}
+                      fill
                       alt={selectedLesson.name}
                       className="w-full h-64 object-cover rounded-lg"
                     />

@@ -97,7 +97,9 @@ const CourseManagement = () => {
       // Handle paginated response
       const coursesData = response.data?.content || response.data || [];
       setCourses(coursesData);
+      console.log(courses)
       setAllCourses(coursesData); // Store original data for filtering
+      console.log("courses", courses);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
       setCourses([]);
@@ -325,10 +327,9 @@ const CourseManagement = () => {
                 {course.photoUrl ? (
                   <Image
                     src={course.photoUrl}
-                    fill
                     alt={course.name}
+                    fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 33vw" // Optional: optimizes responsive loading
                   />
                 ) : (
                   <div className="w-full h-full flexCenter">
@@ -601,8 +602,9 @@ const CourseManagement = () => {
               {/* Course Image */}
               <div className="h-48 bg-gradient-to-br from-accent to-secondary rounded-lg overflow-hidden">
                 {selectedCourse.photoUrl ? (
-                  <img
+                  <Image
                     src={selectedCourse.photoUrl}
+                    fill
                     alt={selectedCourse.name}
                     className="w-full h-full object-cover"
                   />

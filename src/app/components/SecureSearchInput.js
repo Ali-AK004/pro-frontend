@@ -45,7 +45,7 @@ const SecureSearchInput = ({
   };
 
   return (
-    <div className="relative">
+    <div className="relative flex">
       <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
       <input
         type="text"

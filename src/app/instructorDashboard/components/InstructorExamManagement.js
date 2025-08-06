@@ -15,6 +15,7 @@ import {
   FiBarChart,
 } from "react-icons/fi";
 import ExamCreationModal from "../../adminDashboard/components/Modal/ExamCreationModal";
+import SecureSearchInput from "@/app/components/SecureSearchInput";
 
 const InstructorExamManagement = () => {
   const { user } = useUserData();
@@ -208,16 +209,12 @@ const InstructorExamManagement = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
-          <div className="relative flex">
-            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="البحث في الامتحانات..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-            />
-          </div>
+          <SecureSearchInput
+            placeholder="البحث في الواجبات..."
+            onSearch={(term) => setSearchTerm(term)}
+            className="border border-gray-300 focus:ring-secondary"
+            maxLength={100}
+          />
 
           {/* Course Filter */}
           <select
