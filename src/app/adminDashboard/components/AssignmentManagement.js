@@ -32,11 +32,24 @@ const AssignmentManagement = () => {
   const [assignmentSubmissions, setAssignmentSubmissions] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [assignmentToDelete, setAssignmentToDelete] = useState(null);
+  const [selectedLessonFilter, setSelectedLessonFilter] = useState("");
+  const [allAssignments, setAllAssignments] = useState([]);
 
   useEffect(() => {
     fetchLessons();
     fetchAssignments();
   }, [selectedLesson]);
+
+  useEffect(() => {
+    if (selectedLessonFilter) {
+      const filtered = allAssignments.filter(
+        (assignment) => assignment.lessonId === selectedLessonFilter
+      );
+      setAssignments(filtered);
+    } else {
+      setAssignments([]); // Show nothing when no lesson is selected
+    }
+  }, [selectedLessonFilter, allAssignments]);
 
   const fetchLessons = async () => {
     try {
@@ -79,17 +92,12 @@ const AssignmentManagement = () => {
   const fetchAssignments = async () => {
     try {
       setIsLoading(true);
-      if (selectedLesson) {
-        const response = await adminAPI.assignments.getByLesson(selectedLesson);
-        setAssignments(response.data || []);
-      } else {
-        // Only fetch all assignments if no lesson is selected
-        // For now, show empty list when no lesson is selected to avoid unnecessary API calls
-        setAssignments([]);
-      }
+      const response = await adminAPI.assignments.getAll();
+      const assignmentsData = response.data?.content || [];
+      setAllAssignments(assignmentsData);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الواجبات"));
-      setAssignments([]);
+      setAllAssignments([]);
     } finally {
       setIsLoading(false);
     }
@@ -202,35 +210,19 @@ const AssignmentManagement = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-y-4 md:gap-4">
-          {/* Search */}
-          <div className="relative flex col-span-2">
-            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="البحث في الواجبات..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-            />
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-y-4 md:gap-4">
           {/* Lesson Filter */}
           <select
-            value={selectedLesson}
-            onChange={(e) => setSelectedLesson(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+            value={selectedLessonFilter}
+            onChange={(e) => setSelectedLessonFilter(e.target.value)}
+            className="w-full px-4 col-span-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
           >
-            <option value="">اختر الدرس</option>
+            <option value="">اختر درس</option>
             {courses.map((course) => {
-              // Filter lessons that belong to this course
               const courseLessons = lessons.filter(
                 (lesson) => lesson.courseId === course.id
               );
-
-              // Only render optgroup if course has lessons
               if (courseLessons.length === 0) return null;
-
               return (
                 <optgroup key={course.id} label={`كورس: ${course.name}`}>
                   {courseLessons.map((lesson) => (
@@ -242,6 +234,14 @@ const AssignmentManagement = () => {
               );
             })}
           </select>
+          <button
+            onClick={() => setSelectedLessonFilter("")}
+            disabled={!selectedLessonFilter}
+            className="bg-accent flexCenter gap-2 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
+          >
+            <FiX className="w-4 h-4" />
+            إعادة تعيين
+          </button>
         </div>
       </div>
 
@@ -433,7 +433,7 @@ const AssignmentCard = ({
         </p>
 
         {/* Assignment Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
           <div className="flex items-center gap-2">
             <FiCalendar className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
             <span className="regular-10 sm:regular-12 text-gray-600 truncate">

@@ -269,20 +269,12 @@ const InstructorAssignmentManagement = React.memo(() => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Search */}
-          <SecureSearchInput
-            placeholder="البحث في الواجبات..."
-            onSearch={(term) => setSearchTerm(term)}
-            className="border border-gray-300 focus:ring-secondary"
-            maxLength={100}
-          />
-
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
           {/* Course Filter */}
           <select
             value={selectedCourse}
             onChange={(e) => setSelectedCourse(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+            className="w-full px-4 py-3 border md:col-span-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
             <option value="">اختر كورس</option>
             {courses.map((course) => (
@@ -296,7 +288,7 @@ const InstructorAssignmentManagement = React.memo(() => {
           <select
             value={selectedLesson}
             onChange={(e) => setSelectedLesson(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+            className="w-full px-4 py-3 border md:col-span-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
             <option value="">اختر درس</option>
             {lessons.map((lesson) => (
@@ -305,6 +297,18 @@ const InstructorAssignmentManagement = React.memo(() => {
               </option>
             ))}
           </select>
+
+          <button
+            onClick={() => {
+              setSelectedLesson("");
+              setSelectedCourse("");
+            }}
+            disabled={!selectedLesson}
+            className="bg-accent flexCenter gap-2 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
+          >
+            <FiX className="w-4 h-4" />
+            إعادة تعيين
+          </button>
         </div>
       </div>
 

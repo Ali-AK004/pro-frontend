@@ -15,7 +15,9 @@ import {
   FiX,
   FiBook,
   FiVideo,
+  FiHash,
 } from "react-icons/fi";
+import Image from "next/image";
 
 const LessonManagement = () => {
   const [lessons, setLessons] = useState([]);
@@ -66,22 +68,6 @@ const LessonManagement = () => {
     fetchCourses();
     fetchAllLessons();
   }, []);
-
-  // Only load lessons when a specific lesson is selected
-  useEffect(() => {
-    if (selectedLessonFilter) {
-      // Load only the selected lesson
-      const selectedLesson = allLessons.find(
-        (lesson) => lesson.id === selectedLessonFilter
-      );
-      if (selectedLesson) {
-        setLessons([selectedLesson]);
-      }
-    } else {
-      // Clear lessons when no specific lesson is selected
-      setLessons([]);
-    }
-  }, [selectedLessonFilter, allLessons]);
 
   const fetchCourses = async () => {
     try {
@@ -272,13 +258,33 @@ const LessonManagement = () => {
   };
 
   const handleSearch = () => {
-    // Since lessons are now only loaded when a specific lesson is selected,
-    // we don't need to filter here. The useEffect handles lesson loading.
-    if (!selectedLessonFilter) {
+    try {
+      let filteredLessons = [...allLessons];
+
+      // Apply search term filter if it exists
+      if (searchTerm.trim()) {
+        const searchLower = searchTerm.toLowerCase();
+        filteredLessons = filteredLessons.filter(
+          (lesson) =>
+            lesson.name.toLowerCase().includes(searchLower) ||
+            lesson.description?.toLowerCase().includes(searchLower) ||
+            lesson.courseName?.toLowerCase().includes(searchLower)
+        );
+      }
+
+      // Apply dropdown filter if it exists
+      if (selectedLessonFilter) {
+        filteredLessons = filteredLessons.filter(
+          (lesson) => lesson.id === selectedLessonFilter
+        );
+      }
+
+      setLessons(filteredLessons);
+    } catch (error) {
+      toast.error("خطأ في البحث");
       setLessons([]);
     }
   };
-
   const fetchLessonStatus = async (lessonId) => {
     try {
       setLessonStatus((prev) => ({ ...prev, isLoading: true }));
@@ -337,44 +343,63 @@ const LessonManagement = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid lg:gap-4 grid-cols-1 gap-y-3 lg:grid-cols-3">
-          <div className="flex-1 flex col-span-2 relative">
+        <div className="grid lg:gap-4 grid-cols-1 gap-y-3 lg:grid-cols-2">
+          <div className="flex-1 flex relative">
             <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
               placeholder="البحث في الدروس..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
             />
           </div>
-          <select
-            value={selectedLessonFilter}
-            onChange={(e) => setSelectedLessonFilter(e.target.value)}
-            className="px-4 py-3 border md:flex-none border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-          >
-            <option value="">اختر درس</option>
-            {courses.map((course) => {
-              // Filter lessons that belong to this course
-              const courseLessons = allLessons.filter(
-                (lesson) => lesson.courseId === course.id
-              );
+          <div className="flex flex-col gap-3 md:flex-row md:w-full">
+            <select
+              value={selectedLessonFilter}
+              onChange={(e) => {
+                setSelectedLessonFilter(e.target.value);
+                // Only filter by dropdown selection immediately
+                if (e.target.value) {
+                  const selected = allLessons.find(
+                    (l) => l.id === e.target.value
+                  );
+                  setLessons(selected ? [selected] : []);
+                } else {
+                  setLessons([]);
+                }
+              }}
+              className="px-4 py-3 md:w-3/4 border md:flex-none border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+            >
+              <option value="">اختر درس</option>
+              {courses.map((course) => {
+                // Filter lessons that belong to this course
+                const courseLessons = allLessons.filter(
+                  (lesson) => lesson.courseId === course.id
+                );
 
-              // Only render optgroup if course has lessons
-              if (courseLessons.length === 0) return null;
+                // Only render optgroup if course has lessons
+                if (courseLessons.length === 0) return null;
 
-              return (
-                <optgroup key={course.id} label={`كورس: ${course.name}`}>
-                  {courseLessons.map((lesson) => (
-                    <option key={lesson.id} value={lesson.id}>
-                      {lesson.name}
-                    </option>
-                  ))}
-                </optgroup>
-              );
-            })}
-          </select>
+                return (
+                  <optgroup key={course.id} label={`كورس: ${course.name}`}>
+                    {courseLessons.map((lesson) => (
+                      <option key={lesson.id} value={lesson.id}>
+                        {lesson.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                );
+              })}
+            </select>
+            <button
+              onClick={() => handleSearch()}
+              className="bg-accent md:w-1/4 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
+            >
+              بحث
+            </button>
+          </div>
         </div>
       </div>
 
@@ -443,16 +468,22 @@ const LessonManagement = () => {
               {/* Lesson Content */}
               <div className="p-3 sm:p-4 flex-1 flex flex-col">
                 <div className="flex-1">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
+                  <div className="flex sm:flex-row sm:justify-between sm:items-start justify-between mb-2">
                     <h3 className="bold-16 sm:bold-18 text-gray-900 line-clamp-1 mb-1 sm:mb-0">
                       {lesson.name}
                     </h3>
                     {/* Lesson Stats */}
-                    <div className="text-xs sm:text-sm text-gray-500 sm:ml-4">
+                    <div className="text-xs sm:text-sm text-gray-500 flex flex-col gap-2 sm:ml-4">
                       <div className="flex items-center gap-1">
                         <FiBook className="w-3 h-3 sm:w-4 sm:h-4" />
                         <span className="truncate">
                           {lesson.courseName || "غير محدد"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <FiHash className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="truncate">
+                          {lesson.id || "غير محدد"}
                         </span>
                       </div>
                     </div>
@@ -546,7 +577,7 @@ const LessonManagement = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div className="">
                   <label className="block bold-14 text-gray-900 mb-2">
                     السعر *
                   </label>
@@ -785,8 +816,8 @@ const LessonManagement = () => {
 
       {/* View Lesson Modal */}
       {showViewModal && selectedLesson && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black/30 flexCenter z-50">
+          <div className="bg-white rounded-xl w-full max-w-4xl overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="bold-24 text-gray-900">تفاصيل الدرس</h2>
@@ -809,7 +840,8 @@ const LessonManagement = () => {
                   {selectedLesson.photoUrl ? (
                     <Image
                       src={selectedLesson.photoUrl}
-                      fill
+                      width={192}
+                      height={192}
                       alt={selectedLesson.name}
                       className="w-full h-64 object-cover rounded-lg"
                     />
@@ -856,7 +888,7 @@ const LessonManagement = () => {
                   </div>
 
                   {/* Lesson Components Status */}
-                  <div className="grid grid-cols-2 gap-4 mt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                     <div
                       className={`p-4 rounded-lg border ${
                         lessonStatus.isLoading
@@ -866,7 +898,7 @@ const LessonManagement = () => {
                             : "bg-gray-50 border-gray-200"
                       }`}
                     >
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center flex-col md:flex-row gap-2 mb-2">
                         <FiFileText className="w-5 h-5 text-blue-500" />
                         <span className="bold-14 text-gray-700">الامتحان</span>
                       </div>
@@ -879,7 +911,7 @@ const LessonManagement = () => {
                         </div>
                       ) : (
                         <span
-                          className={`bold-14 ${
+                          className={`bold-14 text-center block md:inline-block md:text-right ${
                             lessonStatus.hasExam
                               ? "text-blue-700"
                               : "text-gray-500"
@@ -899,7 +931,7 @@ const LessonManagement = () => {
                             : "bg-gray-50 border-gray-200"
                       }`}
                     >
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center flex-col md:flex-row gap-2 mb-2">
                         <FiFileText className="w-5 h-5 text-purple-500" />
                         <span className="bold-14 text-gray-700">الواجب</span>
                       </div>
@@ -912,7 +944,7 @@ const LessonManagement = () => {
                         </div>
                       ) : (
                         <span
-                          className={`bold-14 ${
+                          className={`bold-14 text-center block md:inline-block md:text-right ${
                             lessonStatus.hasAssignment
                               ? "text-purple-700"
                               : "text-gray-500"

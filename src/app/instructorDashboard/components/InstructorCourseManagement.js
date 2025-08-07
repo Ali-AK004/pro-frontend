@@ -226,8 +226,9 @@ const InstructorCourseManagement = () => {
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <SecureSearchInput
-            placeholder="البحث في الواجبات..."
+            placeholder="البحث في الكورسات..."
             onSearch={(term) => setSearchTerm(term)}
+            onEnterPress={handleSearch} // Added this prop
             className="border border-gray-300 focus:ring-secondary"
             maxLength={100}
           />

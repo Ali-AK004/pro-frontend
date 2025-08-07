@@ -174,7 +174,7 @@ const LessonExpirationManagement = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 lg:mb-8">
         <div>
-          <h1 className="bold-24 lg:bold-32 text-gray-900 mb-2">
+          <h1 className="bold-32 text-gray-900 mb-2">
             إدارة انتهاء صلاحية الدروس
           </h1>
           <p className="regular-14 lg:regular-16 text-gray-600">
@@ -514,7 +514,7 @@ const LessonExpirationManagement = () => {
 
       {/* Extend Access Modal */}
       {showExtendModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg lg:rounded-xl shadow-xl max-w-md w-full">
             <div className="p-4 lg:p-6 border-b border-gray-100">
               <h3 className="bold-16 lg:bold-18 text-gray-900">
@@ -592,7 +592,7 @@ const LessonExpirationManagement = () => {
 
       {/* Reset Student Data Modal */}
       {showResetModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg lg:rounded-xl shadow-xl max-w-md w-full">
             <div className="p-4 lg:p-6 border-b border-gray-100">
               <h3 className="bold-16 lg:bold-18 text-gray-900">

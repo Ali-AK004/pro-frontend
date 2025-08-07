@@ -52,7 +52,7 @@ const InstructorAccessCodeManagement = () => {
       fetchCourses();
       fetchAccessCodes();
     }
-  }, [instructorId]);
+  }, [selectedLesson, pagination.page, instructorId]);
 
   useEffect(() => {
     if (courses.length > 0) {
@@ -130,22 +130,22 @@ const InstructorAccessCodeManagement = () => {
       const loadingState = loadMore ? setIsLoadingMore : setIsLoading;
       loadingState(true);
 
-      const page = loadMore ? pagination.page + 1 : 0;
+      // Use the current pagination state
+      const currentPage = loadMore ? pagination.page + 1 : 0;
       const size = pagination.size;
-      // Use simple sorting by ID to ensure consistent pagination
       const sort = "id,desc";
 
       const response = selectedLesson
         ? await instructorAPI.accessCodes.getByLesson(
             instructorId,
             selectedLesson,
-            page,
+            currentPage,
             size,
             sort
           )
         : await instructorAPI.accessCodes.getByInstructor(
             instructorId,
-            page,
+            currentPage,
             size,
             sort
           );
@@ -153,31 +153,9 @@ const InstructorAccessCodeManagement = () => {
       const newAccessCodes = response.data?.content || [];
 
       if (loadMore) {
-        setAccessCodes((prev) => {
-          const existingIds = new Set(prev.map((c) => c.id));
-          const uniqueNewCodes = newAccessCodes.filter(
-            (code) => !existingIds.has(code.id)
-          );
-          const result = [...prev, ...uniqueNewCodes];
-          return result;
-        });
+        setAccessCodes((prev) => [...prev, ...newAccessCodes]);
       } else {
-        // Check for duplicates in the initial data
-        const uniqueIds = new Set();
-        const duplicates = [];
-        newAccessCodes.forEach((code) => {
-          if (uniqueIds.has(code.id)) {
-            duplicates.push(code.id);
-          } else {
-            uniqueIds.add(code.id);
-          }
-        });
-
-        // Remove duplicates from initial data
-        const uniqueCodes = newAccessCodes.filter(
-          (code, index, arr) => arr.findIndex((c) => c.id === code.id) === index
-        );
-        setAccessCodes(uniqueCodes);
+        setAccessCodes(newAccessCodes);
       }
 
       setPagination({
@@ -185,8 +163,7 @@ const InstructorAccessCodeManagement = () => {
         size: response.data?.size || size,
         totalElements: response.data?.totalElements || 0,
         totalPages: response.data?.totalPages || 0,
-        hasMore:
-          (response.data?.number || 0) < (response.data?.totalPages || 0) - 1,
+        hasMore: !response.data?.last,
       });
     } catch (error) {
       console.error("Error fetching access codes:", error);
@@ -304,15 +281,15 @@ const InstructorAccessCodeManagement = () => {
       {/* Header */}
       <div className="flex items-center flex-col lg:flex-row justify-between mb-6 lg:mb-8 gap-4 lg:gap-0">
         <div>
-          <h1 className="bold-24 lg:bold-32 text-gray-900 mb-2">إدارة أكواد الوصول</h1>
+          <h1 className="bold-32 text-gray-900 mb-2">إدارة أكواد الوصول</h1>
           <p className="regular-14 lg:regular-16 text-gray-600">
             إنشاء وإدارة أكواد الوصول لدروسك
           </p>
         </div>
-        <div className="flex gap-2 lg:gap-3 w-full lg:w-auto justify-end">
+        <div className="flex gap-2 lg:gap-3 w-full lg:w-auto md:justify-end">
           <button
             onClick={downloadCodes}
-            className="cursor-pointer bg-green-600 text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-green-700 transition-all duration-300 flexCenter gap-2"
+            className="cursor-pointer flex-1/2 bg-green-600 text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-green-700 transition-all duration-300 flexCenter gap-2"
           >
             <FiDownload className="w-4 h-4 lg:w-5 lg:h-5" />
             <span className="hidden sm:inline">تحميل الأكواد</span>
@@ -320,7 +297,7 @@ const InstructorAccessCodeManagement = () => {
           </button>
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="cursor-pointer bg-secondary text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
+            className="cursor-pointer bg-secondary flex-1/2 text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
           >
             <FiPlus className="w-4 h-4 lg:w-5 lg:h-5" />
             <span className="hidden sm:inline">إنشاء أكواد جديدة</span>
@@ -331,19 +308,7 @@ const InstructorAccessCodeManagement = () => {
 
       {/* Filters */}
       <div className="bg-white p-3 lg:p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid grid-cols-1 lg:flex lg:items-center lg:flex-wrap gap-3 lg:gap-4">
-          <div className="relative lg:flex-1/2">
-            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 lg:w-5 lg:h-5" />
-            <input
-              type="text"
-              placeholder="البحث في الأكواد..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-              className="w-full pr-10 lg:pr-12 pl-3 lg:pl-4 py-2 lg:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent text-sm lg:text-base"
-            />
-          </div>
-
+        <div className="grid grid-cols-1 lg:flex lg:flex-wrap gap-3 lg:gap-4">
           <select
             value={selectedLesson}
             onChange={(e) => setSelectedLesson(e.target.value)}
@@ -368,23 +333,20 @@ const InstructorAccessCodeManagement = () => {
             })}
           </select>
 
-          <div className="flex gap-2 col-span-2 lg:col-auto">
-            <button
-              onClick={handleSearch}
-              className="cursor-pointer flex-1 bg-secondary text-white py-2 lg:py-3 px-3 lg:px-4 rounded-lg hover:bg-opacity-90 transition-all duration-300 text-sm lg:text-base"
-            >
-              تطبيق
-            </button>
-            <button
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedLesson("");
-              }}
-              className="cursor-pointer px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm lg:text-base"
-            >
-              إعادة تعيين
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              setSearchTerm("");
+              setSelectedLesson("");
+              setPagination((prev) => ({
+                ...prev,
+                page: 0,
+                hasMore: true,
+              }));
+            }}
+            className="bg-accent flexCenter flex text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
+          >
+            إعادة تعيين
+          </button>
         </div>
       </div>
 
@@ -397,7 +359,9 @@ const InstructorAccessCodeManagement = () => {
             </div>
             <div>
               <p className="regular-12 text-gray-500">إجمالي الأكواد</p>
-              <p className="bold-16 lg:bold-20 text-gray-900">{accessCodes.length}</p>
+              <p className="bold-16 lg:bold-20 text-gray-900">
+                {accessCodes.length}
+              </p>
             </div>
           </div>
         </div>
@@ -453,7 +417,7 @@ const InstructorAccessCodeManagement = () => {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="hidden xl:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 border-t border-gray-200">
           <table className="w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -612,10 +576,13 @@ const InstructorAccessCodeManagement = () => {
       </div>
 
       {/* Mobile Card View */}
-      <div className="lg:hidden space-y-3">
+      <div className="xl:hidden space-y-3">
         {isLoading ? (
           Array.from({ length: 5 }).map((_, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-pulse">
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-pulse"
+            >
               <div className="flex justify-between items-center">
                 <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                 <div className="h-4 bg-gray-200 rounded w-6"></div>
@@ -766,7 +733,9 @@ const InstructorAccessCodeManagement = () => {
         <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-20 lg:bold-24 text-gray-900">إنشاء أكواد وصول</h2>
+              <h2 className="bold-20 lg:bold-24 text-gray-900">
+                إنشاء أكواد وصول
+              </h2>
               <button
                 onClick={() => setShowGenerateModal(false)}
                 className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -775,7 +744,10 @@ const InstructorAccessCodeManagement = () => {
               </button>
             </div>
 
-            <form onSubmit={handleGenerateAccessCodes} className="space-y-4 lg:space-y-6">
+            <form
+              onSubmit={handleGenerateAccessCodes}
+              className="space-y-4 lg:space-y-6"
+            >
               <div>
                 <label className="block bold-14 lg:bold-16 text-gray-900 mb-2">
                   اختر الدرس *

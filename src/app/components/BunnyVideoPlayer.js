@@ -35,8 +35,6 @@ const convertToEmbedUrl = (
 
   if (!videoId) return null;
 
-  // Removed debug logging for production
-
   // Create the embed URL format
   const embedUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}`;
 
@@ -46,7 +44,7 @@ const convertToEmbedUrl = (
     autoplay: autoplay ? "true" : "false",
     loop: "false",
     muted: "false",
-    preload: "true", // Changed back to "true" - valid value for Bunny.net
+    preload: "true",
     responsive: "true",
     // Bunny.net specific control parameters
     controls: "true",
@@ -176,7 +174,7 @@ const BunnyVideoPlayer = ({
           loading="lazy"
           onLoad={handleIframeLoad}
           style={{
-            minHeight: "500px", // Ensure iframe has enough height
+            minHeight: "500px",
             width: "100%",
             height: "100%",
           }}

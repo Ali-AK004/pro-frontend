@@ -137,8 +137,8 @@ const DashboardOverview = ({ setActiveTab }) => {
                   <h3 className="text-sm font-medium text-gray-600 mb-1">
                     {card.title}
                   </h3>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {card.value.toLocaleString()}
+                  <p className="bold-24 text-gray-900 text-center">
+                    ({card.value.toLocaleString()})
                   </p>
                 </div>
               </div>

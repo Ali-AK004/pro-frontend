@@ -147,13 +147,6 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
               <h1 className="text-xl font-bold">لوحة المدرس</h1>
               <p className="text-green-100 text-sm">مرحباً {user?.fullname}</p>
             </div>
-            {/* Close button for mobile */}
-            <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="lg:hidden mr-auto p-2 text-white hover:bg-white/20 rounded-xl transition-colors cursor-pointer"
-            >
-              <FiX className="w-5 h-5" />
-            </button>
           </div>
         </div>
 

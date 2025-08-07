@@ -20,7 +20,6 @@ const AccessCodeManagement = () => {
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedLesson, setSelectedLesson] = useState("");
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -253,45 +252,40 @@ const AccessCodeManagement = () => {
       {/* Header */}
       <div className="flex items-center flex-col gap-5 lg:gap-0 lg:flex-row justify-between mb-8">
         <div>
-          <h1 className="bold-24 md:bold-32 text-gray-900 mb-2">
-            إدارة أكواد الوصول
-          </h1>
+          <h1 className="bold-32 text-gray-900 mb-2">إدارة أكواد الوصول</h1>
           <p className="regular-14 md:regular-16 text-gray-600">
             إجمالي الأكواد: {pagination.totalElements} | المعروض:{" "}
             {accessCodes.length}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 md:gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 w-full md:w-auto gap-2 md:gap-3">
           <button
             onClick={handleCopyAllCodes}
-            className="bg-blue-500 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg hover:bg-blue-600 transition-all duration-300 flexCenter gap-1 md:gap-2 cursor-pointer text-sm md:text-base"
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-300 flexCenter gap-1 md:gap-2 cursor-pointer text-sm md:text-base"
           >
             <FiCopy className="w-3 h-3 md:w-4 md:h-4" />
-            <span className="hidden sm:inline">نسخ الكل</span>
-            <span className="sm:hidden">نسخ</span>
+            <span>نسخ الكل</span>
           </button>
           <button
             onClick={handleDownloadCodes}
-            className="bg-green-500 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg hover:bg-green-600 transition-all duration-300 flexCenter gap-1 md:gap-2 cursor-pointer text-sm md:text-base"
+            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-300 flexCenter gap-1 md:gap-2 cursor-pointer text-sm md:text-base"
           >
             <FiDownload className="w-3 h-3 md:w-4 md:h-4" />
-            <span className="hidden sm:inline">تحميل</span>
+            <span>تحميل</span>
           </button>
           <button
             onClick={handleDeleteUsedCodes}
-            className="bg-red-500 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg hover:bg-red-600 transition-all duration-300 flexCenter gap-1 md:gap-2 cursor-pointer text-sm md:text-base"
+            className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-300 flexCenter gap-1 md:gap-2 cursor-pointer text-sm md:text-base"
           >
             <FiTrash2 className="w-3 h-3 md:w-4 md:h-4" />
-            <span className="hidden sm:inline">حذف المستخدمة</span>
-            <span className="sm:hidden">حذف</span>
+            <span>حذف المستخدمة</span>
           </button>
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="bg-accent text-white px-4 py-2 md:px-6 md:py-3 rounded-lg bold-14 md:bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-1 md:gap-2 shadow-lg hover:shadow-xl cursor-pointer"
+            className="bg-accent text-white px-4 py-2 rounded-lg bold-14 md:bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-1 md:gap-2 shadow-lg hover:shadow-xl cursor-pointer"
           >
             <FiPlus className="w-4 h-4 md:w-5 md:h-5" />
-            <span className="hidden sm:inline">إنشاء أكواد جديدة</span>
-            <span className="sm:hidden">جديد</span>
+            <span>إنشاء أكواد جديدة</span>
           </button>
         </div>
       </div>
@@ -299,21 +293,10 @@ const AccessCodeManagement = () => {
       {/* Filters */}
       <div className="bg-white p-3 md:p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-5 md:gap-3 gap-y-3">
-          <div className="relative flex col-span-3">
-            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5" />
-            <input
-              type="text"
-              placeholder="البحث بالكود أو اسم الدرس..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-10 md:pr-12 pl-3 md:pl-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-            />
-          </div>
           <select
             value={selectedLesson}
             onChange={(e) => setSelectedLesson(e.target.value)}
-            className="px-3 md:px-4 py-2 md:py-3 border col-span-1 border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+            className="px-3 md:px-4 col-span-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
           >
             <option value="">اختر الدرس</option>
             {courses.map((course) => {
@@ -337,10 +320,12 @@ const AccessCodeManagement = () => {
             })}
           </select>
           <button
-            onClick={handleSearch}
-            className="bg-accent text-white col-span-1 px-4 py-2 md:px-6 md:py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer text-sm md:text-base"
+            onClick={() => setSelectedLesson("")}
+            disabled={!selectedLesson}
+            className="bg-accent flexCenter gap-2 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
           >
-            بحث
+            <FiX className="w-4 h-4" />
+            إعادة تعيين
           </button>
         </div>
       </div>

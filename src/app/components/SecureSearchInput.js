@@ -1,31 +1,17 @@
 'use client';
 import React, { useState, useCallback } from 'react';
 import { FiSearch } from 'react-icons/fi';
-import { sanitizeInput, validateSearchTerm, debounce } from '../utils/security';
 import { toast } from 'react-toastify';
 
 const SecureSearchInput = ({
   placeholder,
   onSearch,
   className = "",
-  maxLength = 100
+  maxLength = 100,
+  onEnterPress
 }) => {
   const [value, setValue] = useState('');
   const [isValid, setIsValid] = useState(true);
-
-  const debouncedSearch = useCallback(
-    debounce((term) => {
-      try {
-        const sanitized = validateSearchTerm(term);
-        onSearch(sanitized);
-        setIsValid(true);
-      } catch (error) {
-        setIsValid(false);
-        toast.error('مصطلح البحث غير صالح');
-      }
-    }, 300),
-    [onSearch]
-  );
 
   const handleChange = (e) => {
     const rawValue = e.target.value;
@@ -35,23 +21,27 @@ const SecureSearchInput = ({
       return;
     }
 
-    try {
-      const sanitized = sanitizeInput(rawValue);
-      setValue(sanitized);
-      debouncedSearch(sanitized);
-    } catch (error) {
-      toast.error('إدخال غير صالح');
+    // Allow letters (English & Arabic), numbers, and spaces
+    const sanitized = rawValue.replace(/[^a-zA-Z0-9\u0600-\u06FF\s]/g, '');
+    setValue(sanitized);
+    onSearch(sanitized); // Still send to parent for potential debouncing
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      onEnterPress();
     }
   };
 
   return (
-    <div className="relative flex">
+    <div className="relative flex w-full">
       <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
       <input
         type="text"
         placeholder={placeholder}
         value={value}
         onChange={handleChange}
+        onKeyDown={handleKeyDown}
         maxLength={maxLength}
         className={`w-full pr-12 pl-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
           !isValid ? 'border-red-500' : 'border-gray-300'

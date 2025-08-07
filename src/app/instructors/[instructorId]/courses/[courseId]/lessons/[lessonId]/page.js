@@ -353,6 +353,8 @@ const LessonPage = () => {
     videoUrl,
   } = lessonData;
 
+  console.log(lessonData)
+
   return (
     <div className="min-h-screen bg-main">
       <NavBar />
@@ -736,7 +738,7 @@ const OverviewTab = ({
           {/* Progress Status */}
           {hasAccess && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center flex-col gap-3 mb-3">
                 <FaGraduationCap className="w-5 h-5 text-blue-500" />
                 <h3 className="bold-18 text-blue-800">حالة التقدم</h3>
               </div>
@@ -1250,20 +1252,6 @@ const VideoTab = ({
     );
   }
 
-  // if (!lesson.videoUrl) {
-  //   return (
-  //     <div className="bg-white rounded-lg shadow-sm p-6">
-  //       <div className="text-center">
-  //         <FaExclamationTriangle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
-  //         <h3 className="bold-18 text-gray-600 mb-2">الفيديو غير متاح</h3>
-  //         <p className="regular-14 text-gray-500">
-  //           لم يتم رفع فيديو لهذا الدرس بعد
-  //         </p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <h2 className="bold-24 text-gray-900 mb-6">فيديو الدرس</h2>
@@ -1288,7 +1276,7 @@ const VideoTab = ({
       </div>
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center flex-col md:flex-row gap-6 justify-between">
           <div className="flex items-center gap-3">
             <FaEye className="w-5 h-5 text-blue-500" />
             <div>
@@ -1304,7 +1292,7 @@ const VideoTab = ({
               progressStatus === "VIDEO_WATCHED" ||
               progressStatus === "ASSIGNMENT_DONE"
             }
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-colors ${
               progressStatus === "VIDEO_WATCHED" ||
               progressStatus === "ASSIGNMENT_DONE"
                 ? "bg-green-100 text-green-700 cursor-not-allowed"

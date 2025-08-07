@@ -9,6 +9,7 @@ import {
   FaInstagram,
   FaLinkedin,
   FaWhatsapp,
+  FaYoutube,
 } from "react-icons/fa";
 import Link from "next/link";
 
@@ -27,7 +28,7 @@ const Footer = ({ id }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Company Info */}
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
               <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
                 <FaGraduationCap className="w-7 h-7 text-white" />
               </div>
@@ -35,13 +36,13 @@ const Footer = ({ id }) => {
                 أكادميتنا
               </h3>
             </div>
-            <p className="text-gray-300 mb-8 leading-relaxed max-w-md">
+            <p className="text-gray-300 mb-8 text-center md:text-right leading-relaxed max-w-md">
               منصة التعليم الذكي الرائدة في المنطقة العربية. نقدم تعليماً عالي
               الجودة مدعوماً بالذكاء الاصطناعي لجميع المراحل التعليمية.
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center md:justify-start gap-4">
               <a
-                href="https://www.facebook.com"
+                href="https://www.facebook.com/profile.php?id=61578988888252"
                 className="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -49,15 +50,15 @@ const Footer = ({ id }) => {
                 <FaFacebook className="w-6 h-6" />
               </a>
               <a
-                href="https://x.com/?lang=en"
-                className="w-12 h-12 bg-gray-700 hover:bg-gray-600 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                href="https://x.com/academitna"
+                className="w-12 h-12 bg-[#1da1f2] hover:bg-[#4d8ab0] rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <FaTwitter className="w-6 h-6" />
               </a>
               <a
-                href="https://www.instagram.com"
+                href="https://www.instagram.com/academitna/"
                 className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -65,12 +66,12 @@ const Footer = ({ id }) => {
                 <FaInstagram className="w-6 h-6" />
               </a>
               <a
-                href="https://www.linkedin.com"
-                className="w-12 h-12 bg-blue-700 hover:bg-blue-800 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                href="https://www.youtube.com/channel/UCGfTiSzmEVpRLSiW7bfx71Q"
+                className="w-12 h-12 bg-red-700 hover:bg-red-800 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <FaLinkedin className="w-6 h-6" />
+                <FaYoutube className="w-6 h-6" />
               </a>
             </div>
           </div>

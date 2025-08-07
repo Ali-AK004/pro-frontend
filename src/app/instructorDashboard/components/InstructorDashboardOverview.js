@@ -148,9 +148,9 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
           <div className="flex items-center justify-between mb-4">
             <h3 className="bold-20 text-gray-900">كورساتك الأخيرة</h3>
           </div>
-          <div className="space-y-4 ">
+          <div className="space-y-4">
             {recentCourses.length === 0 ? (
-              <div className="text-center  py-8">
+              <div className="text-center py-8">
                 <FiBook className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="regular-14 text-gray-600 mb-4">لم تقم بإنشاء أي كورسات بعد</p>
                 <button
@@ -166,7 +166,7 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
                   <div className="w-12 h-12 bg-secondary bg-opacity-10 rounded-lg flexCenter">
                     <FiBook className="w-6 h-6 text-white" />
                   </div>
-                  <div className="flex-1 text-right">
+                  <div className="flex-1 md:text-right text-center">
                     <p className="bold-16 text-gray-900">{course.name}</p>
                     <p className="regular-14 text-gray-500">{course.description}</p>
                   </div>

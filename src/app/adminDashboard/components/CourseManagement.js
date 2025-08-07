@@ -51,44 +51,39 @@ const CourseManagement = () => {
     fetchInstructors();
   }, []);
 
-  const handleSecureSearch = useCallback(
-    debounce(() => {
-      try {
-        const sanitizedTerm = validateSearchTerm(searchTerm);
-        let filteredCourses = [...allCourses];
+  const performSearch = (searchValue, filterValue) => {
+    try {
+      const sanitizedTerm = validateSearchTerm(searchValue);
+      let filteredCourses = [...allCourses];
 
-        // Filter by search term
-        if (sanitizedTerm.trim()) {
-          filteredCourses = filteredCourses.filter(
-            (course) =>
-              course.name.toLowerCase().includes(sanitizedTerm.toLowerCase()) ||
-              course.description
-                ?.toLowerCase()
-                .includes(sanitizedTerm.toLowerCase())
-          );
-        }
-
-        // Filter by selected course from dropdown
-        if (selectedCourseFilter) {
-          filteredCourses = filteredCourses.filter(
-            (course) => course.id === selectedCourseFilter
-          );
-        }
-
-        setCourses(filteredCourses);
-      } catch (error) {
-        toast.error("خطأ في البحث");
+      // Filter by search term if it exists
+      if (sanitizedTerm.trim()) {
+        filteredCourses = filteredCourses.filter(
+          (course) =>
+            course.name.toLowerCase().includes(sanitizedTerm.toLowerCase()) ||
+            course.description
+              ?.toLowerCase()
+              .includes(sanitizedTerm.toLowerCase())
+        );
       }
-    }, 300),
-    [searchTerm, selectedCourseFilter, allCourses]
-  );
 
-  // Trigger search when searchTerm or selectedCourseFilter changes
-  useEffect(() => {
-    if (allCourses.length > 0) {
-      handleSecureSearch();
+      // Filter by selected course from dropdown if it exists
+      if (filterValue) {
+        filteredCourses = filteredCourses.filter(
+          (course) => course.id === filterValue
+        );
+      }
+
+      setCourses(filteredCourses);
+    } catch (error) {
+      toast.error("خطأ في البحث");
+      setCourses(allCourses); // Fallback to showing all courses
     }
-  }, [searchTerm, selectedCourseFilter, handleSecureSearch]);
+  };
+
+  const handleSecureSearch = () => {
+    performSearch(searchTerm, selectedCourseFilter);
+  };
 
   const fetchCourses = async () => {
     try {
@@ -97,9 +92,7 @@ const CourseManagement = () => {
       // Handle paginated response
       const coursesData = response.data?.content || response.data || [];
       setCourses(coursesData);
-      console.log(courses)
       setAllCourses(coursesData); // Store original data for filtering
-      console.log("courses", courses);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
       setCourses([]);
@@ -189,6 +182,7 @@ const CourseManagement = () => {
 
   const handleCourseFilterChange = (e) => {
     setSelectedCourseFilter(e.target.value);
+    performSearch(searchTerm, e.target.value);
   };
 
   const openEditModal = (course) => {
@@ -230,8 +224,8 @@ const CourseManagement = () => {
               placeholder="البحث في الكورسات..."
               value={searchTerm}
               onChange={handleSearchInput}
-              className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
               onKeyDown={(e) => e.key === "Enter" && handleSecureSearch()}
+              className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
             />
           </div>
           <select
@@ -604,7 +598,8 @@ const CourseManagement = () => {
                 {selectedCourse.photoUrl ? (
                   <Image
                     src={selectedCourse.photoUrl}
-                    fill
+                    width={192}
+                    height={192}
                     alt={selectedCourse.name}
                     className="w-full h-full object-cover"
                   />

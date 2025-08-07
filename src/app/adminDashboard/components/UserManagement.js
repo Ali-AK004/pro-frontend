@@ -110,6 +110,7 @@ const UserManagement = () => {
       setInstructors(response.data?.content || response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل المدرسين"));
+      console.error(error);
       setInstructors([]);
     }
   };
@@ -126,51 +127,62 @@ const UserManagement = () => {
     }
   };
 
-  const handleSecureSearch = useCallback(
-    debounce(async (term) => {
-      try {
-        const sanitizedTerm = validateSearchTerm(term);
-
-        if (!sanitizedTerm.trim()) {
-          fetchUsers();
-          return;
-        }
-
-        setIsLoading(true);
-
-        if (activeUserType === "students") {
-          const response = await adminAPI.users.searchStudents(sanitizedTerm);
-          setUsers(response.data || []);
-        } else {
-          // Client-side filtering with sanitized term
-          const searchLower = sanitizedTerm.toLowerCase();
-          const filteredUsers = users.filter(
-            (user) =>
-              user.fullname?.toLowerCase().includes(searchLower) ||
-              user.username?.toLowerCase().includes(searchLower) ||
-              user.email?.toLowerCase().includes(searchLower)
-          );
-          setUsers(filteredUsers);
-        }
-      } catch (error) {
-        console.error("Search error:", error);
-        toast.error("خطأ في البحث");
-        setUsers([]);
-      } finally {
-        setIsLoading(false);
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      // Reset to show all users of the current type
+      if (activeUserType === "students") {
+        fetchUsers(); // This will reload all students
+      } else if (activeUserType === "instructors") {
+        setUsers(instructors); // Use the already loaded instructors
+      } else if (activeUserType === "assistants") {
+        setUsers(assistants); // Use the already loaded assistants
       }
-    }, 300),
-    [activeUserType, users]
-  );
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const searchLower = searchTerm.trim().toLowerCase();
+
+      // Determine which dataset to search based on user type
+      let dataToSearch = [];
+      if (activeUserType === "students") {
+        dataToSearch = users;
+      } else if (activeUserType === "instructors") {
+        dataToSearch = instructors;
+      } else if (activeUserType === "assistants") {
+        dataToSearch = assistants;
+      }
+
+      // Perform the search
+      const filteredUsers = dataToSearch.filter(
+        (user) =>
+          user.fullname?.toLowerCase().includes(searchLower) ||
+          user.username?.toLowerCase().includes(searchLower) ||
+          user.email?.toLowerCase().includes(searchLower)
+      );
+
+      setUsers(filteredUsers);
+    } catch (error) {
+      console.error("Search error:", error);
+      toast.error("خطأ في البحث");
+      setUsers([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSearchInput = (e) => {
     const rawValue = e.target.value;
     try {
-      const sanitizedValue = sanitizeInput(rawValue);
+      // Simple sanitization that allows spaces
+      const sanitizedValue = rawValue.replace(
+        /[^a-zA-Z0-9\u0600-\u06FF\s]/g,
+        ""
+      );
       setSearchTerm(sanitizedValue);
-      handleSecureSearch(sanitizedValue);
     } catch (error) {
-      toast.error("مصطلح البحث غير صالح");
+      console.error("مصطلح البحث غير صالح");
     }
   };
 
@@ -195,6 +207,7 @@ const UserManagement = () => {
       fetchUsers();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء المدرس"));
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -223,6 +236,7 @@ const UserManagement = () => {
       fetchUsers();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء المساعد"));
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -248,6 +262,7 @@ const UserManagement = () => {
       }
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف المستخدم"));
+      console.error(error);
     } finally {
       setIsLoading(false);
       setShowDeleteModal(false);
@@ -333,6 +348,7 @@ const UserManagement = () => {
       fetchUsers();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحديث بيانات المستخدم"));
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -398,18 +414,16 @@ const UserManagement = () => {
   return (
     <div className="p-4 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-        <div>
-          <h1 className="bold-24 md:bold-32 text-gray-900 mb-2">
-            إدارة المستخدمين
-          </h1>
+      <div className="flex items-center justify-between flex-col md:flex-row gap-4 mb-8">
+        <div className="">
+          <h1 className="bold-32 text-gray-900 mb-2">إدارة المستخدمين</h1>
           <p className="regular-14 md:regular-16 text-gray-600">
             إدارة المدرسين والمساعدين والطلاب
           </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="bg-accent text-white px-4 py-2 md:px-6 md:py-3 rounded-lg bold-14 md:bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer w-full md:w-auto"
+          className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
         >
           <FiPlus className="w-4 h-4 md:w-5 md:h-5" />
           إضافة مستخدم
@@ -417,7 +431,7 @@ const UserManagement = () => {
       </div>
 
       {/* User Type Tabs */}
-      <div className="flex flex-wrap gap-2 md:gap-4 mb-6">
+      <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4 mb-6">
         {userTypes.map((type) => (
           <button
             key={type.id}
@@ -443,12 +457,13 @@ const UserManagement = () => {
               placeholder="البحث بالاسم أو البريد الإلكتروني..."
               value={searchTerm}
               onChange={handleSearchInput}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               className="w-full pr-10 pl-3 py-2 md:pr-12 md:pl-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
             />
           </div>
           <button
-            onClick={() => handleSecureSearch(searchTerm)}
-            className="bg-accent text-white px-4 py-2 md:px-6 md:py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 bold-14 md:bold-16"
+            onClick={handleSearch}
+            className="bg-accent text-white cursor-pointer px-4 py-2 md:px-6 md:py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 bold-14 md:bold-16"
           >
             بحث
           </button>
@@ -470,7 +485,7 @@ const UserManagement = () => {
         ) : (
           <>
             {/* Desktop Table (hidden on mobile) */}
-            <div className="hidden md:block overflow-x-auto">
+            <div className="hidden xl:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
@@ -564,7 +579,7 @@ const UserManagement = () => {
             </div>
 
             {/* Mobile Cards (visible only on mobile) */}
-            <div className="md:hidden space-y-3 p-3">
+            <div className="xl:hidden space-y-3 p-3">
               {users.map((user) => (
                 <div
                   key={user.id}
@@ -632,21 +647,21 @@ const UserManagement = () => {
                             setSelectedUser(user);
                             setShowViewModal(true);
                           }}
-                          className="p-2 text-blue-600 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 text-blue-600 border bg-blue-600/20 border-blue-600 cursor-pointer hover:bg-blue-50 rounded-sm transition-colors"
                           title="عرض التفاصيل"
                         >
                           <FiEye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleEditUser(user)}
-                          className="p-2 text-green-600 hover:bg-green-50 cursor-pointer rounded-lg transition-colors"
+                          className="p-2 text-green-600 border bg-green-600/20 border-green-600 hover:bg-green-50 cursor-pointer rounded-sm transition-colors"
                           title="تعديل البيانات"
                         >
                           <FiEdit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteClick(user.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
+                          className="p-2 text-red-600 border bg-red-600/20 border-red-600 hover:bg-red-50 rounded-sm cursor-pointer transition-colors"
                           title="حذف المستخدم"
                         >
                           <FiTrash2 className="w-4 h-4" />

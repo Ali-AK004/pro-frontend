@@ -400,17 +400,19 @@ const InstructorLessonManagement = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <SecureSearchInput
-            placeholder="البحث في الواجبات..."
-            onSearch={(term) => setSearchTerm(term)}
-            className="border border-gray-300 focus:ring-secondary"
-            maxLength={100}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+          <div className="md:col-span-3 flex">
+            <SecureSearchInput
+              placeholder="البحث في الدروس..."
+              onSearch={(term) => setSearchTerm(term)}
+              className="border border-gray-300 focus:ring-secondary"
+              maxLength={100}
+            />
+          </div>
           <select
             value={selectedCourse}
             onChange={(e) => setSelectedCourse(e.target.value)}
-            className="px-4 py-3 border md:col-span-1  md:flex-0 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+            className="px-4 py-3 border md:col-span-3  md:flex-0 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
             <option value="">اختر كورس</option>
             {courses.map((course) => (
@@ -883,7 +885,7 @@ const InstructorLessonManagement = () => {
                 </div>
 
                 {/* Lesson Components Details */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
                   <div
                     className={`p-4 rounded-lg border ${
                       lessonStatus.isLoading
@@ -893,7 +895,7 @@ const InstructorLessonManagement = () => {
                           : "bg-gray-50 border-gray-200"
                     }`}
                   >
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center flex-col md:flex-row gap-2 mb-2">
                       <FiFileText className="w-4 h-4 text-blue-500" />
                       <span className="regular-12 text-gray-500">الامتحان</span>
                     </div>
@@ -906,18 +908,13 @@ const InstructorLessonManagement = () => {
                       </div>
                     ) : (
                       <p
-                        className={`bold-14 ${
+                        className={`bold-14 text-center md:text-right ${
                           lessonStatus.hasExam
                             ? "text-blue-700"
                             : "text-gray-500"
                         }`}
                       >
                         {lessonStatus.hasExam ? "✓ متوفر" : "✗ غير متوفر"}
-                      </p>
-                    )}
-                    {lessonStatus.hasExam && !lessonStatus.isLoading && (
-                      <p className="regular-10 text-blue-600 mt-1">
-                        يحتوي هذا الدرس على امتحان
                       </p>
                     )}
                   </div>
@@ -930,7 +927,7 @@ const InstructorLessonManagement = () => {
                           : "bg-gray-50 border-gray-200"
                     }`}
                   >
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center flex-col md:flex-row gap-2 mb-2">
                       <FiFileText className="w-4 h-4 text-purple-500" />
                       <span className="regular-12 text-gray-500">الواجب</span>
                     </div>
@@ -943,7 +940,7 @@ const InstructorLessonManagement = () => {
                       </div>
                     ) : (
                       <p
-                        className={`bold-14 ${
+                        className={`bold-14 text-center md:text-right ${
                           lessonStatus.hasAssignment
                             ? "text-purple-700"
                             : "text-gray-500"
@@ -952,29 +949,8 @@ const InstructorLessonManagement = () => {
                         {lessonStatus.hasAssignment ? "✓ متوفر" : "✗ غير متوفر"}
                       </p>
                     )}
-                    {lessonStatus.hasAssignment && !lessonStatus.isLoading && (
-                      <p className="regular-10 text-purple-600 mt-1">
-                        يحتوي هذا الدرس على واجب
-                      </p>
-                    )}
                   </div>
                 </div>
-
-                {selectedLesson.videoUrl && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="regular-12 text-gray-500 mb-2">
-                      رابط الفيديو
-                    </p>
-                    <a
-                      href={selectedLesson.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-secondary hover:underline break-all"
-                    >
-                      {selectedLesson.videoUrl}
-                    </a>
-                  </div>
-                )}
               </div>
             </div>
           </div>

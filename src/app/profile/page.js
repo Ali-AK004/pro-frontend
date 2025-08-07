@@ -299,7 +299,7 @@ const Profile = () => {
             </div>
 
             {/* Quick Stats */}
-            <div className="flex-1 lg:mr-8">
+            <div className="flex-1 w-full md:w-auto lg:mr-8">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-2xl text-center">
                   <div className="text-2xl font-bold">{userLessons.length}</div>

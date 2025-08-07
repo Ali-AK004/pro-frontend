@@ -23,7 +23,6 @@ const InstructorExamManagement = () => {
   const [lessons, setLessons] = useState([]);
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedLesson, setSelectedLesson] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -49,12 +48,17 @@ const InstructorExamManagement = () => {
     } else {
       setLessons([]);
       setSelectedLesson("");
+      setExams([]); // Clear exams when no course is selected
     }
   }, [selectedCourse]);
 
   useEffect(() => {
-    fetchExams();
-  }, [selectedLesson, instructorId]);
+    if (selectedLesson) {
+      fetchExams();
+    } else {
+      setExams([]); // Clear exams when no lesson is selected
+    }
+  }, [selectedLesson]);
 
   const fetchCourses = async () => {
     try {
@@ -81,16 +85,12 @@ const InstructorExamManagement = () => {
   };
 
   const fetchExams = async () => {
+    if (!selectedLesson) return;
+
     try {
       setIsLoading(true);
-      if (selectedLesson) {
-        const response = await instructorAPI.exams.getByLesson(selectedLesson);
-        setExams(response.data || []);
-      } else if (instructorId) {
-        const response =
-          await instructorAPI.exams.getByInstructor(instructorId);
-        setExams(response.data || []);
-      }
+      const response = await instructorAPI.exams.getByLesson(selectedLesson);
+      setExams(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الامتحانات"));
     } finally {
@@ -182,14 +182,10 @@ const InstructorExamManagement = () => {
     }, []);
   };
 
-  const filteredExams = exams.filter((exam) =>
-    exam.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">إدارة الامتحانات</h1>
           <p className="regular-16 text-gray-600">
@@ -207,20 +203,12 @@ const InstructorExamManagement = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Search */}
-          <SecureSearchInput
-            placeholder="البحث في الواجبات..."
-            onSearch={(term) => setSearchTerm(term)}
-            className="border border-gray-300 focus:ring-secondary"
-            maxLength={100}
-          />
-
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
           {/* Course Filter */}
           <select
             value={selectedCourse}
             onChange={(e) => setSelectedCourse(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+            className="w-full px-4 py-3 border md:col-span-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
             <option value="">اختر كورس</option>
             {courses.map((course) => (
@@ -234,7 +222,7 @@ const InstructorExamManagement = () => {
           <select
             value={selectedLesson}
             onChange={(e) => setSelectedLesson(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+            className="w-full px-4 py-3 border md:col-span-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
           >
             <option value="">اختر درس</option>
             {lessons.map((lesson) => (
@@ -243,6 +231,16 @@ const InstructorExamManagement = () => {
               </option>
             ))}
           </select>
+
+          <button
+            onClick={() => {
+              setSelectedLesson("");
+              setSelectedCourse("");
+            }}
+            className="bg-accent flexCenter flex text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
+          >
+            إعادة تعيين
+          </button>
         </div>
       </div>
 
@@ -264,7 +262,7 @@ const InstructorExamManagement = () => {
               </div>
             </div>
           ))
-        ) : filteredExams.length === 0 ? (
+        ) : exams.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <FiBook className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="regular-16 text-gray-600">لا توجد امتحانات للعرض</p>
@@ -276,7 +274,7 @@ const InstructorExamManagement = () => {
             </button>
           </div>
         ) : (
-          filteredExams.map((exam) => (
+          exams.map((exam) => (
             <div
               key={exam.id}
               className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"

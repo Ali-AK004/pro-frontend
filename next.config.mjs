@@ -33,9 +33,6 @@ const nextConfig = {
     },
   }),
 
-  // Performance optimizations
-  swcMinify: true,
-
   // Headers for caching
   async headers() {
     return [

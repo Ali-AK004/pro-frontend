@@ -17,11 +17,10 @@ import ExamCreationModal from "./Modal/ExamCreationModal";
 
 const ExamManagement = () => {
   const [exams, setExams] = useState([]);
-  const [lessons, setLessons] = useState([]);
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLesson, setSelectedLesson] = useState("");
+  const [lessons, setLessons] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showResultsModal, setShowResultsModal] = useState(false);
@@ -29,11 +28,24 @@ const ExamManagement = () => {
   const [selectedExam, setSelectedExam] = useState(null);
   const [examResults, setExamResults] = useState(null);
   const [examToDelete, setExamToDelete] = useState(null);
+  const [selectedLessonFilter, setSelectedLessonFilter] = useState("");
+  const [allExams, setAllExams] = useState([]);
 
   useEffect(() => {
     fetchLessons();
     fetchExams();
-  }, [selectedLesson]);
+  }, []);
+
+  useEffect(() => {
+    if (selectedLessonFilter) {
+      const filtered = allExams.filter(
+        (exam) => exam.lessonId === selectedLessonFilter
+      );
+      setExams(filtered);
+    } else {
+      setExams([]); // Show nothing when no lesson is selected
+    }
+  }, [selectedLessonFilter, allExams]);
 
   const fetchLessons = async () => {
     try {
@@ -68,22 +80,16 @@ const ExamManagement = () => {
   const fetchExams = async () => {
     try {
       setIsLoading(true);
-      if (selectedLesson) {
-        const response = await adminAPI.exams.getByLesson(selectedLesson);
-        setExams(response.data || []);
-      } else {
-        // Only fetch all exams if no lesson is selected
-        // For now, show empty list when no lesson is selected to avoid unnecessary API calls
-        setExams([]);
-      }
+      const response = await adminAPI.exams.getAll();
+      const examsData = response.data?.content || [];
+      setAllExams(examsData); // Only store in allExams
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الامتحانات"));
-      setExams([]);
+      setAllExams([]);
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleCreateExam = async (examData) => {
     try {
       setIsLoading(true);
@@ -174,35 +180,19 @@ const ExamManagement = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-y-4 md:gap-4">
-          <div className="flex-1 flex col-span-2 relative">
-            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="البحث في الدروس..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-            />
-          </div>
-
+        <div className="grid md:grid-cols-5 gap-3 grid-cols-1">
           {/* Lesson Filter */}
           <select
-            value={selectedLesson}
-            onChange={(e) => setSelectedLesson(e.target.value)}
-            className="w-full px-4 py-3 col-span-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+            value={selectedLessonFilter}
+            onChange={(e) => setSelectedLessonFilter(e.target.value)}
+            className="w-full px-4 py-3 md:col-span-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
           >
-            <option value="">اختر الدرس</option>
+            <option value="">اختر درس</option>
             {courses.map((course) => {
-              // Filter lessons that belong to this course
               const courseLessons = lessons.filter(
                 (lesson) => lesson.courseId === course.id
               );
-
-              // Only render optgroup if course has lessons
               if (courseLessons.length === 0) return null;
-
               return (
                 <optgroup key={course.id} label={course.name}>
                   {courseLessons.map((lesson) => (
@@ -214,6 +204,14 @@ const ExamManagement = () => {
               );
             })}
           </select>
+          <button
+            onClick={() => setSelectedLessonFilter("")}
+            disabled={!selectedLessonFilter}
+            className="bg-accent flexCenter gap-2 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
+          >
+            <FiX className="w-4 h-4" />
+            إعادة تعيين
+          </button>
         </div>
       </div>
 
@@ -244,13 +242,19 @@ const ExamManagement = () => {
         ) : filteredExams.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <FiBook className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="regular-16 text-gray-600">لا توجد امتحانات للعرض</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="mt-4 bg-accent text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
-            >
-              إنشاء أول امتحان
-            </button>
+            <p className="regular-16 text-gray-600">
+              {selectedLessonFilter
+                ? "لا توجد امتحانات للدرس المحدد"
+                : "الرجاء اختيار درس لعرض الامتحانات"}
+            </p>
+            {!selectedLessonFilter && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="mt-4 bg-accent text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
+              >
+                إنشاء أول امتحان
+              </button>
+            )}
           </div>
         ) : (
           filteredExams.map((exam) => (
