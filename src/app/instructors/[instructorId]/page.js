@@ -39,7 +39,6 @@ const InstructorProfile = () => {
           setError("لم يتم العثور على المدرس");
         }
       } catch (err) {
-        console.error("خطأ في جلب بيانات المدرس:", err);
         setError(handleAPIError(err, "حدث خطأ أثناء تحميل بيانات المدرس"));
         setInstructor(null);
       } finally {

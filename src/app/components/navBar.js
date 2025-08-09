@@ -12,6 +12,7 @@ import {
 import axios from "axios";
 import { useUserData } from "../../../models/UserContext";
 import apiConfig, { API_ENDPOINTS } from "@/config/api";
+import { toast } from "react-toastify";
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -38,7 +39,7 @@ const NavBar = () => {
       // Redirect to home page
       router.replace("/");
     } catch (error) {
-      console.error("Logout failed:", error);
+      toast.error("فشل في تسجيل الخروج");
       router.replace("/");
     }
   };

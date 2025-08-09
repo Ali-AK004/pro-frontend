@@ -85,7 +85,7 @@ export const API_ENDPOINTS = {
     SIGNIN: "/auth/signin",
     SIGNUP: "/auth/signup",
     REFRESH: "/auth/refresh",
-    LOGOUT: "/auth/logout",
+    LOGOUT: "/auth/signout",
     PROFILE: "/auth/profile",
     CHECK_USERNAME: "/auth/check-username",
   },

@@ -55,7 +55,6 @@ const CourseDetails = () => {
           setError("لم يتم العثور على الكورس");
         }
       } catch (err) {
-        console.error("خطأ في جلب بيانات الكورس:", err);
         setError(handleAPIError(err, "حدث خطأ أثناء تحميل بيانات الكورس"));
       } finally {
         setIsLoading(false);

@@ -18,6 +18,7 @@ import {
   formatProgressStatus,
 } from "../../../../../services/studentAPI";
 import { useUserData } from "../../../../../../../models/UserContext";
+import { toast } from "react-toastify";
 
 const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   const { user } = useUserData();
@@ -50,7 +51,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
       );
       setHasAssignment(assignmentResponse.data);
     } catch (error) {
-      console.error("Error checking lesson components:", error);
+      toast.error("خطأ في متابعة مكونات الحصة");
       // Set defaults on error
       setHasExam(false);
       setHasAssignment(false);

@@ -74,9 +74,8 @@ const AssignmentManagement = () => {
           }));
           allLessons = [...allLessons, ...lessonsWithCourse];
         } catch (error) {
-          console.error(
-            `Error fetching lessons for course ${course.id}:`,
-            error
+          toast.error(
+            handleAPIError(error, ` ${course.id} :فشل في تحميل دروس كورس`)
           );
         }
       }

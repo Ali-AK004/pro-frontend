@@ -112,7 +112,6 @@ const LessonPage = () => {
           await studentAPI.profile.getInstructorFullProfile(instructorId);
         setInstructorData(instructorResponse.data);
       } catch (instructorError) {
-        console.error("Error fetching instructor data:", instructorError);
         toast.error("فشل في تحميل بيانات المدرس");
       }
 
@@ -122,13 +121,12 @@ const LessonPage = () => {
           setAccessExpiry(accessResponse.data.expiryDate);
         }
       } catch (accessError) {
-        console.error("Error fetching access info:", accessError);
+        toast.error("خطأ في إحضار بيانات الوصول");
       }
 
       // Set initial tab based on access and progress
       setInitialTab(response.data);
     } catch (error) {
-      console.error("Error fetching lesson data:", error);
       setError(handleAPIError(error, "فشل في تحميل بيانات الدرس"));
       toast.error(handleAPIError(error, "فشل في تحميل بيانات الدرس"));
     } finally {
@@ -352,8 +350,6 @@ const LessonPage = () => {
     accessError,
     videoUrl,
   } = lessonData;
-
-  console.log(lessonData)
 
   return (
     <div className="min-h-screen bg-main">

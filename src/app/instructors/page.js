@@ -36,8 +36,6 @@ const Instructors = () => {
       
       router.push(`/instructors/${instructorId.trim()}`);
     } catch (error) {
-      console.error("Error fetching instructor profile:", error);
-      
       let errorMessage = "حدث خطأ أثناء جلب بيانات المدرس";
       
       if (error.response) {

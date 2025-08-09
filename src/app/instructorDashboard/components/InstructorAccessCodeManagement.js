@@ -166,8 +166,7 @@ const InstructorAccessCodeManagement = () => {
         hasMore: !response.data?.last,
       });
     } catch (error) {
-      console.error("Error fetching access codes:", error);
-      toast.error(handleAPIError(error, "Failed to load access codes"));
+      toast.error(handleAPIError("خطأ في إحضار اكواد الوصول"));
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);

@@ -110,10 +110,7 @@ const InstructorAssignmentManagement = React.memo(() => {
           }));
           allLessonsData = [...allLessonsData, ...lessonsWithCourse];
         } catch (error) {
-          console.error(
-            `Error fetching lessons for course ${course.id}:`,
-            error
-          );
+          toast.error(`خطأ في احضار حصص الكورس: ${course.id}:`)
         }
       }
 
@@ -208,7 +205,6 @@ const InstructorAssignmentManagement = React.memo(() => {
       const submissions = response.data?.content || response.data;
       if (Array.isArray(submissions)) {
         setAssignmentSubmissions(submissions);
-        console.log("Loaded submissions:", submissions);
       } else {
         console.warn("API response is not an array:", response.data);
         setAssignmentSubmissions([]);
@@ -218,7 +214,6 @@ const InstructorAssignmentManagement = React.memo(() => {
       setShowSubmissionsModal(true);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل التسليمات"));
-      console.error("Error fetching submissions:", error);
       setAssignmentSubmissions([]); // Set empty array on error
     } finally {
       setIsLoading(false);

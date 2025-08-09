@@ -21,6 +21,7 @@ const InstructorExamManagement = () => {
   const { user } = useUserData();
   const [exams, setExams] = useState([]);
   const [lessons, setLessons] = useState([]);
+  const [errors, setErrors] = useState({});
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -106,7 +107,27 @@ const InstructorExamManagement = () => {
       setShowCreateModal(false);
       fetchExams();
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في إنشاء الامتحان"));
+      const errorMessage =
+        error.response?.data?.message || "فشل في إنشاء الامتحان";
+
+      toast.error(errorMessage);
+
+      if (error.response?.data?.errorCode === "VALIDATION_ERROR") {
+        // Match Arabic: "السؤال رقم 2 مكرر"
+        const match = errorMessage.match(/السؤال رقم (\d+) مكرر/);
+
+        if (match && match[1]) {
+          const questionIndex = parseInt(match[1], 10) - 1; // Convert to 0-based index
+
+          if (!isNaN(questionIndex)) {
+            setErrors((prev) => ({
+              ...prev,
+              [`question_${questionIndex}_text`]:
+                "نص السؤال مكرر. يرجى تعديله.",
+            }));
+          }
+        }
+      }
     } finally {
       setIsLoading(false);
     }
@@ -121,7 +142,30 @@ const InstructorExamManagement = () => {
       setSelectedExam(null);
       fetchExams();
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحديث الامتحان"));
+      const errorMessage =
+        error.response?.data?.message || "فشل في تحديث الامتحان";
+      toast.error(errorMessage);
+
+      if (error.response?.data?.errorCode === "VALIDATION_ERROR") {
+        // Check if it's a duplicate question error
+        if (errorMessage.includes("نص السؤال مكرر:")) {
+          const match = errorMessage.match(/نص السؤال مكرر:\s*(.+)/);
+
+          if (match && match[1]) {
+            const duplicateText = match[1].trim();
+            const newErrors = {};
+
+            examData.questions.forEach((q, index) => {
+              if (q.questionText.trim() === duplicateText) {
+                newErrors[`question_${index}_text`] =
+                  "نص السؤال مكرر. يرجى تعديله.";
+              }
+            });
+
+            setErrors((prev) => ({ ...prev, ...newErrors }));
+          }
+        }
+      }
     } finally {
       setIsLoading(false);
     }
@@ -351,11 +395,16 @@ const InstructorExamManagement = () => {
       {showCreateModal && (
         <ExamCreationModal
           isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
+          onClose={() => {
+            setShowCreateModal(false);
+            setErrors({});
+          }}
           onSubmit={handleCreateExam}
           lessons={getAvailableLessons()}
           courses={courses.sort((a, b) => a.name.localeCompare(b.name))}
           isLoading={isLoading}
+          errors={errors}
+          setErrors={setErrors} // Add this line
         />
       )}
 
@@ -366,6 +415,7 @@ const InstructorExamManagement = () => {
           onClose={() => {
             setShowEditModal(false);
             setSelectedExam(null);
+            setErrors({});
           }}
           onSubmit={handleUpdateExam}
           lessons={getAvailableLessons()}
@@ -373,6 +423,8 @@ const InstructorExamManagement = () => {
           initialData={selectedExam}
           isLoading={isLoading}
           isEdit={true}
+          errors={errors}
+          setErrors={setErrors} // Add this line
         />
       )}
 

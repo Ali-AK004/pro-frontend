@@ -190,14 +190,27 @@ const InstructorLessonManagement = () => {
 
     try {
       setIsLoading(true);
-      await instructorAPI.lessons.update(
+      const response = await instructorAPI.lessons.update(
         instructorId,
         selectedLesson.id,
         editForm
       );
+
+      // Update local state immediately
+      setLessons((prevLessons) =>
+        prevLessons.map((lesson) =>
+          lesson.id === selectedLesson.id ? { ...lesson, ...editForm } : lesson
+        )
+      );
+
+      setOriginalLessons((prevLessons) =>
+        prevLessons.map((lesson) =>
+          lesson.id === selectedLesson.id ? { ...lesson, ...editForm } : lesson
+        )
+      );
+
       toast.success("تم تحديث الدرس بنجاح");
       setShowEditModal(false);
-      fetchLessons();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
     } finally {
@@ -258,7 +271,7 @@ const InstructorLessonManagement = () => {
       // Cache the result
       setLessonStatusCache((prev) => ({ ...prev, [lessonId]: status }));
     } catch (error) {
-      console.error("Error fetching lesson status:", error);
+      toast.error("خطأ في احضار حالة الحصص");
       const errorStatus = {
         hasExam: false,
         hasAssignment: false,

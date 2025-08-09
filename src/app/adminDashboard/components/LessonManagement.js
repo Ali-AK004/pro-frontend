@@ -172,9 +172,23 @@ const LessonManagement = () => {
     try {
       setIsLoading(true);
       await adminAPI.lessons.update(selectedLesson.id, editForm);
+
+      // Update the local state immediately
+      setAllLessons((prevLessons) =>
+        prevLessons.map((lesson) =>
+          lesson.id === selectedLesson.id ? { ...lesson, ...editForm } : lesson
+        )
+      );
+
+      // Also update the filtered lessons if the current lesson is in view
+      setLessons((prevLessons) =>
+        prevLessons.map((lesson) =>
+          lesson.id === selectedLesson.id ? { ...lesson, ...editForm } : lesson
+        )
+      );
+
       toast.success("تم تحديث الدرس بنجاح");
       setShowEditModal(false);
-      fetchAllLessons(); // Refresh the lessons dropdown data
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
     } finally {

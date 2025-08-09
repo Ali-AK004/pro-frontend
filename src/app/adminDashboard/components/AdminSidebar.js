@@ -20,6 +20,7 @@ import {
 } from "react-icons/fi";
 import Link from "next/link";
 import apiConfig, { API_ENDPOINTS } from "@/config/api";
+import { handleAPIError } from "../services/adminAPI";
 
 const AdminSidebar = ({ activeTab, setActiveTab }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -46,7 +47,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       // Redirect to home page
       router.replace("/");
     } catch (error) {
-      console.error("Logout error:", error);
+      toast.error(handleAPIError(error, "فشل تسجيل الخروج"));
       router.replace("/");
     }
   };

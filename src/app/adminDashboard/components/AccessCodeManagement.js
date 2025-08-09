@@ -80,7 +80,6 @@ const AccessCodeManagement = () => {
       }));
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل أكواد الوصول"));
-      console.error(error);
       if (!loadMore) setAccessCodes([]);
     } finally {
       if (loadMore) {
@@ -117,10 +116,7 @@ const AccessCodeManagement = () => {
           }));
           allLessons = [...allLessons, ...lessonsWithCourse];
         } catch (error) {
-          console.error(
-            `Error fetching lessons for course ${course.id}:`,
-            error
-          );
+          toast.error(handleAPIError(error, `خطأ في إحضار حصص الكورس: ${course.id}:`));
         }
       }
 
@@ -146,7 +142,6 @@ const AccessCodeManagement = () => {
       fetchAccessCodes();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء أكواد الوصول"));
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -213,7 +208,6 @@ const AccessCodeManagement = () => {
       fetchAccessCodes();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف كود الوصول"));
-      console.error(error);
     } finally {
       setIsLoading(false);
       setShowDeleteModal(false);
@@ -233,7 +227,6 @@ const AccessCodeManagement = () => {
       fetchAccessCodes();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف الأكواد المستخدمة"));
-      console.error(error);
     } finally {
       setIsDeletingUsed(false);
       setShowDeleteUsedModal(false);

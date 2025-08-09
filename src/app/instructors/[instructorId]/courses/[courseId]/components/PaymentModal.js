@@ -58,7 +58,6 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
         handleClose();
       }, 2000);
     } catch (error) {
-      console.error("Payment error:", error);
       const errorMessage = handleAPIError(error, "حدث خطأ أثناء عملية الدفع");
 
       setPaymentResult({

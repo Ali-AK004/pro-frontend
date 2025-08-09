@@ -12,6 +12,7 @@ import {
   cachedRequest,
   handleAPIError,
 } from "../src/app/utils/apiClient";
+import { toast } from "react-toastify";
 
 const UserContext = createContext();
 
@@ -40,7 +41,7 @@ export function UserProvider({ children }) {
         setUser(null);
         setError(null); // No error, just not logged in
       } else {
-        console.error("Error fetching current user:", error);
+        toast.error("خطأ في عرض المستخدم");
         const errorMessage = handleAPIError(error, "Failed to fetch user");
         setError(errorMessage);
       }

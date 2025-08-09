@@ -80,7 +80,6 @@ const InstructorProfileManagement = () => {
       setIsEditing(false);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحديث الملف الشخصي"));
-      console.error(error);
     } finally {
       setIsLoading(false);
     }

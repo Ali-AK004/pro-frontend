@@ -19,6 +19,7 @@ import {
   FiMessageCircle,
 } from "react-icons/fi";
 import apiConfig, { API_ENDPOINTS } from "@/config/api";
+import { toast } from "react-toastify";
 
 const InstructorSidebar = ({ activeTab, setActiveTab }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -45,7 +46,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
       // Redirect to home page
       router.replace("/");
     } catch (error) {
-      console.error("Logout error:", error);
+      toast.error("خطأ في تسجيل الخروج");
       router.replace("/");
     }
   };

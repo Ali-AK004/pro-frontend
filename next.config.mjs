@@ -8,11 +8,24 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    domains: [
-      "images.unsplash.com",
-      "localhost",
-      "academitna.b-cdn.net",
-      "academitna.online",
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3000",
+      },
+      {
+        protocol: "https",
+        hostname: "academitna.b-cdn.net",
+      },
+      {
+        protocol: "https",
+        hostname: "academitna.online",
+      },
     ],
     formats: ["image/webp", "image/avif"],
     minimumCacheTTL: 60,

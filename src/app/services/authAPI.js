@@ -113,6 +113,7 @@ class AuthAPI {
     try {
       return await apiService.get(`${API_ENDPOINTS.AUTH.CHECK_USERNAME}/${username}`);
     } catch (error) {
+      console.error(error)
       throw error;
     }
   }

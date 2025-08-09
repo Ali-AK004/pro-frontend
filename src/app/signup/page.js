@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FaEyeSlash, FaRegEye } from "react-icons/fa";
 import authAPI from "../services/authAPI";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -64,14 +65,14 @@ const SignUp = () => {
     setIsCheckingUsername(true);
     try {
       const response = await authAPI.checkUsername(username);
-      if (!response.data.available) {
+      if (!response.available) {
         setErrors((prev) => ({
           ...prev,
           username: "اسم المستخدم غير متاح",
         }));
       }
     } catch (error) {
-      console.error("Username check endpoint not available");
+      toast.error("خطأ في مراجعة اسم المستخدم")
     } finally {
       setIsCheckingUsername(false);
     }
@@ -188,7 +189,6 @@ const SignUp = () => {
       router.push("/login");
       return response.data;
     } catch (error) {
-      console.error("خطأ في إنشاء الحساب:", error);
       setErrors({ general: error.message || "حدث خطأ أثناء إنشاء الحساب" });
     } finally {
       setIsLoading(false);

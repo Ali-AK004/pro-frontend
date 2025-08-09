@@ -9,6 +9,7 @@ import {
   FiClock,
   FiAward,
   FiHelpCircle,
+  FiAlertCircle,
 } from "react-icons/fi";
 
 const ExamCreationModal = ({
@@ -20,11 +21,12 @@ const ExamCreationModal = ({
   initialData = null,
   isLoading = false,
   isEdit = false,
+  errors = {},
+  setErrors = () => {},
 }) => {
   const [examData, setExamData] = useState(
     examAPI.validation.createDefaultExam()
   );
-  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (initialData && isEdit) {
@@ -160,17 +162,95 @@ const ExamCreationModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const validation = examAPI.validation.validateExamData(examData);
+    // Clear previous errors
+    setErrors({});
 
-    if (!validation.isValid) {
-      setErrors(validation.errors);
+    // Basic validation
+    const validationErrors = {};
+
+    if (!examData.lessonId) {
+      validationErrors.lessonId = "يجب اختيار الدرس";
+    }
+
+    if (!examData.title?.trim()) {
+      validationErrors.title = "عنوان الامتحان مطلوب";
+    }
+
+    if (examData.passingScore < 0 || examData.passingScore > 100) {
+      validationErrors.passingScore = "درجة النجاح يجب أن تكون بين 0 و 100";
+    }
+
+    if (examData.timeLimitMinutes <= 0) {
+      validationErrors.timeLimitMinutes =
+        "وقت الامتحان يجب أن يكون أكبر من صفر";
+    }
+
+    if (examData.questions.length === 0) {
+      validationErrors.questions = "يجب إضافة سؤال واحد على الأقل";
+    }
+
+    // Validate questions and answers
+    examData.questions.forEach((question, qIndex) => {
+      if (!question.questionText?.trim()) {
+        validationErrors[`question_${qIndex}_text`] = "نص السؤال مطلوب";
+      }
+
+      if (question.points <= 0) {
+        validationErrors[`question_${qIndex}_points`] =
+          "يجب أن تكون النقاط أكبر من صفر";
+      }
+
+      // Validate answers - check for empty answer text
+      question.answers.forEach((answer, aIndex) => {
+        if (!answer.answerText?.trim()) {
+          validationErrors[`question_${qIndex}_answer_${aIndex}`] =
+            "نص الإجابة مطلوب";
+        }
+      });
+
+      if (question.answers.length < 2) {
+        validationErrors[`question_${qIndex}_answers`] =
+          "يجب أن يحتوي السؤال على إجابتين على الأقل";
+      }
+
+      const correctAnswers = question.answers.filter((a) => a.correct).length;
+
+      if (question.questionType === "SINGLE_CHOICE" && correctAnswers !== 1) {
+        validationErrors[`question_${qIndex}_correct`] =
+          "يجب اختيار إجابة صحيحة واحدة";
+      }
+
+      if (question.questionType === "MULTIPLE_CHOICE" && correctAnswers < 1) {
+        validationErrors[`question_${qIndex}_correct`] =
+          "يجب اختيار إجابة صحيحة واحدة على الأقل";
+      }
+
+      if (question.questionType === "TRUE_FALSE" && correctAnswers !== 1) {
+        validationErrors[`question_${qIndex}_correct`] =
+          "يجب اختيار إجابة صحيحة واحدة";
+      }
+    });
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+
+      // Scroll to the first error
+      const firstErrorKey = Object.keys(validationErrors)[0];
+      const firstErrorElement = document.querySelector(
+        `[data-error="${firstErrorKey}"]`
+      );
+      if (firstErrorElement) {
+        firstErrorElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+
       return;
     }
 
     onSubmit(examData);
   };
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/20 flexCenter z-50">
@@ -190,57 +270,54 @@ const ExamCreationModal = ({
 
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Basic Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
+            {errors.general && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg flex items-start gap-2">
+                <FiAlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <span>{errors.general}</span>
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Lesson Selection */}
-              {!isEdit && (
-                <div>
-                  <label className="block bold-14 text-gray-700 mb-2">
-                    <FiBook className="inline w-4 h-4 ml-1" />
-                    الدرس
-                  </label>
-                  <select
-                    value={examData.lessonId}
-                    onChange={(e) =>
-                      handleInputChange("lessonId", e.target.value)
-                    }
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                      errors.lessonId ? "border-red-300" : "border-gray-300"
-                    }`}
-                    required
-                  >
-                    <option value="">اختر الدرس</option>
-                    {courses.map((course) => {
-                      // Filter lessons that belong to this course
-                      const courseLessons = lessons.filter(
-                        (lesson) => lesson.courseId === course.id
-                      );
-
-                      // Only render optgroup if course has lessons
-                      if (courseLessons.length === 0) return null;
-
-                      return (
-                        <optgroup key={course.id} label={course.name}>
-                          {courseLessons.map((lesson) => (
-                            <option key={lesson.id} value={lesson.id}>
-                              {lesson.name}
-                            </option>
-                          ))}
-                        </optgroup>
-                      );
-                    })}
-                  </select>
-                  {errors.lessonId && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.lessonId}
-                    </p>
-                  )}
-                </div>
-              )}
+              <div>
+                <label className="block bold-14 text-gray-700 mb-2">
+                  <FiBook className="inline w-4 h-4 ml-1" />
+                  الدرس
+                </label>
+                <select
+                  value={examData.lessonId}
+                  onChange={(e) =>
+                    handleInputChange("lessonId", e.target.value)
+                  }
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
+                    errors.lessonId ? "border-red-300" : "border-gray-300"
+                  }`}
+                  required
+                >
+                  <option value="">اختر الدرس</option>
+                  {courses.map((course) => {
+                    const courseLessons = lessons.filter(
+                      (lesson) => lesson.courseId === course.id
+                    );
+                    if (courseLessons.length === 0) return null;
+                    return (
+                      <optgroup key={course.id} label={course.name}>
+                        {courseLessons.map((lesson) => (
+                          <option key={lesson.id} value={lesson.id}>
+                            {lesson.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
+                </select>
+                {errors.lessonId && (
+                  <p className="mt-1 text-sm text-red-600">{errors.lessonId}</p>
+                )}
+              </div>
 
               {/* Title */}
-              <div className={!isEdit ? "" : "md:col-span-2"}>
+              <div>
                 <label className="block bold-14 text-gray-700 mb-2">
                   عنوان الامتحان
                 </label>
@@ -321,48 +398,59 @@ const ExamCreationModal = ({
                   </p>
                 )}
               </div>
-            </div>
 
-            {/* Questions Section */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="bold-18 text-gray-900 flex items-center gap-2">
-                  <FiHelpCircle className="w-5 h-5" />
-                  الأسئلة ({examData.questions.length})
-                </h3>
-                <button
-                  type="button"
-                  onClick={addQuestion}
-                  className="bg-accent cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2"
-                >
-                  <FiPlus className="w-4 h-4" />
-                  إضافة سؤال
-                </button>
+              {/* Questions Section */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="bold-18 text-gray-900 flex items-center gap-2">
+                    <FiHelpCircle className="w-5 h-5" />
+                    الأسئلة ({examData.questions.length})
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={addQuestion}
+                    className="bg-accent cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2"
+                  >
+                    <FiPlus className="w-4 h-4" />
+                    إضافة سؤال
+                  </button>
+                </div>
+
+                {errors.questions && (
+                  <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg">
+                    {errors.questions}
+                  </div>
+                )}
+
+                <div className="space-y-6">
+                  {examData.questions.map((question, questionIndex) => (
+                    <div
+                      key={questionIndex}
+                      className={
+                        errors[`question_${questionIndex}_text`]
+                          ? "border-l-4 border-red-500 pl-3"
+                          : ""
+                      }
+                    >
+                      <QuestionEditor
+                        key={questionIndex}
+                        question={question}
+                        questionIndex={questionIndex}
+                        onQuestionChange={handleQuestionChange}
+                        onAnswerChange={handleAnswerChange}
+                        onQuestionTypeChange={handleQuestionTypeChange}
+                        onAddAnswer={addAnswer}
+                        onRemoveAnswer={removeAnswer}
+                        onRemoveQuestion={removeQuestion}
+                        canRemoveQuestion={examData.questions.length > 1}
+                        errors={errors}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-
-              {errors.questions && (
-                <p className="mb-4 text-sm text-red-600">{errors.questions}</p>
-              )}
-
-              <div className="space-y-6">
-                {examData.questions.map((question, questionIndex) => (
-                  <QuestionEditor
-                    key={questionIndex}
-                    question={question}
-                    questionIndex={questionIndex}
-                    onQuestionChange={handleQuestionChange}
-                    onAnswerChange={handleAnswerChange}
-                    onQuestionTypeChange={handleQuestionTypeChange}
-                    onAddAnswer={addAnswer}
-                    onRemoveAnswer={removeAnswer}
-                    onRemoveQuestion={removeQuestion}
-                    canRemoveQuestion={examData.questions.length > 1}
-                    errors={errors}
-                  />
-                ))}
-              </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
 
         {/* Footer */}
@@ -404,6 +492,7 @@ const QuestionEditor = ({
   onRemoveQuestion,
   canRemoveQuestion,
   errors,
+  setErrors = () => {},
 }) => {
   const questionTypes = [
     { value: "SINGLE_CHOICE", label: "اختيار واحد" },
@@ -432,6 +521,7 @@ const QuestionEditor = ({
           <label className="block bold-14 text-gray-700 mb-2">نص السؤال</label>
           <textarea
             value={question.questionText}
+            data-error={`question_${questionIndex}_text`}
             onChange={(e) =>
               onQuestionChange(questionIndex, "questionText", e.target.value)
             }
@@ -445,12 +535,14 @@ const QuestionEditor = ({
             required
           />
           {errors[`question_${questionIndex}_text`] && (
-            <p className="mt-1 text-sm text-red-600">
+            <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
+              <FiAlertCircle className="w-4 h-4" />
               {errors[`question_${questionIndex}_text`]}
-            </p>
+            </div>
           )}
         </div>
 
+        {/* Question Type and Points */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Question Type */}
           <div>
@@ -576,14 +668,26 @@ const QuestionEditor = ({
                           : answer.answerText
                       : answer.answerText
                   }
-                  onChange={(e) =>
+                  onChange={(e) => {
                     onAnswerChange(
                       questionIndex,
                       answerIndex,
                       "answerText",
                       e.target.value
-                    )
-                  }
+                    );
+                    // Clear error when user starts typing
+                    if (
+                      errors[`question_${questionIndex}_answer_${answerIndex}`]
+                    ) {
+                      setErrors((prev) => {
+                        const newErrors = { ...prev };
+                        delete newErrors[
+                          `question_${questionIndex}_answer_${answerIndex}`
+                        ];
+                        return newErrors;
+                      });
+                    }
+                  }}
                   className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
                     errors[`question_${questionIndex}_answer_${answerIndex}`]
                       ? "border-red-300"
@@ -592,7 +696,15 @@ const QuestionEditor = ({
                   placeholder="نص الإجابة"
                   disabled={question.questionType === "TRUE_FALSE"}
                   required
+                  data-error={`question_${questionIndex}_answer_${answerIndex}`}
                 />
+
+                {errors[`question_${questionIndex}_answer_${answerIndex}`] && (
+                  <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <FiAlertCircle className="w-4 h-4" />
+                    {errors[`question_${questionIndex}_answer_${answerIndex}`]}
+                  </div>
+                )}
 
                 {question.questionType !== "TRUE_FALSE" &&
                   question.answers.length > 1 && (

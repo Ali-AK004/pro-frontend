@@ -98,29 +98,39 @@ const InstructorCourseManagement = () => {
   };
 
   const handleUpdateCourse = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!permissions.canEditCourse) {
-      toast.error("ليس لديك صلاحية لتعديل الكورس");
-      return;
-    }
+  if (!permissions.canEditCourse) {
+    toast.error("ليس لديك صلاحية لتعديل الكورس");
+    return;
+  }
 
-    try {
-      setIsLoading(true);
-      await instructorAPI.courses.update(
-        instructorId,
-        selectedCourse.id,
-        editForm
-      );
-      toast.success("تم تحديث الكورس بنجاح");
-      setShowEditModal(false);
-      fetchCourses();
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحديث الكورس"));
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    setIsLoading(true);
+    const response = await instructorAPI.courses.update(
+      instructorId,
+      selectedCourse.id,
+      editForm
+    );
+    const updatedCourse = response.data;
+    
+    // Update local state immediately
+    setCourses(prev => 
+      prev.map(course => 
+        course.id === selectedCourse.id 
+          ? { ...course, ...updatedCourse } 
+          : course
+      )
+    );
+    
+    toast.success("تم تحديث الكورس بنجاح");
+    setShowEditModal(false);
+  } catch (error) {
+    toast.error(handleAPIError(error, "فشل في تحديث الكورس"));
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleSearch = () => {
     if (!searchTerm.trim()) {
@@ -173,7 +183,6 @@ const InstructorCourseManagement = () => {
       setCourseToDelete(null);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف الكورس"));
-      console.error(error);
     } finally {
       setIsLoading(false);
     }

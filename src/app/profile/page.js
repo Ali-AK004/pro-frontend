@@ -54,7 +54,6 @@ const Profile = () => {
 
         setUserLessons(response.data || []);
       } catch (error) {
-        console.error("خطأ في جلب الحصص:", error);
         setLessonsError("فشل في تحميل الحصص");
         setUserLessons([]);
       } finally {

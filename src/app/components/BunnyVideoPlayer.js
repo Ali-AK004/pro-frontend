@@ -65,10 +65,6 @@ const convertToEmbedUrl = (
   return `${embedUrl}?${params.toString()}`;
 };
 
-/**
- * Bunny.net Video Player Component
- * Uses Bunny.net's iframe player for optimal experience
- */
 const BunnyVideoPlayer = ({
   videoUrl,
   poster = null,
@@ -158,7 +154,7 @@ const BunnyVideoPlayer = ({
       style={{
         width,
         height: height === "auto" ? "auto" : height,
-        minHeight: "500px", // Ensure minimum height for controls
+        minHeight: "500px",
       }}
     >
       <div
