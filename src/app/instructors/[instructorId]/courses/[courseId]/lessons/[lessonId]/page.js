@@ -1249,10 +1249,12 @@ const VideoTab = ({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="bold-24 text-gray-900 mb-6">فيديو الدرس</h2>
+    <div className="bg-white rounded-lg shadow-sm md:p-6">
+      <h2 className="bold-24 text-gray-900 mb-6 mx-2 hidden lg:block">
+        فيديو الدرس
+      </h2>
 
-      <div className="w-full max-w-4xl mx-auto mb-4">
+      <div className="w-[calc(100% + 1px)] -mx-10 -mt-10 md:-mx-15 lg:mx-0 lg:mt-0 md:w-auto">
         <LessonVideoPlayer
           lesson={{
             id: lesson?.id,
@@ -1267,11 +1269,10 @@ const VideoTab = ({
           onVideoEnd={onVideoComplete}
           autoplay={false}
           showVideoInfo={true}
-          className="w-full"
         />
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="bg-blue-50 border mt-5 border-blue-200 rounded-lg p-4">
         <div className="flex items-center flex-col md:flex-row gap-6 justify-between">
           <div className="flex items-center gap-3">
             <FaEye className="w-5 h-5 text-blue-500" />

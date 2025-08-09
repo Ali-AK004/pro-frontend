@@ -60,6 +60,9 @@ const convertToEmbedUrl = (
     // Force controls to be always visible
     hidecontrols: "false",
     showcontrols: "true",
+    "ui-toggle": "true", // Better mobile controls
+    "ui-small": "true", // Optimized for small screens
+    "ui-high-refresh": "false", // Better mobile performance
   });
 
   return `${embedUrl}?${params.toString()}`;
@@ -72,8 +75,6 @@ const BunnyVideoPlayer = ({
   className = "",
   onVideoEnd = null,
   onLoadedMetadata = null,
-  width = "100%",
-  height = "auto",
 }) => {
   const playerContainerRef = useRef(null);
   const [embedUrl, setEmbedUrl] = useState(null);
@@ -103,20 +104,26 @@ const BunnyVideoPlayer = ({
     setLoading(false);
   }, [videoUrl, autoplay]);
 
-  // Handle iframe events
-  const handleIframeLoad = () => {
-    if (onLoadedMetadata) {
-      onLoadedMetadata();
-    }
-  };
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        // Reset player when exiting fullscreen
+        if (containerRef.current) {
+          containerRef.current.scrollIntoView();
+        }
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   // Loading state
   if (loading) {
     return (
-      <div
-        className={`relative bg-gray-900 rounded-lg overflow-hidden ${className}`}
-        style={{ width, height: height === "auto" ? "400px" : height }}
-      >
+      <div className={`relative w-full aspect-video bg-gray-900 ${className}`}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-white text-center">
             <FiLoader className="w-8 h-8 animate-spin mx-auto mb-2" />
@@ -130,17 +137,13 @@ const BunnyVideoPlayer = ({
   // Error state
   if (error || !embedUrl) {
     return (
-      <div
-        className={`relative bg-gray-900 rounded-lg overflow-hidden ${className}`}
-        style={{ width, height: height === "auto" ? "400px" : height }}
-      >
+      <div className={`relative w-full aspect-video bg-gray-900 ${className}`}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-white text-center">
             <p className="text-red-400 mb-2">Failed to load video</p>
             <p className="text-sm text-gray-400">
               {error || "Invalid video URL"}
             </p>
-            <p className="text-xs text-gray-500 mt-2">URL: {videoUrl}</p>
           </div>
         </div>
       </div>
@@ -150,32 +153,22 @@ const BunnyVideoPlayer = ({
   return (
     <div
       ref={playerContainerRef}
-      className={`relative bg-black rounded-lg overflow-hidden ${className}`}
-      style={{
-        width,
-        height: height === "auto" ? "auto" : height,
-        minHeight: "500px",
-      }}
+      className={`relative w-full min-h-[400px] aspect-video md:pb-0 h-0 md:h-auto overflow-hidden ${className}`}
     >
-      <div
-        className="relative w-full"
-        style={{ paddingBottom: "56.25%", minHeight: "500px" }}
-      >
-        <iframe
-          src={embedUrl}
-          title="Video Player"
-          allow="accelerometer; gyroscope; autoplay; encrypted-media; fullscreen;"
-          className="absolute top-0 left-0 w-full h-full border-0"
-          allowFullScreen
-          loading="lazy"
-          onLoad={handleIframeLoad}
-          style={{
-            minHeight: "500px",
-            width: "100%",
-            height: "100%",
-          }}
-        />
-      </div>
+      <iframe
+        src={embedUrl}
+        title="Video Player"
+        allow="accelerometer; gyroscope; autoplay; encrypted-media; fullscreen;"
+        className="absolute top-0 left-0 w-full h-full border-0"
+        allowFullScreen
+        loading="lazy"
+        style={{
+          // Force controls to be visible on mobile
+          minHeight: "300px",
+          // Better mobile touch handling
+          touchAction: "manipulation"
+        }}
+      />
     </div>
   );
 };

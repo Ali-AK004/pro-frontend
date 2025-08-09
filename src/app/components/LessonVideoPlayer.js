@@ -9,7 +9,6 @@ const LessonVideoPlayer = ({
   autoplay = false,
   showVideoInfo = true,
 }) => {
-
   if (!lesson) {
     return (
       <div className={`bg-gray-100 rounded-lg p-8 text-center ${className}`}>
@@ -33,10 +32,10 @@ const LessonVideoPlayer = ({
   };
 
   return (
-    <div className={className}>
-      {/* Video Info Header */}
+    <div className={`w-full ${className}`}>
+      {/* Video Info Header - Hidden on mobile */}
       {showVideoInfo && (
-        <div className="mb-4">
+        <div className="mb-4 px-4 hidden lg:block">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             {lesson.name}
           </h3>
@@ -46,16 +45,16 @@ const LessonVideoPlayer = ({
         </div>
       )}
 
-      {/* Video Player */}
-      <BunnyVideoPlayer
-        videoUrl={lesson.videoUrl}
-        poster={lesson.videoThumbnailUrl}
-        autoplay={autoplay}
-        onVideoEnd={handleVideoEnd}
-        onLoadedMetadata={() => {}}
-        className="w-full rounded-lg overflow-hidden shadow-lg"
-        height="400px"
-      />
+      {/* Video Player - Full width on all screens */}
+      <div className="w-full mx-0">
+        <BunnyVideoPlayer
+          videoUrl={lesson.videoUrl}
+          poster={lesson.videoThumbnailUrl}
+          autoplay={autoplay}
+          onVideoEnd={handleVideoEnd}
+          className="rounded-lg"
+        />
+      </div>
     </div>
   );
 };

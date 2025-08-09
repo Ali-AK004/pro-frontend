@@ -100,8 +100,7 @@ const LessonManagement = () => {
           }));
         } catch (error) {
           console.error(
-            `Error fetching lessons for course ${course.id}:`,
-            error
+            `Error fetching lessons for course ${course.id}:`
           );
           return [];
         }
@@ -111,7 +110,7 @@ const LessonManagement = () => {
       const flattenedLessons = allLessonsArrays.flat();
       setAllLessons(flattenedLessons);
     } catch (error) {
-      console.error("Error fetching all lessons:", error);
+      console.error("Error fetching all lessons");
       setAllLessons([]);
     }
   };
@@ -314,7 +313,7 @@ const LessonManagement = () => {
         isLoading: false,
       });
     } catch (error) {
-      console.error("Error fetching lesson status:", error);
+      console.error("Error fetching lesson status");
       setLessonStatus({
         hasExam: false,
         hasAssignment: false,
