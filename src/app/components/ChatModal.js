@@ -112,8 +112,8 @@ const ChatModal = ({ isOpen, onClose, initialPosition = "bottom-right" }) => {
     <>
       {/* Chat Modal */}
       <div
-        className={`fixed z-50 transition-all duration-300 left-6 bottom-0 ${
-          isMinimized ? "w-16 h-16" : "w-96 h-[600px]"
+        className={`fixed z-50 transition-all duration-300 left-0 md:left-6 bottom-0 ${
+          isMinimized ? "w-16 h-16" : "max-w-96 h-[600px]"
         }`}
         onMouseDown={handleMouseDown}
         style={{
