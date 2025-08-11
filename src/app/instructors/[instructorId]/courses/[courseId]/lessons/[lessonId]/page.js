@@ -245,6 +245,7 @@ const LessonPage = () => {
       setExamSubmitted(true);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تقديم الامتحان"));
+      console.error(error)
     } finally {
       setIsSubmitting(false);
     }
@@ -313,7 +314,7 @@ const LessonPage = () => {
             <p className="regular-16 text-gray-600 mb-4">{error}</p>
             <button
               onClick={() => router.back()}
-              className="bg-accent text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
+              className="bg-accent cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
             >
               العودة
             </button>

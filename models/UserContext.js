@@ -41,7 +41,6 @@ export function UserProvider({ children }) {
         setUser(null);
         setError(null); // No error, just not logged in
       } else {
-        toast.error("خطأ في عرض المستخدم");
         const errorMessage = handleAPIError(error, "Failed to fetch user");
         setError(errorMessage);
       }

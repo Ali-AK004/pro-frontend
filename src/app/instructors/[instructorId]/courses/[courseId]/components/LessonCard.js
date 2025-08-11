@@ -329,10 +329,13 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
         <div className="flex flex-col md:flex-col gap-2 items-center md:items-end w-full md:w-auto">
           {/* Enhanced Price Badge - Only show for students */}
           {user?.role === "STUDENT" && (
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-sm md:text-base">
-              <FaDollarSign className="w-3 h-3 md:w-4 md:h-4" />
-              {lesson.price} جنيه
-            </div>
+            <>
+              {(lesson.price !== undefined || lesson.free) && (
+                <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full bold-10">
+                  {lesson.free ? "مجاني" : `${lesson.price} جنيه`}
+                </div>
+              )}
+            </>
           )}
 
           {/* Enhanced Role Badge for non-students */}
@@ -467,10 +470,23 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
         {shouldShowPurchaseButton() && (
           <button
             onClick={() => onPurchase(lesson)}
-            className="cursor-pointer bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 md:py-4 px-6 md:px-8 rounded-xl md:rounded-2xl font-bold hover:from-green-600 hover:to-emerald-700 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm md:text-base"
+            className={`cursor-pointer text-white py-3 md:py-4 px-6 md:px-8 rounded-xl md:rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm md:text-base ${
+              lesson.free
+                ? "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+            }`}
           >
-            <FaShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
-            شراء الدرس
+            {lesson.free ? (
+              <>
+                <FaPlay className="w-4 h-4 md:w-5 md:h-5" />
+                ابدأ التعلم
+              </>
+            ) : (
+              <>
+                <FaShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
+                شراء الدرس
+              </>
+            )}
           </button>
         )}
 

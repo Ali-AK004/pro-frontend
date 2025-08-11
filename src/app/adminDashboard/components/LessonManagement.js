@@ -46,6 +46,7 @@ const LessonManagement = () => {
     photoUrl: "",
     price: "",
     videoUrl: "",
+    free: false,
     videoId: "",
     courseId: "",
   });
@@ -99,9 +100,7 @@ const LessonManagement = () => {
             courseId: course.id,
           }));
         } catch (error) {
-          console.error(
-            `Error fetching lessons for course ${course.id}:`
-          );
+          console.error(`Error fetching lessons for course ${course.id}:`);
           return [];
         }
       });
@@ -606,6 +605,24 @@ const LessonManagement = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
                     placeholder="0"
                   />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="free-lesson"
+                    checked={lessonForm.free}
+                    onChange={(e) =>
+                      setLessonForm({ ...lessonForm, free: e.target.checked })
+                    }
+                    className="w-4 h-4 text-accent rounded focus:ring-accent"
+                  />
+                  <label
+                    htmlFor="free-lesson"
+                    className="regular-14 text-gray-700"
+                  >
+                    درس مجاني
+                  </label>
                 </div>
 
                 <div>

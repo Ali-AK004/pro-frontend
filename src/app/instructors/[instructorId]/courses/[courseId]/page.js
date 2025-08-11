@@ -40,6 +40,8 @@ const CourseDetails = () => {
           await studentAPI.profile.getInstructorFullProfile(instructorId);
         const instructorData = response.data;
 
+        console.log(response.data);
+
         setInstructorData(instructorData);
 
         if (instructorData && instructorData.courses) {
@@ -68,8 +70,15 @@ const CourseDetails = () => {
 
   // Handler functions
   const handlePurchaseLesson = (lesson) => {
-    setSelectedLesson(lesson);
-    setShowPaymentModal(true);
+    if (lesson.free) {
+      router.push(
+        `/instructors/${instructorId}/courses/${courseId}/lessons/${lesson.id}`
+      );
+    } else {
+      // Show payment modal for paid lessons
+      setSelectedLesson(lesson);
+      setShowPaymentModal(true);
+    }
   };
 
   const handleViewLesson = (lesson) => {
@@ -237,9 +246,7 @@ const CourseDetails = () => {
                   <div className="relative flexCenter gap-4">
                     <FaChalkboardTeacher className="w-6 h-6 md:w-8 md:h-8 opacity-80" />
                     <div>
-                      <div className="text-base md:text-sm mb-1">
-                        المعلم
-                      </div>
+                      <div className="text-base md:text-sm mb-1">المعلم</div>
                       <div className="text-xs md:text-lg font-bold opacity-90 truncate">
                         {instructorData?.fullname || "غير محدد"}
                       </div>
