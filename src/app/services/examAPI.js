@@ -58,6 +58,10 @@ export const examAPI = {
     submit: (examId, answers) =>
       apiClient.post(`/exams/${examId}/submit`, answers),
 
+    // Get exam submission for a student
+    getSubmission: (examId, studentId) =>
+      apiClient.get(`/exams/${examId}/submissions/${studentId}`),
+
     // Get exam results (for instructors/admins)
     getResults: (examId) => apiClient.get(`/exams/${examId}/results`),
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaEyeSlash, FaRegEye } from "react-icons/fa";
 import authAPI from "../services/authAPI";
@@ -15,8 +15,23 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { fetchCurrentUser } = useUserData();
+  const { user, fetchCurrentUser } = useUserData();
   const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        await fetchCurrentUser(); // Try to fetch current user
+        if (user) {
+          router.push("/"); // Redirect if user exists
+        }
+      } catch (error) {
+        console.error("لا يوجد مستخدم");
+      }
+    };
+
+    checkAuth();
+  }, [user, router, fetchCurrentUser]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

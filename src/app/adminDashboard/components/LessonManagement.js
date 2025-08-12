@@ -119,45 +119,57 @@ const LessonManagement = () => {
     try {
       setIsLoading(true);
 
-      // Check if we have a video file for direct upload
+      // Prepare the lesson data - ensure free is boolean and price is properly set
+      const lessonData = {
+        name: lessonForm.name,
+        description: lessonForm.description,
+        photoUrl: lessonForm.photoUrl,
+        price: lessonForm.free ? "0" : lessonForm.price,
+        free: Boolean(lessonForm.free),
+        videoUrl: lessonForm.videoUrl,
+        courseId: lessonForm.courseId,
+      };
+
+      // For FormData uploads
       if (selectedVideoFile) {
-        // Use direct video upload endpoint
         const formData = new FormData();
         formData.append("file", selectedVideoFile);
-        formData.append("name", lessonForm.name);
-        formData.append("description", lessonForm.description);
-        formData.append("price", lessonForm.price);
-        if (lessonForm.photoUrl)
-          formData.append("photoUrl", lessonForm.photoUrl);
-        formData.append("videoTitle", lessonForm.name); // Use lesson name as video title
-        formData.append("videoDescription", lessonForm.description);
+        formData.append("name", lessonData.name);
+        formData.append("description", lessonData.description);
+        formData.append("price", lessonData.price);
+        formData.append("free", lessonData.free.toString()); // Explicit string conversion
+
+        if (lessonData.photoUrl)
+          formData.append("photoUrl", lessonData.photoUrl);
+        formData.append("courseId", lessonData.courseId);
 
         await adminAPI.lessons.createWithVideo(
-          lessonForm.courseId,
+          lessonData.courseId,
           formData,
-          (progress) => {
-            setUploadProgress(progress);
-          }
+          (progress) => setUploadProgress(progress)
         );
       } else {
-        // Use regular lesson creation (for URL-based videos)
-        await adminAPI.lessons.create(lessonForm.courseId, lessonForm);
+        // For regular JSON payload
+        await adminAPI.lessons.create(lessonData.courseId, lessonData);
       }
 
       toast.success("تم إنشاء الدرس بنجاح");
       setShowCreateModal(false);
+      // Reset form
       setLessonForm({
         name: "",
         description: "",
         photoUrl: "",
         price: "",
         videoUrl: "",
+        free: false,
         videoId: "",
         courseId: "",
       });
       setSelectedVideoFile(null);
-      fetchAllLessons(); // Refresh the lessons dropdown data
+      fetchAllLessons();
     } catch (error) {
+      console.error("Create lesson error:", error);
       toast.error(handleAPIError(error, "فشل في إنشاء الدرس"));
     } finally {
       setIsLoading(false);
@@ -591,7 +603,7 @@ const LessonManagement = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="">
                   <label className="block bold-14 text-gray-900 mb-2">
-                    السعر *
+                    السعر {lessonForm.free ? "(مجاني)" : "*"}
                   </label>
                   <input
                     type="number"
@@ -602,7 +614,10 @@ const LessonManagement = () => {
                     onChange={(e) =>
                       setLessonForm({ ...lessonForm, price: e.target.value })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                    disabled={lessonForm.free}
+                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
+                      lessonForm.free ? "bg-gray-100" : ""
+                    }`}
                     placeholder="0"
                   />
                 </div>
@@ -612,9 +627,14 @@ const LessonManagement = () => {
                     type="checkbox"
                     id="free-lesson"
                     checked={lessonForm.free}
-                    onChange={(e) =>
-                      setLessonForm({ ...lessonForm, free: e.target.checked })
-                    }
+                    onChange={(e) => {
+                      const isFree = e.target.checked;
+                      setLessonForm({
+                        ...lessonForm,
+                        free: isFree,
+                        price: isFree ? "0" : lessonForm.price,
+                      });
+                    }}
                     className="w-4 h-4 text-accent rounded focus:ring-accent"
                   />
                   <label

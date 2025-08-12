@@ -27,11 +27,13 @@ import { studentAPI } from "@/app/services/studentAPI";
 import examAPI, { handleAPIError } from "@/app/services/examAPI";
 import assignmentAPI from "@/app/services/assignmentAPI";
 import LessonVideoPlayer from "../../../../../../components/LessonVideoPlayer";
+import { useUserData } from "../../../../../../../../models/UserContext";
 
 const LessonPage = () => {
   const params = useParams();
   const router = useRouter();
   const { instructorId, courseId, lessonId } = params;
+  const { user } = useUserData();
 
   // State management
   const [lessonData, setLessonData] = useState(null);
@@ -216,17 +218,9 @@ const LessonPage = () => {
         lessonData.exam.id,
         formattedAnswers
       );
-      setExamResult(response.data);
+      // setExamResult(response.data);
 
       if (response.data.passed) {
-        if (isAutoSubmit) {
-          toast.success(
-            "انتهى الوقت! تم تقديم الامتحان تلقائياً - تهانينا لقد نجحت!"
-          );
-        } else {
-          toast.success("تهانينا! لقد اجتزت الامتحان بنجاح");
-        }
-        // Refresh lesson data to update progress
         await fetchLessonData();
         setActiveTab("video");
       } else {
@@ -245,11 +239,31 @@ const LessonPage = () => {
       setExamSubmitted(true);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تقديم الامتحان"));
-      console.error(error)
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const fetchExamSubmission = async () => {
+    try {
+      if (lessonData?.exam?.id) {
+        const studentId = user.id;
+        const submission = await examAPI.exams.getSubmission(
+          lessonData.exam.id,
+          studentId
+        );
+        setExamResult(submission.data);
+      }
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تحميل نتائج الامتحان"));
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "exam" && lessonData?.exam?.id) {
+      fetchExamSubmission();
+    }
+  }, [activeTab, lessonData?.exam?.id]);
 
   // Handle assignment submission
   const handleAssignmentSubmit = async () => {
@@ -260,10 +274,11 @@ const LessonPage = () => {
 
     try {
       setIsSubmitting(true);
-      await assignmentAPI.assignments.submit(
+      const response = await assignmentAPI.assignments.submit(
         lessonData.assignment.id,
         assignmentSubmission
       );
+
       toast.success("تم تسليم الواجب بنجاح");
       // Refresh lesson data
       await fetchLessonData();
@@ -284,6 +299,16 @@ const LessonPage = () => {
       await fetchLessonData();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تسجيل مشاهدة الفيديو"));
+    }
+  };
+
+  const loadAssignmentData = async () => {
+    try {
+      const response = await studentAPI.lessons.getAssignment(lessonId);
+      return response.data;
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تحميل بيانات الواجب"));
+      return null;
     }
   };
 
@@ -463,6 +488,7 @@ const LessonPage = () => {
                 accessError={accessError}
                 instructorData={instructorData}
                 accessExpiry={accessExpiry}
+                loadAssignmentData={loadAssignmentData}
               />
             )}
 
@@ -480,6 +506,7 @@ const LessonPage = () => {
                 startExamTimer={startExamTimer}
                 formatTimeRemaining={formatTimeRemaining}
                 examSubmitted={examSubmitted}
+                fetchExamSubmission={fetchExamSubmission}
               />
             )}
 
@@ -502,6 +529,7 @@ const LessonPage = () => {
                 onSubmit={handleAssignmentSubmit}
                 isSubmitting={isSubmitting}
                 canAccess={canAccessAssignment}
+                loadAssignmentData={loadAssignmentData}
               />
             )}
           </div>
@@ -844,69 +872,149 @@ const ExamTab = ({
 
   if (examResult) {
     return (
-      <div
-        className={`rounded-3xl shadow-2xl border p-12 relative overflow-hidden ${
-          examResult.passed
-            ? "bg-gradient-to-r from-green-50 to-emerald-50 border-green-200/50"
-            : "bg-gradient-to-r from-red-50 to-pink-50 border-red-200/50"
-        }`}
-      >
-        <div
-          className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl ${
-            examResult.passed
-              ? "bg-gradient-to-br from-green-400/20 to-emerald-400/20"
-              : "bg-gradient-to-br from-red-400/20 to-pink-400/20"
-          }`}
-        ></div>
-
-        <div className="relative text-center">
+      <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="text-center mb-8">
           <div
-            className={`inline-flex items-center justify-center w-32 h-32 rounded-full mb-8 shadow-2xl ${
+            className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-6 ${
               examResult.passed
-                ? "bg-gradient-to-r from-green-500 to-emerald-600"
-                : "bg-gradient-to-r from-red-500 to-pink-600"
+                ? "bg-green-100 text-green-600"
+                : "bg-red-100 text-red-600"
             }`}
           >
             {examResult.passed ? (
-              <FaCheckCircle className="w-16 h-16 text-white" />
+              <FaCheckCircle className="w-12 h-12" />
             ) : (
-              <FaExclamationTriangle className="w-16 h-16 text-white" />
+              <FaExclamationTriangle className="w-12 h-12" />
             )}
           </div>
-
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
             {examResult.passed ? "تهانينا! لقد نجحت" : "لم تنجح في الامتحان"}
           </h2>
+          <p className="text-gray-600">
+            {examResult.lessonName} - {examResult.examTitle}
+          </p>
+        </div>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-white/50 shadow-lg">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="text-center">
-                <div
-                  className={`text-5xl font-bold mb-2 ${
-                    examResult.passed ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {examResult.score}%
-                </div>
-                <p className="text-gray-600 font-medium">درجتك</p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-gray-700 mb-2">
-                  {exam.passingScore}%
-                </div>
-                <p className="text-gray-600 font-medium">
-                  درجة النجاح المطلوبة
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4">معلومات التقديم</h3>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm text-gray-500">وقت التقديم</p>
+                <p className="font-medium">
+                  {(() => {
+                    try {
+                      const [year, month, day, hours, minutes, seconds] =
+                        examResult.submissionTime;
+                      const date = new Date(
+                        year,
+                        month - 1,
+                        day,
+                        hours,
+                        minutes,
+                        seconds
+                      );
+
+                      return date.toLocaleString("ar-EG", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: true,
+                      });
+                    } catch {
+                      return "غير محدد";
+                    }
+                  })()}
                 </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">عدد المحاولات</p>
+                <p className="font-medium">{examResult.attemptNumber}</p>
               </div>
             </div>
           </div>
 
-          {!examResult.passed && (
-            <p className="regular-14 text-gray-600">
-              يمكنك إعادة المحاولة مرة أخرى
-            </p>
-          )}
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4">النتيجة</h3>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm text-gray-500">درجتك</p>
+                <p
+                  className={`text-2xl font-bold ${
+                    examResult.passed ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {examResult.score}%
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">درجة النجاح</p>
+                <p className="font-medium">{examResult.passingScore}%</p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4">تفاصيل الإجابات</h3>
+          <div className="space-y-4">
+            {Object.entries(examResult.questionResults || {}).map(
+              ([questionId, result]) => (
+                <div
+                  key={questionId}
+                  className={`p-4 border rounded-lg ${
+                    result.correct
+                      ? "bg-green-50 border-green-200"
+                      : "bg-red-50 border-red-200"
+                  }`}
+                >
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="font-medium">{result.questionText}</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        إجابتك: {examResult.studentAnswers[questionId]}
+                      </p>
+                      {result.feedback && (
+                        <p className="text-sm text-gray-700 mt-2">
+                          <span className="font-medium">تعليق:</span>{" "}
+                          {result.feedback}
+                        </p>
+                      )}
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full flexCenter text-sm ${
+                        result.correct
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {result.correct ? "صحيح" : "خطأ"}
+                    </span>
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+
+        {!examResult.passed && (
+          <div className="text-center">
+            <button
+              onClick={() => {
+                setExamResult(null);
+                setExamSubmitted(false);
+                setExamAnswers({});
+                setActiveTab("exam");
+              }}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              إعادة المحاولة
+            </button>
+          </div>
+        )}
       </div>
     );
   }
@@ -1316,7 +1424,29 @@ const AssignmentTab = ({
   onSubmit,
   isSubmitting,
   canAccess,
+  loadAssignmentData,
 }) => {
+  const [assignmentData, setAssignmentData] = useState(null);
+  const [isLoadingAssignment, setIsLoadingAssignment] = useState(false);
+
+  useEffect(() => {
+    const fetchAssignmentData = async () => {
+      setIsLoadingAssignment(true);
+      try {
+        const data = await loadAssignmentData();
+        setAssignmentData(data);
+      } catch (error) {
+        toast.error("خطأ في عرض بيانات الواجب");
+      } finally {
+        setIsLoadingAssignment(false);
+      }
+    };
+
+    if (canAccess) {
+      fetchAssignmentData();
+    }
+  }, [canAccess]);
+
   if (!canAccess) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -1327,6 +1457,14 @@ const AssignmentTab = ({
             تحتاج إلى مشاهدة الفيديو أولاً للوصول إلى الواجب
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (isLoadingAssignment) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-6 flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
       </div>
     );
   }
@@ -1344,7 +1482,9 @@ const AssignmentTab = ({
 
   const isOverdue =
     assignment.dueDate && new Date(assignment.dueDate) < new Date();
-  const isSubmitted = assignment.submissionText && assignment.submissionDate;
+
+  const isSubmitted =
+    assignmentData?.submissionText && assignmentData?.submissionDate;
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
@@ -1386,19 +1526,20 @@ const AssignmentTab = ({
           </div>
         </div>
 
-        {assignment.grade !== null && assignment.grade !== undefined && (
-          <div className="bg-green-50 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <FaGraduationCap className="w-5 h-5 text-green-500" />
-              <div>
-                <h4 className="bold-14 text-green-800">الدرجة</h4>
-                <p className="regular-12 text-green-600">
-                  {assignment.grade} من {assignment.maxPoints}
-                </p>
+        {assignmentData?.grade !== null &&
+          assignmentData?.grade !== undefined && (
+            <div className="bg-green-50 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <FaGraduationCap className="w-5 h-5 text-green-500" />
+                <div>
+                  <h4 className="bold-14 text-green-800">الدرجة</h4>
+                  <p className="regular-12 text-green-600">
+                    {assignmentData.grade} من {assignment.maxPoints}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
 
       {/* Submission Status */}
@@ -1409,18 +1550,20 @@ const AssignmentTab = ({
             <h3 className="bold-18 text-green-800">تم التسليم</h3>
           </div>
           <p className="regular-14 text-green-700 mb-3">
-            تم تسليم الواجب في: {formatDate(assignment.submissionDate)}
+            تم تسليم الواجب في: {formatDate(assignmentData.submissionDate)}
           </p>
           <div className="bg-white rounded-lg p-4">
             <h4 className="bold-14 text-gray-900 mb-2">إجابتك:</h4>
             <p className="regular-14 text-gray-700 whitespace-pre-wrap">
-              {assignment.submissionText}
+              {assignmentData.submissionText}
             </p>
           </div>
-          {assignment.feedback && (
+          {assignmentData.feedback && (
             <div className="bg-blue-50 rounded-lg p-4 mt-4">
               <h4 className="bold-14 text-blue-900 mb-2">تعليق المدرس:</h4>
-              <p className="regular-14 text-blue-700">{assignment.feedback}</p>
+              <p className="regular-14 text-blue-700 whitespace-pre-wrap">
+                {assignmentData.feedback}
+              </p>
             </div>
           )}
         </div>
@@ -1441,7 +1584,7 @@ const AssignmentTab = ({
             <button
               onClick={onSubmit}
               disabled={!submission.trim() || isSubmitting || isOverdue}
-              className={`px-6 py-2 rounded-lg bold-14 transition-colors ${
+              className={`px-6 py-2 rounded-lg cursor-pointer bold-14 transition-colors ${
                 submission.trim() && !isSubmitting && !isOverdue
                   ? "bg-accent text-white hover:bg-opacity-90"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"

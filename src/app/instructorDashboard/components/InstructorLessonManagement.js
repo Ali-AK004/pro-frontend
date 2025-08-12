@@ -61,6 +61,7 @@ const InstructorLessonManagement = () => {
     description: "",
     photoUrl: "",
     price: "",
+    free: false,
     videoUrl: "",
     videoId: "",
     courseId: "",
@@ -134,39 +135,49 @@ const InstructorLessonManagement = () => {
     try {
       setIsLoading(true);
 
+      // Prepare the lesson data with explicit type conversion
+      const lessonData = {
+        name: lessonForm.name,
+        description: lessonForm.description,
+        photoUrl: lessonForm.photoUrl,
+        price: lessonForm.free ? "0" : lessonForm.price,
+        free: Boolean(lessonForm.free), // Force boolean conversion
+        videoUrl: lessonForm.videoUrl,
+        courseId: lessonForm.courseId,
+      };
+
       // Check if we have a video file for direct upload
       if (selectedVideoFile) {
-        // Use direct video upload endpoint
         const formData = new FormData();
         formData.append("file", selectedVideoFile);
-        formData.append("name", lessonForm.name);
-        formData.append("description", lessonForm.description);
-        formData.append("price", lessonForm.price);
-        if (lessonForm.photoUrl)
-          formData.append("photoUrl", lessonForm.photoUrl);
-        formData.append("videoTitle", lessonForm.name); // Use lesson name as video title
-        formData.append("videoDescription", lessonForm.description);
+        formData.append("name", lessonData.name);
+        formData.append("description", lessonData.description);
+        formData.append("price", lessonData.price);
+        formData.append("free", lessonData.free.toString()); // Explicit string conversion
+
+        if (lessonData.photoUrl)
+          formData.append("photoUrl", lessonData.photoUrl);
+        formData.append("courseId", lessonData.courseId);
 
         await instructorAPI.lessons.createWithVideo(
-          lessonForm.courseId,
+          lessonData.courseId,
           formData,
-          (progress) => {
-            setUploadProgress(progress);
-          }
+          (progress) => setUploadProgress(progress)
         );
       } else {
-        // Use regular lesson creation (for URL-based videos)
-        await instructorAPI.lessons.create(lessonForm.courseId, lessonForm);
+        await instructorAPI.lessons.create(lessonData.courseId, lessonData);
       }
 
       toast.success("تم إنشاء الدرس بنجاح");
       setShowCreateModal(false);
+      // Reset form
       setLessonForm({
         name: "",
         description: "",
         photoUrl: "",
         price: "",
         videoUrl: "",
+        free: false,
         videoId: "",
         courseId: "",
       });
@@ -618,7 +629,7 @@ const InstructorLessonManagement = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block bold-14 text-gray-900 mb-2">
-                    السعر *
+                    السعر {lessonForm.free ? "(مجاني)" : "*"}
                   </label>
                   <input
                     type="number"
@@ -629,9 +640,29 @@ const InstructorLessonManagement = () => {
                     onChange={(e) =>
                       setLessonForm({ ...lessonForm, price: e.target.value })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                    disabled={lessonForm.free}
+                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent ${
+                      lessonForm.free ? "bg-gray-100" : ""
+                    }`}
                     placeholder="0"
                   />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="free-lesson"
+                    checked={lessonForm.free}
+                    onChange={(e) =>
+                      setLessonForm({ ...lessonForm, free: e.target.checked })
+                    }
+                    className="w-4 h-4 text-accent rounded focus:ring-accent"
+                  />
+                  <label
+                    htmlFor="free-lesson"
+                    className="regular-14 text-gray-700"
+                  >
+                    درس مجاني
+                  </label>
                 </div>
                 <div>
                   <label className="block bold-14 text-gray-900 mb-2">
