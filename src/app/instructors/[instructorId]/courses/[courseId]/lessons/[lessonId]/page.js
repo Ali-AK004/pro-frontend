@@ -201,42 +201,40 @@ const LessonPage = () => {
         setExamTimerInterval(null);
       }
 
-      // Convert exam answers to the format expected by backend
+      // Convert exam answers
       const formattedAnswers = {};
       Object.keys(examAnswers).forEach((questionId) => {
         const answer = examAnswers[questionId];
-        if (Array.isArray(answer)) {
-          // Multiple choice: convert array to comma-separated string
-          formattedAnswers[questionId] = answer.join(",");
-        } else {
-          // Single choice or true/false: use as is
-          formattedAnswers[questionId] = answer;
-        }
+        formattedAnswers[questionId] = Array.isArray(answer)
+          ? answer.join(",")
+          : answer;
       });
 
+      // Submit exam
       const response = await examAPI.exams.submit(
         lessonData.exam.id,
         formattedAnswers
       );
-      // setExamResult(response.data);
 
-      if (response.data.passed) {
-        await fetchLessonData();
-        setActiveTab("video");
-      } else {
-        if (isAutoSubmit) {
-          toast.error(
-            `انتهى الوقت! تم تقديم الامتحان تلقائياً - درجتك: ${response.data.score}%`
-          );
-        } else {
-          toast.error(`لم تجتز الامتحان. درجتك: ${response.data.score}%`);
-        }
-      }
+      // Immediately after submission, fetch the latest results
+      const submission = await examAPI.exams.getSubmission(
+        lessonData.exam.id,
+        user.id
+      );
 
-      // Reset exam state and mark as submitted
+      // Update state with the fetched results
+      setExamResult(submission.data);
+      setExamSubmitted(true);
       setExamStarted(false);
       setTimeRemaining(0);
-      setExamSubmitted(true);
+
+      // Show appropriate message
+      if (submission.data.passed) {
+        await fetchLessonData();
+        toast.success(`تهانينا! لقد نجحت - درجتك: ${submission.data.score}%`);
+      } else {
+        toast.error(`لم تجتز الامتحان. الدرجة: ${submission.data.score}%`);
+      }
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تقديم الامتحان"));
     } finally {
@@ -255,7 +253,7 @@ const LessonPage = () => {
         setExamResult(submission.data);
       }
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل نتائج الامتحان"));
+      console.log(handleAPIError(error, "فشل في تحميل نتائج الامتحان"));
     }
   };
 
@@ -498,6 +496,9 @@ const LessonPage = () => {
                 examAnswers={examAnswers}
                 setExamAnswers={setExamAnswers}
                 examResult={examResult}
+                setExamSubmitted={setExamSubmitted}
+                setExamResult={setExamResult}
+                setActiveTab={setActiveTab}
                 onSubmit={handleExamSubmit}
                 isSubmitting={isSubmitting}
                 canAccess={canAccessExam}
@@ -792,7 +793,17 @@ const ExamTab = ({
   startExamTimer,
   formatTimeRemaining,
   examSubmitted,
+  setActiveTab,
+  setExamSubmitted,
+  setExamResult,
+  fetchExamSubmission,
 }) => {
+  useEffect(() => {
+    if (examSubmitted && !examResult) {
+      fetchExamSubmission();
+    }
+  }, [examSubmitted, examResult, fetchExamSubmission]);
+
   if (!canAccess) {
     return (
       <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-3xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
@@ -821,56 +832,8 @@ const ExamTab = ({
     );
   }
 
-  // Show submitted state if exam was submitted but no result yet
-  if (examSubmitted && !examResult) {
-    return (
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl shadow-2xl border border-blue-200/50 p-12 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-2xl"></div>
-
-        <div className="relative text-center">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl mb-8 shadow-lg">
-            <FaCheckCircle className="w-12 h-12 text-white" />
-          </div>
-
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            تم تقديم الامتحان
-          </h2>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-white/50 shadow-lg max-w-2xl mx-auto">
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-lg font-semibold text-gray-700">
-                جاري تصحيح الامتحان...
-              </span>
-            </div>
-
-            <p className="text-gray-600 leading-relaxed mb-6">
-              تم تقديم إجاباتك بنجاح. يتم الآن تصحيح الامتحان وستظهر النتيجة
-              قريباً.
-            </p>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-              <div className="flex items-start gap-3">
-                <FaCheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-bold text-blue-800 mb-2">
-                    تم التقديم بنجاح
-                  </h4>
-                  <ul className="text-blue-700 space-y-2 text-right">
-                    <li>• تم حفظ جميع إجاباتك</li>
-                    <li>• سيتم إعلامك بالنتيجة فور الانتهاء من التصحيح</li>
-                    <li>• يمكنك متابعة باقي محتويات الدرس</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (examResult) {
+    const questionResults = examResult.questionResults || {};
     return (
       <div className="bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
@@ -961,8 +924,11 @@ const ExamTab = ({
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">تفاصيل الإجابات</h3>
           <div className="space-y-4">
-            {Object.entries(examResult.questionResults || {}).map(
-              ([questionId, result]) => (
+            {Object.entries(questionResults).map(([questionId, result]) => {
+              const studentAnswer =
+                examResult.studentAnswers?.[questionId] || "لا توجد إجابة";
+
+              return (
                 <div
                   key={questionId}
                   className={`p-4 border rounded-lg ${
@@ -971,11 +937,13 @@ const ExamTab = ({
                       : "bg-red-50 border-red-200"
                   }`}
                 >
-                  <div className="flex justify-between">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{result.questionText}</p>
+                      <p className="font-medium">
+                        {result.questionText || "سؤال بدون نص"}
+                      </p>
                       <p className="text-sm text-gray-600 mt-1">
-                        إجابتك: {examResult.studentAnswers[questionId]}
+                        إجابتك: {studentAnswer}
                       </p>
                       {result.feedback && (
                         <p className="text-sm text-gray-700 mt-2">
@@ -985,7 +953,7 @@ const ExamTab = ({
                       )}
                     </div>
                     <span
-                      className={`px-3 py-1 rounded-full flexCenter text-sm ${
+                      className={`p-3 rounded-full flexCenter text-sm ${
                         result.correct
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
@@ -995,8 +963,8 @@ const ExamTab = ({
                     </span>
                   </div>
                 </div>
-              )
-            )}
+              );
+            })}
           </div>
         </div>
 
@@ -1009,7 +977,7 @@ const ExamTab = ({
                 setExamAnswers({});
                 setActiveTab("exam");
               }}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              className="bg-blue-600 text-white px-6 py-3 cursor-pointer rounded-lg hover:bg-blue-700 transition-colors"
             >
               إعادة المحاولة
             </button>
@@ -1080,7 +1048,7 @@ const ExamTab = ({
               معلومات الامتحان
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600 mb-2">
                   {exam.questions?.length || 0}
@@ -1095,14 +1063,14 @@ const ExamTab = ({
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600 mb-2">
-                  {exam.timeLimitMinutes || 60}
+                  {exam.timeLimitMinutes || "غير محدد"}
                 </div>
                 <p className="text-gray-600 font-medium">دقيقة</p>
               </div>
-              <div className="text-center">
+              {/* <div className="text-center">
                 <div className="text-3xl font-bold text-orange-600 mb-2">1</div>
                 <p className="text-gray-600 font-medium">محاولة واحدة</p>
-              </div>
+              </div> */}
             </div>
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
@@ -1114,7 +1082,8 @@ const ExamTab = ({
                   </h4>
                   <ul className="text-yellow-700 space-y-2 text-right">
                     <li>
-                      • لديك {exam.timeLimitMinutes || 60} دقيقة لإكمال الامتحان
+                      • لديك {exam.timeLimitMinutes || "غير محدد"} دقيقة لإكمال
+                      الامتحان
                     </li>
                     <li>• سيتم تقديم الامتحان تلقائياً عند انتهاء الوقت</li>
                     <li>• لا يمكن إيقاف المؤقت بعد البدء</li>
@@ -1127,7 +1096,7 @@ const ExamTab = ({
 
             <button
               onClick={() => startExamTimer(exam.timeLimitMinutes || 60)}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 px-8 rounded-2xl font-bold text-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 px-8 rounded-2xl font-bold text-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
             >
               <FaPlay className="w-6 h-6 inline-block ml-3" />
               بدء الامتحان
@@ -1300,7 +1269,7 @@ const ExamTab = ({
           <button
             onClick={onSubmit}
             disabled={!allQuestionsAnswered || isSubmitting}
-            className={`group relative inline-flex items-center gap-3 px-12 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
+            className={`group relative inline-flex items-center gap-3 px-12 py-4 rounded-2xl font-bold text-lg transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
               allQuestionsAnswered && !isSubmitting
                 ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -1320,7 +1289,7 @@ const ExamTab = ({
           </button>
 
           {!allQuestionsAnswered && (
-            <div className="mt-6 inline-flex items-center gap-2 bg-red-50 text-red-700 px-6 py-3 rounded-2xl border border-red-200">
+            <div className="mt-6 flex items-center gap-2 bg-red-50 text-red-700 px-6 py-3 rounded-2xl border border-red-200">
               <FaExclamationTriangle className="w-5 h-5" />
               <span className="font-semibold">
                 يرجى الإجابة على جميع الأسئلة قبل التقديم

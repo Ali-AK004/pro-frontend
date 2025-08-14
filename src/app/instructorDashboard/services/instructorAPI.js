@@ -249,6 +249,42 @@ export const instructorAPI = {
       apiClient.delete(`/${instructorId}/access-codes/${codeId}`),
   },
 
+  // Photo Management
+  photos: {
+    // Upload a photo
+    upload: (file, title = "", description = "") => {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (title) formData.append("title", title);
+      if (description) formData.append("description", description);
+
+      return generalApiClient.post("/photos/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 60000, // 1 minute timeout for photo uploads
+      });
+    },
+
+    // Get photo by ID
+    getPhoto: (photoId) => generalApiClient.get(`/photos/${photoId}`),
+
+    // Delete photo
+    deletePhoto: (photoId) => generalApiClient.delete(`/photos/${photoId}`),
+
+    // Generate secure URL
+    getSecureUrl: (photoId, expirationSeconds = 86400) =>
+      generalApiClient.get(
+        `/photos/${photoId}/secure-url?expirationSeconds=${expirationSeconds}`
+      ),
+
+    // Get thumbnail URL
+    getThumbnailUrl: (photoId, width = 320, height = 180) =>
+      generalApiClient.get(
+        `/photos/${photoId}/thumbnail?width=${width}&height=${height}`
+      ),
+  },
+
   // Profile Management
   profile: {
     // Get instructor profile by ID (for assistants to view instructor data)

@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import apiConfig, { API_ENDPOINTS } from "@/config/api";
 import { handleAPIError } from "../services/adminAPI";
+import { toast } from "react-toastify";
 
 const AdminSidebar = ({ activeTab, setActiveTab }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -44,11 +45,15 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
         )
         .catch(() => {}); // Ignore any errors
 
+      closeMenus();
+
       // Redirect to home page
       router.replace("/");
+      window.location.href = "/";
     } catch (error) {
       toast.error(handleAPIError(error, "فشل تسجيل الخروج"));
       router.replace("/");
+      window.location.href = "/";
     }
   };
 

@@ -42,12 +42,15 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
           }
         )
         .catch(() => {}); // Ignore any errors
+      closeMenus();
 
       // Redirect to home page
       router.replace("/");
+      window.location.href = "/";
     } catch (error) {
       toast.error("خطأ في تسجيل الخروج");
       router.replace("/");
+      window.location.href = "/";
     }
   };
 

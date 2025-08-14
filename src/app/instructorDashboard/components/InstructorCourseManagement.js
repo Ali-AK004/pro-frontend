@@ -32,6 +32,8 @@ const InstructorCourseManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [courseToDelete, setCourseToDelete] = useState(null);
+  const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
+  const [editPhotoFile, setEditPhotoFile] = useState(null);
 
   const instructorId = getInstructorId(user);
   const permissions = getRolePermissions(user?.role);
@@ -85,10 +87,26 @@ const InstructorCourseManagement = () => {
 
     try {
       setIsLoading(true);
-      await instructorAPI.courses.create(instructorId, courseForm);
+
+      let response;
+      if (selectedPhotoFile) {
+        const formData = new FormData();
+        formData.append("file", selectedPhotoFile);
+        formData.append("name", courseForm.name);
+        formData.append("description", courseForm.description);
+
+        response = await instructorAPI.courses.createWithImage(
+          instructorId,
+          formData
+        );
+      } else {
+        response = await instructorAPI.courses.create(instructorId, courseForm);
+      }
+
       toast.success("تم إنشاء الكورس بنجاح");
       setShowCreateModal(false);
       setCourseForm({ name: "", description: "", photoUrl: "" });
+      setSelectedPhotoFile(null);
       fetchCourses();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء الكورس"));
@@ -98,39 +116,71 @@ const InstructorCourseManagement = () => {
   };
 
   const handleUpdateCourse = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!permissions.canEditCourse) {
-    toast.error("ليس لديك صلاحية لتعديل الكورس");
-    return;
-  }
+    if (!permissions.canEditCourse) {
+      toast.error("ليس لديك صلاحية لتعديل الكورس");
+      return;
+    }
 
-  try {
-    setIsLoading(true);
-    const response = await instructorAPI.courses.update(
-      instructorId,
-      selectedCourse.id,
-      editForm
-    );
-    const updatedCourse = response.data;
-    
-    // Update local state immediately
-    setCourses(prev => 
-      prev.map(course => 
-        course.id === selectedCourse.id 
-          ? { ...course, ...updatedCourse } 
-          : course
-      )
-    );
-    
-    toast.success("تم تحديث الكورس بنجاح");
-    setShowEditModal(false);
-  } catch (error) {
-    toast.error(handleAPIError(error, "فشل في تحديث الكورس"));
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      setIsLoading(true);
+      const response = await instructorAPI.courses.update(
+        instructorId,
+        selectedCourse.id,
+        editForm
+      );
+      const updatedCourse = response.data;
+
+      // Update local state immediately
+      setCourses((prev) =>
+        prev.map((course) =>
+          course.id === selectedCourse.id
+            ? { ...course, ...updatedCourse }
+            : course
+        )
+      );
+
+      toast.success("تم تحديث الكورس بنجاح");
+      setShowEditModal(false);
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تحديث الكورس"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePhotoUploaded = (photoData, isEdit = false) => {
+    if (isEdit) {
+      setEditForm((prev) => ({
+        ...prev,
+        photoUrl: photoData.url || photoData.secureUrl,
+      }));
+    } else {
+      setCourseForm((prev) => ({
+        ...prev,
+        photoUrl: photoData.url || photoData.secureUrl,
+      }));
+    }
+    toast.success("تم رفع صورة الكورس بنجاح");
+  };
+
+  const handlePhotoRemoved = (isEdit = false) => {
+    if (isEdit) {
+      setEditPhotoFile(null);
+      setEditForm((prev) => ({
+        ...prev,
+        photoUrl: "",
+      }));
+    } else {
+      setSelectedPhotoFile(null);
+      setCourseForm((prev) => ({
+        ...prev,
+        photoUrl: "",
+      }));
+    }
+    toast.success("تم حذف صورة الكورس");
+  };
 
   const handleSearch = () => {
     if (!searchTerm.trim()) {
@@ -411,14 +461,12 @@ const InstructorCourseManagement = () => {
                 <label className="block bold-14 text-gray-900 mb-2">
                   رابط صورة الكورس
                 </label>
-                <input
-                  type="url"
-                  value={courseForm.photoUrl}
-                  onChange={(e) =>
-                    setCourseForm({ ...courseForm, photoUrl: e.target.value })
+                <PhotoUpload
+                  onPhotoUploaded={(photoData) =>
+                    handlePhotoUploaded(photoData, false)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                  placeholder="https://example.com/image.jpg"
+                  onPhotoRemoved={() => handlePhotoRemoved(false)}
+                  currentPhotoUrl={courseForm.photoUrl}
                 />
               </div>
 
@@ -491,13 +539,12 @@ const InstructorCourseManagement = () => {
                 <label className="block bold-14 text-gray-900 mb-2">
                   رابط صورة الكورس
                 </label>
-                <input
-                  type="url"
-                  value={editForm.photoUrl}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, photoUrl: e.target.value })
+                <PhotoUpload
+                  onPhotoUploaded={(photoData) =>
+                    handlePhotoUploaded(photoData, true)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  onPhotoRemoved={() => handlePhotoRemoved(true)}
+                  currentPhotoUrl={editForm.photoUrl}
                 />
               </div>
 

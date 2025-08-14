@@ -34,13 +34,21 @@ const NavBar = () => {
             withCredentials: true,
             headers: { "Content-Type": "application/json" },
           }
-        );
+        )
+        .catch(() => {}); // Silently handle any logout API errors
 
-      // Redirect to home page
+      // Close any open menus
+      closeMenus();
+
+      // Redirect to home page with force refresh
       router.replace("/");
+
+      window.location.href = "/";
     } catch (error) {
       toast.error("فشل في تسجيل الخروج");
       router.replace("/");
+      // Still force refresh even on error
+      window.location.href = "/";
     }
   };
 

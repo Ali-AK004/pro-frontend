@@ -64,7 +64,7 @@ const ExamManagement = () => {
             lessonsResponse.data?.content || lessonsResponse.data || [];
           allLessons = [...allLessons, ...courseLessons];
         } catch (error) {
-            handleAPIError(error, ` ${course.id} :فشل في تحميل دروس كورس`)
+          handleAPIError(error, ` ${course.id} :فشل في تحميل دروس كورس`);
         }
       }
 
@@ -320,7 +320,7 @@ const ExamManagement = () => {
                 </div>
 
                 {/* Exam Stats */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
                   <div className="flex items-center gap-2">
                     <FiClock className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
                     <span className="regular-10 sm:regular-12 text-gray-600">
@@ -337,12 +337,6 @@ const ExamManagement = () => {
                     <FiBook className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500" />
                     <span className="regular-10 sm:regular-12 text-gray-600">
                       {exam.questions?.length || 0} سؤال
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FiUsers className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500" />
-                    <span className="regular-10 sm:regular-12 text-gray-600">
-                      {exam.submissionCount || 0} محاولة
                     </span>
                   </div>
                 </div>
