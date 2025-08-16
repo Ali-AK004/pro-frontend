@@ -20,8 +20,8 @@ const LessonExpirationManagement = () => {
   const [daysFilter, setDaysFilter] = useState(7);
   const [showExtendModal, setShowExtendModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  const [selectedLesson, setSelectedLesson] = useState(null);
+  const [selectedStudent, setSelectedStudent] = useState("");
+  const [selectedLesson, setSelectedLesson] = useState("");
   const [additionalDays, setAdditionalDays] = useState(7);
   const [studentId, setStudentId] = useState("");
   const [lessonId, setLessonId] = useState("");
