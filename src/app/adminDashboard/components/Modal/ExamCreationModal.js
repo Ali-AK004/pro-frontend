@@ -13,7 +13,6 @@ import {
 } from "react-icons/fi";
 
 const ExamCreationModal = ({
-  isOpen,
   onClose,
   onSubmit,
   lessons,

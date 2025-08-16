@@ -9,15 +9,12 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   FiPlus,
-  FiSearch,
   FiEdit,
   FiEye,
   FiBook,
   FiFileText,
   FiX,
-  FiDelete,
 } from "react-icons/fi";
-import Link from "next/link";
 import { getInstructorId, getRolePermissions } from "../../utils/roleHelpers";
 import SecureSearchInput from "@/app/components/SecureSearchInput";
 import PhotoUpload from "./PhotoUpload";
@@ -260,7 +257,6 @@ const InstructorCourseManagement = () => {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="dark"
         transition={Slide}
         className={`z-50`}
       />

@@ -14,7 +14,6 @@ import {
 import {
   sanitizeInput,
   validateSearchTerm,
-  debounce,
 } from "../../utils/security";
 import Image from "next/image";
 

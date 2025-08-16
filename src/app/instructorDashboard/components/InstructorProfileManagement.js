@@ -23,7 +23,6 @@ const InstructorProfileManagement = () => {
   const [instructorData, setInstructorData] = useState(null);
 
   const instructorId = getInstructorId(user);
-  const permissions = getRolePermissions(user?.role);
   const isAssistant = user?.role === "ASSISTANT";
   const canEditProfile = !isAssistant; // Only instructors can edit their profile
 

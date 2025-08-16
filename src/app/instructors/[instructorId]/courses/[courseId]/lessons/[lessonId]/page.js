@@ -16,7 +16,6 @@ import {
   FaBook,
   FaGraduationCap,
   FaEye,
-  FaDownload,
   FaStar,
   FaCheck,
   FaClock,

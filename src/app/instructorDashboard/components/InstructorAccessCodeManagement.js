@@ -9,7 +9,6 @@ import {
   FiPlus,
   FiCopy,
   FiDownload,
-  FiSearch,
   FiX,
   FiCheck,
   FiClock,
@@ -80,31 +79,6 @@ const InstructorAccessCodeManagement = () => {
       setCourses(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
-    }
-  };
-
-  const fetchLessonsForCourse = async (courseId) => {
-    if (!courseId) {
-      return;
-    }
-
-    try {
-      const response = await instructorAPI.courses.getLessons(courseId);
-      setLessons((prev) => {
-        // Remove old lessons for this course
-        const filtered = prev.filter((l) => l.course?.id !== courseId);
-        // Add new lessons with course association
-        const newLessons = response.data.map((lesson) => ({
-          ...lesson,
-          course: {
-            id: courseId,
-            name: courses.find((c) => c.id === courseId)?.name || "",
-          },
-        }));
-        return [...filtered, ...newLessons];
-      });
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
     }
   };
 
@@ -199,19 +173,6 @@ const InstructorAccessCodeManagement = () => {
       setIsLoading(false);
     }
   };
-
-  const handleSearch = () => {
-    // Reset pagination when searching
-    setPagination((prev) => ({
-      ...prev,
-      page: 0,
-      hasMore: true,
-    }));
-
-    // Fetch fresh data
-    fetchAccessCodes();
-  };
-
   const copyToClipboard = (code) => {
     navigator.clipboard
       .writeText(code)
@@ -273,7 +234,6 @@ const InstructorAccessCodeManagement = () => {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="dark"
         transition={Slide}
         className={`z-50`}
       />

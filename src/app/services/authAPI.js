@@ -49,7 +49,7 @@ class AuthAPI {
       await apiService.post(API_ENDPOINTS.AUTH.LOGOUT);
     } catch (error) {
       // Continue with logout even if API call fails
-      console.warn('Logout API call failed:', error);
+      console.warn('Logout API call failed');
     } finally {
       // Always clear local tokens
       apiService.clearAuthToken();
@@ -150,7 +150,7 @@ class AuthAPI {
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.role || payload.authorities?.[0] || null;
     } catch (error) {
-      console.warn('Failed to decode JWT token:', error);
+      console.warn('Failed to decode JWT token:');
       return null;
     }
   }
@@ -164,7 +164,7 @@ class AuthAPI {
       const payload = JSON.parse(atob(token.split('.')[1]));
       return payload.sub || payload.userId || payload.id || null;
     } catch (error) {
-      console.warn('Failed to decode JWT token:', error);
+      console.warn('Failed to decode JWT token:');
       return null;
     }
   }
@@ -179,7 +179,7 @@ class AuthAPI {
       const currentTime = Date.now() / 1000;
       return payload.exp < currentTime;
     } catch (error) {
-      console.warn('Failed to decode JWT token:', error);
+      console.warn('Failed to decode JWT token:');
       return true;
     }
   }

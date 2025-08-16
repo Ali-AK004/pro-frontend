@@ -9,10 +9,8 @@ import {
   FaArrowLeft,
 } from "react-icons/fa";
 import { studentAPI, handleAPIError } from "../services/studentAPI";
-import { toast } from "react-toastify";
 import Link from "next/link";
 import NavBar from "../components/navBar";
-import SecureSearchInput from "../components/SecureSearchInput";
 import InstructorSearchInput from "../components/InstructorSearchInput";
 
 const Instructors = () => {

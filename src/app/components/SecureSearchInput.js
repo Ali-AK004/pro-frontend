@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { FiSearch } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 

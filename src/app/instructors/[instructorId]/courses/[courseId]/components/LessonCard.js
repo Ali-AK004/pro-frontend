@@ -79,11 +79,6 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
             canAccessAssignment: true,
           });
         } catch (error) {
-          // If enhanced access fails, still allow access but without progress
-          console.log(
-            "Enhanced access granted but couldn't fetch lesson details:",
-            error
-          );
           setLessonProgress({
             progressStatus: LessonProgressStatus.ASSIGNMENT_DONE,
             canAccessVideo: true,

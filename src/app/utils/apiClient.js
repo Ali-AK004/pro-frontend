@@ -43,14 +43,6 @@ const createOptimizedClient = (baseURL = BASE_CONFIG.baseURL) => {
       // Calculate request duration
       const endTime = new Date();
       const duration = endTime - response.config.metadata.startTime;
-
-      // Log slow requests (> 2 seconds)
-      if (duration > 2000) {
-        console.warn(
-          `Slow API request: ${response.config.url} took ${duration}ms`
-        );
-      }
-
       return response;
     },
     (error) => {
@@ -64,22 +56,6 @@ const createOptimizedClient = (baseURL = BASE_CONFIG.baseURL) => {
           }
         }
       }
-
-      // Log API errors for monitoring (but not 401 for /auth/me)
-      if (
-        !(
-          error.response?.status === 401 &&
-          error.config?.url?.includes("/auth/me")
-        )
-      ) {
-        console.error("API Error:", {
-          url: error.config?.url,
-          method: error.config?.method,
-          status: error.response?.status,
-          message: error.response?.data?.message || error.message,
-        });
-      }
-
       return Promise.reject(error);
     }
   );

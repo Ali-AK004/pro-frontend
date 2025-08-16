@@ -8,8 +8,6 @@ import {
   FiCode,
   FiActivity,
 } from "react-icons/fi";
-import Link from "next/link";
-import { FaArrowLeftLong } from "react-icons/fa6";
 
 const DashboardOverview = ({ setActiveTab }) => {
   const [stats, setStats] = useState({

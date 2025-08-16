@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { FiMessageCircle, FiX } from "react-icons/fi";
+import { FiMessageCircle } from "react-icons/fi";
 import ChatModal from "./ChatModal";
 import { useUserData } from "../../../models/UserContext";
 

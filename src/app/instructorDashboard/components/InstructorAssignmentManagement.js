@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { instructorAPI, handleAPIError } from "../services/instructorAPI";
 import { assignmentAPI } from "../../services/assignmentAPI";
 import { useUserData } from "../../../../models/UserContext";
 import { toast } from "react-toastify";
 import {
   FiPlus,
-  FiSearch,
   FiEdit,
   FiTrash2,
   FiEye,
@@ -17,12 +16,10 @@ import {
   FiAward,
   FiUsers,
   FiCalendar,
-  FiCheckCircle,
   FiAlertCircle,
 } from "react-icons/fi";
 import AssignmentCreationModal from "../../adminDashboard/components/Modal/AssignmentCreationModal";
 import { getInstructorId, getRolePermissions } from "../../utils/roleHelpers";
-import SecureSearchInput from "@/app/components/SecureSearchInput";
 
 const InstructorAssignmentManagement = React.memo(() => {
   const { user } = useUserData();
@@ -206,7 +203,6 @@ const InstructorAssignmentManagement = React.memo(() => {
       if (Array.isArray(submissions)) {
         setAssignmentSubmissions(submissions);
       } else {
-        console.warn("API response is not an array:", response.data);
         setAssignmentSubmissions([]);
       }
 

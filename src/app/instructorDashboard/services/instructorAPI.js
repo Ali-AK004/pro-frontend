@@ -1,5 +1,5 @@
 import axios from "axios";
-import { sanitizeInput, validateSearchTerm } from "../../utils/security";
+import { validateSearchTerm } from "../../utils/security";
 import { apiConfig } from "../../../config/api";
 
 const BASE_URL = `${apiConfig.baseURL}/instructors`;

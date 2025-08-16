@@ -9,8 +9,6 @@ import {
   FiCode,
   FiLogOut,
   FiUser,
-  FiBarChart,
-  FiUsers,
   FiEdit,
   FiMenu,
   FiX,

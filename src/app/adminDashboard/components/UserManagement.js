@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { adminAPI, handleAPIError } from "../services/adminAPI";
 import { toast } from "react-toastify";
 import {
@@ -17,11 +17,6 @@ import {
   FiChevronDown,
   FiChevronUp,
 } from "react-icons/fi";
-import {
-  sanitizeInput,
-  validateSearchTerm,
-  debounce,
-} from "../../utils/security";
 
 const UserManagement = () => {
   const [activeUserType, setActiveUserType] = useState("students");

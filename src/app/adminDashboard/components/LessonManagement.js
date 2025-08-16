@@ -14,7 +14,6 @@ import {
   FiEye,
   FiX,
   FiBook,
-  FiVideo,
   FiHash,
 } from "react-icons/fi";
 import Image from "next/image";
@@ -65,7 +64,6 @@ const LessonManagement = () => {
   const [editVideoFile, setEditVideoFile] = useState(null);
 
   useEffect(() => {
-    // Only fetch courses and all lessons for the dropdown, don't load lessons for display
     fetchCourses();
     fetchAllLessons();
   }, []);
@@ -119,7 +117,7 @@ const LessonManagement = () => {
     try {
       setIsLoading(true);
 
-      // Prepare the lesson data - ensure free is boolean and price is properly set
+      // Prepare the lesson data
       const lessonData = {
         name: lessonForm.name,
         description: lessonForm.description,
@@ -137,7 +135,7 @@ const LessonManagement = () => {
         formData.append("name", lessonData.name);
         formData.append("description", lessonData.description);
         formData.append("price", lessonData.price);
-        formData.append("free", lessonData.free.toString()); // Explicit string conversion
+        formData.append("free", lessonData.free.toString());
 
         if (lessonData.photoUrl)
           formData.append("photoUrl", lessonData.photoUrl);

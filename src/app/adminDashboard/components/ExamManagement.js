@@ -3,14 +3,12 @@ import { adminAPI, handleAPIError } from "../services/adminAPI";
 import { toast } from "react-toastify";
 import {
   FiPlus,
-  FiSearch,
   FiEdit,
   FiTrash2,
   FiX,
   FiBook,
   FiClock,
   FiAward,
-  FiUsers,
   FiBarChart,
 } from "react-icons/fi";
 import ExamCreationModal from "./Modal/ExamCreationModal";

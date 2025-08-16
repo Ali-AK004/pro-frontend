@@ -4,7 +4,6 @@ import { useUserData } from "../../../../models/UserContext";
 import { toast } from "react-toastify";
 import {
   FiPlus,
-  FiSearch,
   FiEdit,
   FiTrash2,
   FiX,
@@ -15,7 +14,6 @@ import {
   FiBarChart,
 } from "react-icons/fi";
 import ExamCreationModal from "../../adminDashboard/components/Modal/ExamCreationModal";
-import SecureSearchInput from "@/app/components/SecureSearchInput";
 
 const InstructorExamManagement = () => {
   const { user } = useUserData();

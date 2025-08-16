@@ -18,7 +18,6 @@ import {
   FiMenu,
   FiX,
 } from "react-icons/fi";
-import Link from "next/link";
 import apiConfig, { API_ENDPOINTS } from "@/config/api";
 import { handleAPIError } from "../services/adminAPI";
 import { toast } from "react-toastify";
@@ -33,7 +32,6 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       // Clear frontend state immediately
       clearUser();
 
-      // Make logout request (don't wait for response)
       axios
         .post(
           `${apiConfig.baseURL}${API_ENDPOINTS.AUTH.LOGOUT}`,
@@ -43,7 +41,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
             headers: { "Content-Type": "application/json" },
           }
         )
-        .catch(() => {}); // Ignore any errors
+        .catch(() => {});
 
       closeMenus();
 

@@ -72,10 +72,6 @@ html {
 }
 
 
-.videoPlayerHeight {
-  height: calc(100% - 65px);
-}
-
 @layer utilities {
   .max-container {
     @apply mx-auto max-w-[1440px];
@@ -110,14 +106,6 @@ html {
     @apply text-[12px] font-[400];
   }
 
-  .bold-64 {
-    @apply text-[64px] font-[700] leading-[150%];
-  }
-
-  .bold-40 {
-    @apply text-[40px] font-[700] leading-[120%];
-  }
-
   .bold-32 {
     @apply text-[32px] font-[700] leading-[120%];
   }
@@ -149,11 +137,7 @@ html {
   .bg-accent {
     @apply bg-[#088395];
   }
-
-  .text-main {
-    @apply text-[#f8f9fa];
-  }
-
+  
   .text-secondary {
     @apply text-[#87ceeb];
   }

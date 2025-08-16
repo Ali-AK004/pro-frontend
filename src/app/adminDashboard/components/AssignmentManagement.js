@@ -4,7 +4,6 @@ import { assignmentAPI } from "../../services/assignmentAPI";
 import { toast } from "react-toastify";
 import {
   FiPlus,
-  FiSearch,
   FiEdit,
   FiTrash2,
   FiEye,
@@ -12,7 +11,6 @@ import {
   FiFileText,
   FiClock,
   FiAward,
-  FiUsers,
   FiCalendar,
   FiAlertCircle,
 } from "react-icons/fi";

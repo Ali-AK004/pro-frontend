@@ -6,7 +6,6 @@ import {
   FaArrowLeft,
   FaPlay,
   FaChalkboardTeacher,
-  FaStar,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

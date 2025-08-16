@@ -3,7 +3,6 @@ import { adminAPI, handleAPIError } from "../services/adminAPI";
 import { toast } from "react-toastify";
 import {
   FiPlus,
-  FiSearch,
   FiCode,
   FiCopy,
   FiDownload,
@@ -179,18 +178,6 @@ const AccessCodeManagement = () => {
     URL.revokeObjectURL(url);
 
     toast.success("تم تحميل الأكواد بنجاح");
-  };
-
-  const handleSearch = () => {
-    // Reset pagination when searching
-    setPagination((prev) => ({
-      ...prev,
-      page: 0,
-      hasMore: true,
-    }));
-
-    // Fetch fresh data with new filters
-    fetchAccessCodes();
   };
 
   const handleDeleteCode = (codeId) => {

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import AIChat from "./AIChat";
-import { FiMessageCircle, FiX, FiMinimize2, FiMaximize2 } from "react-icons/fi";
+import { FiMessageCircle } from "react-icons/fi";
 
 const ChatModal = ({ isOpen, onClose, initialPosition = "bottom-right" }) => {
   const [isMinimized, setIsMinimized] = useState(false);

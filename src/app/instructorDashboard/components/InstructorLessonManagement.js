@@ -10,15 +10,12 @@ import VideoUpload from "../../components/VideoUpload";
 import VideoFileSelector from "../../components/VideoFileSelector";
 import {
   FiPlus,
-  FiSearch,
   FiEdit,
   FiEye,
   FiFileText,
   FiPlay,
-  FiDollarSign,
   FiX,
   FiBook,
-  FiVideo,
 } from "react-icons/fi";
 import Image from "next/image";
 import { MdDeleteForever } from "react-icons/md";
@@ -30,13 +27,6 @@ const InstructorLessonManagement = () => {
   const [courses, setCourses] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingStates, setLoadingStates] = useState({
-    courses: false,
-    lessons: false,
-    creating: false,
-    updating: false,
-    deleting: false,
-  });
   const [uploadProgress, setUploadProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -46,6 +36,7 @@ const InstructorLessonManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [lessonToDelete, setLessonToDelete] = useState(null);
+  const [lessonStatusCache, setLessonStatusCache] = useState({});
   const [lessonStatus, setLessonStatus] = useState({
     hasExam: false,
     hasAssignment: false,
@@ -255,7 +246,6 @@ const InstructorLessonManagement = () => {
   }, [handleSearch]);
 
   // Cache lesson status to avoid repeated API calls
-  const [lessonStatusCache, setLessonStatusCache] = useState({});
 
   const fetchLessonStatus = async (lessonId) => {
     // Check cache first
@@ -396,7 +386,6 @@ const InstructorLessonManagement = () => {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="dark"
         transition={Slide}
         className={`z-50`}
       />

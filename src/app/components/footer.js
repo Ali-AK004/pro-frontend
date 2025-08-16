@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  FaGraduationCap,
   FaPhone,
   FaEnvelope,
   FaMapMarkerAlt,
@@ -42,7 +41,7 @@ const Footer = ({ id }) => {
             </p>
             <div className="flex items-center justify-center md:justify-start gap-4">
               <a
-                href="https://www.facebook.com/profile.php?id=61578988888252"
+                href="https://www.facebook.com/profile.php?id=61579145144491"
                 className="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 target="_blank"
                 rel="noopener noreferrer"

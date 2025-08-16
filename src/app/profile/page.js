@@ -12,7 +12,6 @@ import {
   FaClock,
   FaPlay,
   FaImage,
-  FaStar,
   FaChalkboardTeacher,
   FaUserShield,
 } from "react-icons/fa";
