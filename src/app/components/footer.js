@@ -7,11 +7,11 @@ import {
   FaFacebook,
   FaTwitter,
   FaInstagram,
-  FaLinkedin,
   FaWhatsapp,
   FaYoutube,
 } from "react-icons/fa";
 import Link from "next/link";
+import Image from "next/image";
 
 const Footer = ({ id }) => {
   return (
@@ -29,8 +29,8 @@ const Footer = ({ id }) => {
           {/* Company Info */}
           <div className="lg:col-span-2">
             <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <FaGraduationCap className="w-7 h-7 text-white" />
+              <div className="w-12 h-12 flex items-center justify-center">
+                <Image src={"/logo.png"} width={225} height={206} alt="logo" />
               </div>
               <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 أكادميتنا

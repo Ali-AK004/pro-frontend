@@ -33,8 +33,8 @@ const InstructorCourseManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [courseToDelete, setCourseToDelete] = useState(null);
-  const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
-  const [editPhotoFile, setEditPhotoFile] = useState(null);
+  // const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
+  // const [editPhotoFile, setEditPhotoFile] = useState(null);
 
   const instructorId = getInstructorId(user);
   const permissions = getRolePermissions(user?.role);
@@ -86,49 +86,25 @@ const InstructorCourseManagement = () => {
       return;
     }
 
+    if (!courseForm.photoUrl) {
+      toast.error("يجب إضافة رابط صورة الكورس");
+      return;
+    }
+
     try {
       setIsLoading(true);
+      const response = await instructorAPI.courses.create(
+        instructorId,
+        courseForm
+      );
 
-      // Prepare the request data
-      const requestData = {
-        name: courseForm.name,
-        description: courseForm.description,
-      };
-
-      let response;
-      if (selectedPhotoFile) {
-        // Use FormData for file upload
-        const formData = new FormData();
-        formData.append(
-          "request",
-          new Blob([JSON.stringify(requestData)], {
-            type: "application/json",
-          })
-        );
-        formData.append("imageFile", selectedPhotoFile);
-
-        response = await instructorAPI.courses.createWithImage(
-          instructorId,
-          formData
-        );
-
-        console.log(response)
-      } else {
-        // Regular JSON request without image
-        response = await instructorAPI.courses.create(
-          instructorId,
-          requestData
-        );
-      }
+      setCourses((prevCourses) => [response.data, ...prevCourses]);
 
       toast.success("تم إنشاء الكورس بنجاح");
       setShowCreateModal(false);
       setCourseForm({ name: "", description: "", photoUrl: "" });
-      setSelectedPhotoFile(null);
-      fetchCourses();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء الكورس"));
-      console.error(error)
     } finally {
       setIsLoading(false);
     }
@@ -139,6 +115,11 @@ const InstructorCourseManagement = () => {
 
     if (!permissions.canEditCourse) {
       toast.error("ليس لديك صلاحية لتعديل الكورس");
+      return;
+    }
+
+    if (!editForm.photoUrl) {
+      toast.error("يجب إضافة رابط صورة الكورس");
       return;
     }
 
@@ -169,37 +150,37 @@ const InstructorCourseManagement = () => {
     }
   };
 
-  const handlePhotoUploaded = (photoData, isEdit = false) => {
-    if (isEdit) {
-      setEditForm((prev) => ({
-        ...prev,
-        photoUrl: photoData.url || photoData.secureUrl,
-      }));
-    } else {
-      setCourseForm((prev) => ({
-        ...prev,
-        photoUrl: photoData.url || photoData.secureUrl,
-      }));
-    }
-    toast.success("تم رفع صورة الكورس بنجاح");
-  };
+  // const handlePhotoUploaded = (photoData, isEdit = false) => {
+  //   if (isEdit) {
+  //     setEditForm((prev) => ({
+  //       ...prev,
+  //       photoUrl: photoData.url || photoData.secureUrl,
+  //     }));
+  //   } else {
+  //     setCourseForm((prev) => ({
+  //       ...prev,
+  //       photoUrl: photoData.url || photoData.secureUrl,
+  //     }));
+  //   }
+  //   toast.success("تم رفع صورة الكورس بنجاح");
+  // };
 
-  const handlePhotoRemoved = (isEdit = false) => {
-    if (isEdit) {
-      setEditPhotoFile(null);
-      setEditForm((prev) => ({
-        ...prev,
-        photoUrl: "",
-      }));
-    } else {
-      setSelectedPhotoFile(null);
-      setCourseForm((prev) => ({
-        ...prev,
-        photoUrl: "",
-      }));
-    }
-    toast.success("تم حذف صورة الكورس");
-  };
+  // const handlePhotoRemoved = (isEdit = false) => {
+  //   if (isEdit) {
+  //     setEditPhotoFile(null);
+  //     setEditForm((prev) => ({
+  //       ...prev,
+  //       photoUrl: "",
+  //     }));
+  //   } else {
+  //     setSelectedPhotoFile(null);
+  //     setCourseForm((prev) => ({
+  //       ...prev,
+  //       photoUrl: "",
+  //     }));
+  //   }
+  //   toast.success("تم حذف صورة الكورس");
+  // };
 
   const handleSearch = () => {
     if (!searchTerm.trim()) {
@@ -246,8 +227,13 @@ const InstructorCourseManagement = () => {
     try {
       setIsLoading(true);
       await instructorAPI.courses.delete(instructorId, courseToDelete.id);
+
+      // Remove the deleted course from local state
+      setCourses((prevCourses) =>
+        prevCourses.filter((course) => course.id !== courseToDelete.id)
+      );
+
       toast.success("تم حذف الكورس بنجاح");
-      fetchCourses();
       setShowDeleteModal(false);
       setCourseToDelete(null);
     } catch (error) {
@@ -478,17 +464,21 @@ const InstructorCourseManagement = () => {
 
               <div>
                 <label className="block bold-14 text-gray-900 mb-2">
-                  رابط صورة الكورس
+                  رابط صورة الكورس *
                 </label>
-                <PhotoUpload
-                  onFileSelected={(file) => setSelectedPhotoFile(file)}
-                  onRemove={() => {
-                    setSelectedPhotoFile(null);
-                    setCourseForm((prev) => ({ ...prev, photoUrl: "" }));
-                  }}
-                  currentPhotoUrl={courseForm.photoUrl}
-                  isRequired={false}
+                <input
+                  type="url"
+                  required
+                  value={courseForm.photoUrl}
+                  onChange={(e) =>
+                    setCourseForm({ ...courseForm, photoUrl: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  placeholder="أدخل رابط صورة الكورس"
                 />
+                {!courseForm.photoUrl && (
+                  <p className="text-red-500 text-sm mt-1">رابط الصورة مطلوب</p>
+                )}
               </div>
 
               <div className="flex gap-4 pt-4">
@@ -558,15 +548,21 @@ const InstructorCourseManagement = () => {
 
               <div>
                 <label className="block bold-14 text-gray-900 mb-2">
-                  رابط صورة الكورس
+                  رابط صورة الكورس *
                 </label>
-                <PhotoUpload
-                  onPhotoUploaded={(photoData) =>
-                    handlePhotoUploaded(photoData, true)
+                <input
+                  type="url"
+                  required
+                  value={editForm.photoUrl}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, photoUrl: e.target.value })
                   }
-                  onPhotoRemoved={() => handlePhotoRemoved(true)}
-                  currentPhotoUrl={editForm.photoUrl}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  placeholder="أدخل رابط صورة الكورس"
                 />
+                {!editForm.photoUrl && (
+                  <p className="text-red-500 text-sm mt-1">رابط الصورة مطلوب</p>
+                )}
               </div>
 
               <div className="flex gap-4 pt-4">

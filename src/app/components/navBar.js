@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  FaGraduationCap,
   FaBars,
   FaTimes,
   FaUser,
@@ -13,6 +12,7 @@ import axios from "axios";
 import { useUserData } from "../../../models/UserContext";
 import apiConfig, { API_ENDPOINTS } from "@/config/api";
 import { toast } from "react-toastify";
+import Image from "next/image";
 
 const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -74,8 +74,8 @@ const NavBar = () => {
             href="/"
             className="flex items-center gap-3 hover:opacity-80 transition-all duration-300 group"
           >
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-              <FaGraduationCap className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Image src={"/logo.png"} width={225} height={206} alt="logo" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               أكاديميتنا

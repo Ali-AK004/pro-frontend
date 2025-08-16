@@ -5,6 +5,7 @@ import { FaEyeSlash, FaRegEye } from "react-icons/fa";
 import authAPI from "../services/authAPI";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import Image from "next/image";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -72,7 +73,7 @@ const SignUp = () => {
         }));
       }
     } catch (error) {
-      toast.error("خطأ في مراجعة اسم المستخدم")
+      toast.error("خطأ في مراجعة اسم المستخدم");
     } finally {
       setIsCheckingUsername(false);
     }
@@ -207,11 +208,20 @@ const SignUp = () => {
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
           {/* Header with gradient */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12 text-center">
-            <Link href="/" className="inline-block mb-4">
-              <div className="px-10 py-2 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center mx-auto">
-                <span className="text-2xl font-bold text-white">أكادميتنا</span>
-              </div>
-            </Link>
+            <div className="inline-block mb-4 bg-white/20 rounded-md px-5 py-2 backdrop-blur-sm">
+              <Link href="/" className="flexCenter gap-2">
+                <Image
+                  src={"/logo.png"}
+                  width={225}
+                  height={206}
+                  alt="logo"
+                  className="w-15 h-15 object-contain"
+                />
+                <span className="text-2xl font-bold text-white">
+                  أكاديميتنا
+                </span>
+              </Link>
+            </div>
             <h2 className="text-3xl font-bold text-white mb-2">
               انضم إلى عائلة أكادميتنا
             </h2>
