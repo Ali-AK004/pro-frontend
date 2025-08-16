@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { getInstructorId, getRolePermissions } from "../../utils/roleHelpers";
 import SecureSearchInput from "@/app/components/SecureSearchInput";
+import PhotoUpload from "./PhotoUpload";
 
 const InstructorCourseManagement = () => {
   const { user } = useUserData();
@@ -88,19 +89,36 @@ const InstructorCourseManagement = () => {
     try {
       setIsLoading(true);
 
+      // Prepare the request data
+      const requestData = {
+        name: courseForm.name,
+        description: courseForm.description,
+      };
+
       let response;
       if (selectedPhotoFile) {
+        // Use FormData for file upload
         const formData = new FormData();
-        formData.append("file", selectedPhotoFile);
-        formData.append("name", courseForm.name);
-        formData.append("description", courseForm.description);
+        formData.append(
+          "request",
+          new Blob([JSON.stringify(requestData)], {
+            type: "application/json",
+          })
+        );
+        formData.append("imageFile", selectedPhotoFile);
 
         response = await instructorAPI.courses.createWithImage(
           instructorId,
           formData
         );
+
+        console.log(response)
       } else {
-        response = await instructorAPI.courses.create(instructorId, courseForm);
+        // Regular JSON request without image
+        response = await instructorAPI.courses.create(
+          instructorId,
+          requestData
+        );
       }
 
       toast.success("تم إنشاء الكورس بنجاح");
@@ -110,6 +128,7 @@ const InstructorCourseManagement = () => {
       fetchCourses();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء الكورس"));
+      console.error(error)
     } finally {
       setIsLoading(false);
     }
@@ -410,8 +429,8 @@ const InstructorCourseManagement = () => {
 
       {/* Create Course Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/20 bg-opacity-50 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">إنشاء كورس جديد</h2>
               <button
@@ -462,11 +481,13 @@ const InstructorCourseManagement = () => {
                   رابط صورة الكورس
                 </label>
                 <PhotoUpload
-                  onPhotoUploaded={(photoData) =>
-                    handlePhotoUploaded(photoData, false)
-                  }
-                  onPhotoRemoved={() => handlePhotoRemoved(false)}
+                  onFileSelected={(file) => setSelectedPhotoFile(file)}
+                  onRemove={() => {
+                    setSelectedPhotoFile(null);
+                    setCourseForm((prev) => ({ ...prev, photoUrl: "" }));
+                  }}
                   currentPhotoUrl={courseForm.photoUrl}
+                  isRequired={false}
                 />
               </div>
 

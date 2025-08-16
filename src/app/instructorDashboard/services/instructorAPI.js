@@ -121,6 +121,12 @@ export const instructorAPI = {
     create: (instructorId, data) =>
       apiClient.post(`/${instructorId}/courses`, data),
 
+    createWithImage: (instructorId, formData) =>
+      apiClient.post(`/${instructorId}/courses/with-image`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }),
     // Get instructor's courses with caching and deduplication
     getByInstructor: (instructorId) => {
       const cacheKey = `courses_${instructorId}`;

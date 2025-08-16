@@ -3,27 +3,22 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiUpload, FiX, FiImage } from "react-icons/fi";
 import { toast } from "react-toastify";
-import { instructorAPI } from "../services/instructorAPI";
 
 const PhotoUpload = ({
-  onPhotoUploaded,
-  onPhotoRemoved,
-  currentPhotoId = null,
+  onFileSelected,
+  onRemove,
   currentPhotoUrl = null,
   isRequired = false,
 }) => {
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [photoUrl, setPhotoUrl] = useState(currentPhotoUrl);
-  const [photoId, setPhotoId] = useState(currentPhotoId);
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     setPhotoUrl(currentPhotoUrl);
-    setPhotoId(currentPhotoId);
-  }, [currentPhotoUrl, currentPhotoId]);
+  }, [currentPhotoUrl]);
 
-  const handleFileChange = async (e) => {
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -39,46 +34,24 @@ const PhotoUpload = ({
       return;
     }
 
-    try {
-      setIsUploading(true);
-      setUploadProgress(0);
+    setSelectedFile(file);
 
-      // Upload the photo
-      const response = await instructorAPI.photos.upload(file, "Lesson Photo");
-      const photoData = response.data;
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setPhotoUrl(previewUrl);
 
-      setPhotoId(photoData.id);
-      setPhotoUrl(photoData.url || photoData.secureUrl);
-
-      if (onPhotoUploaded) {
-        onPhotoUploaded(photoData);
-      }
-
-      toast.success("تم رفع الصورة بنجاح");
-    } catch (error) {
-      toast.error("فشل في رفع الصورة: " + error.message);
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
+    if (onFileSelected) {
+      onFileSelected(file);
     }
   };
 
-  const handleRemovePhoto = async () => {
-    if (!photoId) {
-      setPhotoUrl(null);
-      if (onPhotoRemoved) onPhotoRemoved();
-      return;
+  const handleRemovePhoto = () => {
+    if (selectedFile) {
+      setSelectedFile(null);
+      URL.revokeObjectURL(photoUrl); // Clean up memory
     }
-
-    try {
-      await instructorAPI.photos.deletePhoto(photoId);
-      setPhotoId(null);
-      setPhotoUrl(null);
-      if (onPhotoRemoved) onPhotoRemoved();
-      toast.success("تم حذف الصورة بنجاح");
-    } catch (error) {
-      toast.error("فشل في حذف الصورة: " + error.message);
-    }
+    setPhotoUrl(null);
+    if (onRemove) onRemove();
   };
 
   const triggerFileInput = () => {
@@ -119,15 +92,6 @@ const PhotoUpload = ({
           <p className="text-gray-500 text-sm">
             {isRequired ? "اضغط لرفع صورة (مطلوب)" : "اضغط لرفع صورة (اختياري)"}
           </p>
-        </div>
-      )}
-
-      {isUploading && (
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
-          <div
-            className="bg-blue-600 h-2.5 rounded-full"
-            style={{ width: `${uploadProgress}%` }}
-          ></div>
         </div>
       )}
 
