@@ -105,11 +105,28 @@ const InstructorLessonManagement = () => {
     try {
       setIsLoading(true);
       const response = await instructorAPI.courses.getLessons(selectedCourse);
-      const lessonsData = response.data || [];
+
+      // Validate and filter the response data
+      const lessonsData = (response.data || [])
+        .filter((lesson) => lesson && lesson.id) // Ensure lesson exists and has an id
+        .map((lesson) => ({
+          id: lesson.id,
+          name: lesson.name || "Untitled Lesson",
+          description: lesson.description || "",
+          photoUrl: lesson.photoUrl || null,
+          price: lesson.price || "0",
+          videoUrl: lesson.videoUrl || "",
+          videoId: lesson.videoId || "",
+          courseName: lesson.courseName || "No Course",
+          // Add any other required fields with defaults
+        }));
+
       setLessons(lessonsData);
-      setOriginalLessons(lessonsData); // Store original for search
+      setOriginalLessons(lessonsData);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
+      setLessons([]);
+      setOriginalLessons([]);
     } finally {
       setIsLoading(false);
     }
@@ -125,58 +142,57 @@ const InstructorLessonManagement = () => {
 
     try {
       setIsLoading(true);
+      console.log("Creating lesson...");
 
-      // Prepare the lesson data with explicit type conversion
-      const lessonData = {
-        name: lessonForm.name,
-        description: lessonForm.description,
-        photoUrl: lessonForm.photoUrl,
-        price: lessonForm.free ? "0" : lessonForm.price,
-        free: Boolean(lessonForm.free), // Force boolean conversion
-        videoUrl: lessonForm.videoUrl,
-        courseId: lessonForm.courseId,
-      };
-
-      // Check if we have a video file for direct upload
+      let res;
       if (selectedVideoFile) {
+        console.log("Uploading with video...");
         const formData = new FormData();
         formData.append("file", selectedVideoFile);
-        formData.append("name", lessonData.name);
-        formData.append("description", lessonData.description);
-        formData.append("price", lessonData.price);
-        formData.append("free", lessonData.free.toString()); // Explicit string conversion
+        formData.append("name", lessonForm.name);
+        formData.append("description", lessonForm.description);
+        formData.append("price", lessonForm.free ? "0" : lessonForm.price);
+        formData.append("free", lessonForm.free.toString());
+        if (lessonForm.photoUrl)
+          formData.append("photoUrl", lessonForm.photoUrl);
+        formData.append("courseId", lessonForm.courseId);
 
-        if (lessonData.photoUrl)
-          formData.append("photoUrl", lessonData.photoUrl);
-        formData.append("courseId", lessonData.courseId);
-
-        await instructorAPI.lessons.createWithVideo(
-          lessonData.courseId,
+        res = await instructorAPI.lessons.createWithVideo(
+          lessonForm.courseId,
           formData,
-          (progress) => setUploadProgress(progress)
+          (progress) => {
+            console.log("Upload progress:", progress);
+            setUploadProgress(progress);
+          }
         );
       } else {
-        await instructorAPI.lessons.create(lessonData.courseId, lessonData);
+        console.log("Uploading without video...");
+        res = await instructorAPI.lessons.create(
+          lessonForm.courseId,
+          lessonForm
+        );
       }
 
+      console.log("API response:", res); // 👈 check if this logs
       toast.success("تم إنشاء الدرس بنجاح");
       setShowCreateModal(false);
-      // Reset form
       setLessonForm({
         name: "",
         description: "",
         photoUrl: "",
         price: "",
-        videoUrl: "",
         free: false,
+        videoUrl: "",
         videoId: "",
         courseId: "",
       });
       setSelectedVideoFile(null);
       fetchLessons();
     } catch (error) {
+      console.error("Error creating lesson:", error);
       toast.error(handleAPIError(error, "فشل في إنشاء الدرس"));
     } finally {
+      console.log("Finally block hit"); // 👈 check if this logs
       setIsLoading(false);
       setUploadProgress(0);
     }
@@ -192,29 +208,46 @@ const InstructorLessonManagement = () => {
 
     try {
       setIsLoading(true);
+
+      const formData = new FormData();
+      if (editVideoFile) formData.append("file", editVideoFile);
+      formData.append("name", editForm.name);
+      formData.append("description", editForm.description);
+      formData.append("price", editForm.price);
+      if (editForm.photoUrl) formData.append("photoUrl", editForm.photoUrl);
+
       const response = await instructorAPI.lessons.update(
         instructorId,
         selectedLesson.id,
-        editForm
+        formData
       );
 
-      // Update local state immediately
-      setLessons((prevLessons) =>
-        prevLessons.map((lesson) =>
-          lesson.id === selectedLesson.id ? { ...lesson, ...editForm } : lesson
-        )
-      );
+      // ✅ the backend wraps lesson inside `lesson`
+      const lesson = response.lesson;
 
-      setOriginalLessons((prevLessons) =>
-        prevLessons.map((lesson) =>
-          lesson.id === selectedLesson.id ? { ...lesson, ...editForm } : lesson
-        )
+      const updatedLesson = {
+        ...lesson,
+        description: lesson.description || "",
+        photoUrl: lesson.photoUrl || "",
+        price: lesson.price?.toString() || "",
+        videoUrl: lesson.videoUrl || "",
+        videoId: lesson.bunnyVideoId || lesson.videoId || "",
+      };
+
+      setLessons((prev) =>
+        prev.map((l) => (l.id === selectedLesson.id ? updatedLesson : l))
       );
+      setOriginalLessons((prev) =>
+        prev.map((l) => (l.id === selectedLesson.id ? updatedLesson : l))
+      );
+      setSelectedLesson(updatedLesson);
 
       toast.success("تم تحديث الدرس بنجاح");
       setShowEditModal(false);
+      setEditVideoFile(null);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
+      fetchLessons();
     } finally {
       setIsLoading(false);
     }
@@ -311,12 +344,23 @@ const InstructorLessonManagement = () => {
 
     try {
       setIsLoading(true);
+
+      // Optimistically remove the lesson from state
+      setLessons((prevLessons) =>
+        prevLessons.filter((lesson) => lesson.id !== lessonToDelete.id)
+      );
+      setOriginalLessons((prevLessons) =>
+        prevLessons.filter((lesson) => lesson.id !== lessonToDelete.id)
+      );
+
       await instructorAPI.lessons.delete(instructorId, lessonToDelete.id);
+
       toast.success("تم حذف الدرس بنجاح");
-      fetchLessons();
       setShowDeleteModal(false);
       setLessonToDelete(null);
     } catch (error) {
+      // If error occurs, revert the optimistic update
+      fetchLessons(); // Fall back to refetching
       toast.error(handleAPIError(error, "فشل في حذف الدرس"));
     } finally {
       setIsLoading(false);
@@ -479,9 +523,9 @@ const InstructorLessonManagement = () => {
             )}
           </div>
         ) : (
-          lessons.map((lesson) => (
+          lessons.map((lesson, index) => (
             <div
-              key={lesson.id}
+              key={lesson.id || lesson._id || index}
               className="bg-white rounded-lg flex flex-col shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
             >
               {/* Lesson Image/Video Thumbnail */}

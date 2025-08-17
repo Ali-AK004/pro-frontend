@@ -237,7 +237,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
               </div>
               <div className="text-xs text-gray-500 flex items-center gap-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                مدرس
+                {user?.role === "ASSISTANT" ? "مساعد": "معلم"}
               </div>
               <div className="text-xs text-gray-400 mt-1 truncate">
                 {user?.email}

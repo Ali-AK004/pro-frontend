@@ -174,29 +174,45 @@ export const instructorAPI = {
       apiClient.post(`/courses/${courseId}/lessons`, data),
 
     // Create lesson with video upload
-    createWithVideo: (courseId, formData, onUploadProgress = null) =>
-      apiClient.post(`/courses/${courseId}/lessons/with-video`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        timeout: 300000, // 5 minutes timeout for video uploads
-        onUploadProgress: onUploadProgress
-          ? (progressEvent) => {
-              const percentCompleted = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
-              );
-              onUploadProgress(percentCompleted);
-            }
-          : undefined,
-      }),
+    createWithVideo: async (courseId, formData, onUploadProgress) => {
+      const response = await apiClient.post(
+        `/courses/${courseId}/lessons/with-video`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            if (onUploadProgress) onUploadProgress(percent);
+          },
+        }
+      );
+
+      return response.data;
+    },
+
+    update: async (instructorId, lessonId, formData) => {
+      const response = await apiClient.put(
+        `/${instructorId}/lessons/${lessonId}/with-video`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            console.log("Upload Progress:", percent);
+          },
+        }
+      );
+
+      return response.data;
+    },
 
     // Delete lesson
     delete: (instructorId, lessonId) =>
       apiClient.delete(`${instructorId}/lessons/${lessonId}`),
-
-    // Update instructor's own lesson
-    update: (instructorId, lessonId, data) =>
-      apiClient.put(`/${instructorId}/lessons/${lessonId}`, data),
 
     // Generate access codes for lesson
     generateAccessCodes: (lessonId, count) =>

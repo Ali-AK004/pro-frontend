@@ -1,11 +1,11 @@
 // Get the appropriate instructor ID based on user role
 export const getInstructorId = (user) => {
   if (!user) return null;
-  
+
   switch (user.role) {
-    case 'INSTRUCTOR':
+    case "INSTRUCTOR":
       return user.id;
-    case 'ASSISTANT':
+    case "ASSISTANT":
       return user.instructorId;
     default:
       return null;
@@ -14,7 +14,7 @@ export const getInstructorId = (user) => {
 
 // Check if user can access instructor dashboard
 export const canAccessInstructorDashboard = (user) => {
-  return user && ['INSTRUCTOR', 'ASSISTANT'].includes(user.role);
+  return user && ["INSTRUCTOR", "ASSISTANT"].includes(user.role);
 };
 
 // Get role-specific permissions
@@ -37,22 +37,22 @@ export const getRolePermissions = (role) => {
       canManageStudents: true,
     },
     ASSISTANT: {
-      canCreateCourse: false,
-      canDeleteCourse: false,
-      canEditCourse: false,
+      canCreateCourse: true,
+      canDeleteCourse: true,
+      canEditCourse: true,
       canCreateLesson: true,
-      canDeleteLesson: false,
+      canDeleteLesson: true,
       canEditLesson: true,
       canCreateExam: true,
-      canDeleteExam: false,
+      canDeleteExam: true,
       canEditExam: true,
       canCreateAssignment: true,
-      canDeleteAssignment: false,
+      canDeleteAssignment: true,
       canEditAssignment: true,
       canViewAnalytics: true,
       canManageStudents: false,
-    }
+    },
   };
-  
+
   return permissions[role] || {};
 };

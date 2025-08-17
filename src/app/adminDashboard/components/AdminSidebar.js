@@ -43,8 +43,6 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
         )
         .catch(() => {});
 
-      closeMenus();
-
       // Redirect to home page
       router.replace("/");
       window.location.href = "/";

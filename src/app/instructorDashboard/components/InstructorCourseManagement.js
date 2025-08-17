@@ -37,11 +37,10 @@ const InstructorCourseManagement = () => {
   const permissions = getRolePermissions(user?.role);
 
   // Add this check to ensure assistants have proper restrictions
-  const canCreateCourse =
-    permissions.canCreateCourse && user?.role !== "ASSISTANT";
-  const canEditCourse = permissions.canEditCourse && user?.role !== "ASSISTANT";
-  const canDeleteCourse =
-    permissions.canDeleteCourse && user?.role !== "ASSISTANT";
+  // Use these instead
+const canCreateCourse = permissions.canCreateCourse;
+const canEditCourse = permissions.canEditCourse;
+const canDeleteCourse = permissions.canDeleteCourse;
 
   // Form states
   const [courseForm, setCourseForm] = useState({

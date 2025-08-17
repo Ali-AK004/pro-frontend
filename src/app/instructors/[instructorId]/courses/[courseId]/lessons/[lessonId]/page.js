@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   FaArrowLeft,
@@ -31,8 +31,10 @@ import { useUserData } from "../../../../../../../../models/UserContext";
 const LessonPage = () => {
   const params = useParams();
   const router = useRouter();
-  const { instructorId, courseId, lessonId } = params;
+  const { instructorId, lessonId } = params;
   const { user } = useUserData();
+  const examTimerRef = useRef(null);
+  const autoSubmitGuardRef = useRef(false);
 
   // State management
   const [lessonData, setLessonData] = useState(null);
@@ -49,7 +51,6 @@ const LessonPage = () => {
   // Exam timer states
   const [examStarted, setExamStarted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [examTimerInterval, setExamTimerInterval] = useState(null);
   const [examSubmitted, setExamSubmitted] = useState(false);
 
   // Fetch lesson data
@@ -86,18 +87,37 @@ const LessonPage = () => {
     // Update hash when tab changes (but avoid infinite loop)
     const currentHash = window.location.hash.replace("#", "");
     if (activeTab && activeTab !== currentHash) {
-      window.location.hash = activeTab;
+      window.location.hash = activeTab; // This might trigger re-renders
     }
   }, [activeTab]);
 
   // Cleanup timer on component unmount
   useEffect(() => {
     return () => {
-      if (examTimerInterval) {
-        clearInterval(examTimerInterval);
+      if (examTimerRef.current) {
+        clearInterval(examTimerRef.current);
+        examTimerRef.current = null;
       }
     };
-  }, [examTimerInterval]);
+  }, []);
+
+  useEffect(() => {
+    if (
+      examStarted &&
+      timeRemaining === 0 &&
+      !examSubmitted &&
+      !isSubmitting &&
+      autoSubmitGuardRef.current
+    ) {
+      autoSubmitGuardRef.current = false;
+      // Defer to exit render phase before triggering updates/toasts
+      setTimeout(() => {
+        handleAutoSubmit().catch((e) =>
+          console.error("Auto-submission error")
+        );
+      }, 0);
+    }
+  }, [examStarted, timeRemaining, examSubmitted, isSubmitting]);
 
   const fetchLessonData = async () => {
     try {
@@ -154,27 +174,6 @@ const LessonPage = () => {
     }
   };
 
-  // Start exam timer
-  const startExamTimer = (timeLimitMinutes) => {
-    const totalSeconds = timeLimitMinutes * 60;
-    setTimeRemaining(totalSeconds);
-    setExamStarted(true);
-
-    const interval = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          // Time's up - auto submit exam
-          clearInterval(interval);
-          handleExamSubmit(true); // true indicates auto-submit due to timeout
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    setExamTimerInterval(interval);
-  };
-
   // Format time remaining for display
   const formatTimeRemaining = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -187,27 +186,80 @@ const LessonPage = () => {
     return `${minutes}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Handle exam submission
-  const handleExamSubmit = async (isAutoSubmit = false) => {
-    if (!lessonData?.exam?.id) return;
+  // Start exam timer with auto-submission
+  const startExamTimer = (timeLimitMinutes) => {
+    const totalSeconds = (timeLimitMinutes || 60) * 60;
+    setTimeRemaining(totalSeconds);
+    setExamStarted(true);
 
+    if (examTimerRef.current) clearInterval(examTimerRef.current);
+
+    examTimerRef.current = setInterval(() => {
+      setTimeRemaining((prev) => {
+        const next = prev - 1;
+        if (next <= 0) {
+          if (examTimerRef.current) {
+            clearInterval(examTimerRef.current);
+            examTimerRef.current = null;
+          }
+          // Signal; run auto-submit after render via effect
+          autoSubmitGuardRef.current = true;
+          return 0;
+        }
+        return next;
+      });
+    }, 1000);
+  };
+
+  const handleManualSubmit = async () => {
+    // Define the check here
+    const allAnswered = exam.questions?.every((question) => {
+      const answer = examAnswers[question.id];
+      if (question.questionType === "MULTIPLE_CHOICE") {
+        return answer && answer.length > 0;
+      }
+      return answer !== undefined && answer !== null;
+    });
+
+    if (!allAnswered) {
+      toast.error("يرجى الإجابة على جميع الأسئلة قبل التقديم");
+      return;
+    }
+
+    try {
+      await submitExamAnswers(examAnswers, false);
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تقديم الامتحان"));
+    }
+  };
+  const handleAutoSubmit = async () => {
+    try {
+      // Only submit if there are answers
+      if (Object.keys(examAnswers).length > 0) {
+        await submitExamAnswers(examAnswers, true);
+      } else {
+        toast.error("انتهى الوقت ولم يتم تقديم أي إجابات");
+        setExamStarted(false);
+        setTimeRemaining(0);
+      }
+    } catch (error) {
+      toast.error("حدث خطأ أثناء التقديم التلقائي");
+    }
+  };
+
+  const submitExamAnswers = async (answers, isAutoSubmit = false) => {
     try {
       setIsSubmitting(true);
 
-      // Clear timer if it exists
-      if (examTimerInterval) {
-        clearInterval(examTimerInterval);
-        setExamTimerInterval(null);
-      }
-
-      // Convert exam answers
+      // Convert answers to proper format
       const formattedAnswers = {};
-      Object.keys(examAnswers).forEach((questionId) => {
-        const answer = examAnswers[questionId];
+      Object.keys(answers).forEach((questionId) => {
+        const answer = answers[questionId];
         formattedAnswers[questionId] = Array.isArray(answer)
           ? answer.join(",")
           : answer;
       });
+
 
       // Submit exam
       const response = await examAPI.exams.submit(
@@ -215,52 +267,77 @@ const LessonPage = () => {
         formattedAnswers
       );
 
-      // Immediately after submission, fetch the latest results
-      const submission = await examAPI.exams.getSubmission(
-        lessonData.exam.id,
-        user.id
-      );
 
-      // Update state with the fetched results
+      // Add delay before fetching results
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Fetch results with retry logic
+      let retries = 3;
+      let submission;
+
+      while (retries > 0) {
+        try {
+          submission = await examAPI.exams.getSubmission(
+            lessonData.exam.id,
+            user.id
+          );
+          break;
+        } catch (error) {
+          retries--;
+          if (retries === 0) throw error;
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+
+      // Update state
       setExamResult(submission.data);
       setExamSubmitted(true);
       setExamStarted(false);
       setTimeRemaining(0);
 
+      if (examTimerRef.current) {
+        clearInterval(examTimerRef.current);
+        examTimerRef.current = null;
+      }
+
       // Show appropriate message
       if (submission.data.passed) {
         await fetchLessonData();
-        toast.success(`تهانينا! لقد نجحت - درجتك: ${submission.data.score}%`);
+        toast.success(
+          `${isAutoSubmit ? "انتهى وقت الامتحان. " : ""}تهانينا! لقد نجحت - درجتك: ${submission.data.score}%`
+        );
       } else {
-        toast.error(`لم تجتز الامتحان. الدرجة: ${submission.data.score}%`);
+        toast.error(
+          `${isAutoSubmit ? "انتهى وقت الامتحان. " : ""}لم تجتز الامتحان. الدرجة: ${submission.data.score}%`
+        );
       }
+
+      return submission;
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تقديم الامتحان"));
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const fetchExamSubmission = async () => {
-    try {
-      if (lessonData?.exam?.id) {
-        const studentId = user.id;
-        const submission = await examAPI.exams.getSubmission(
-          lessonData.exam.id,
-          studentId
-        );
-        setExamResult(submission.data);
-      }
-    } catch (error) {
-      console.log(handleAPIError(error, "فشل في تحميل نتائج الامتحان"));
-    }
-  };
-
   useEffect(() => {
     if (activeTab === "exam" && lessonData?.exam?.id) {
-      fetchExamSubmission();
+      const fetchData = async () => {
+        try {
+          const submission = await examAPI.exams.getSubmission(
+            lessonData.exam.id,
+            user.id
+          );
+          setExamResult(submission.data);
+        } catch (error) {
+          console.log(handleAPIError(error, "فشل في تحميل نتائج الامتحان"));
+        }
+      };
+
+      fetchData();
     }
-  }, [activeTab, lessonData?.exam?.id]);
+  }, [activeTab, lessonData?.exam?.id, user?.id]);
 
   // Handle assignment submission
   const handleAssignmentSubmit = async () => {
@@ -495,18 +572,22 @@ const LessonPage = () => {
                 examAnswers={examAnswers}
                 setExamAnswers={setExamAnswers}
                 examResult={examResult}
-                setExamSubmitted={setExamSubmitted}
-                setExamResult={setExamResult}
-                setActiveTab={setActiveTab}
-                onSubmit={handleExamSubmit}
                 isSubmitting={isSubmitting}
                 canAccess={canAccessExam}
                 examStarted={examStarted}
                 timeRemaining={timeRemaining}
                 startExamTimer={startExamTimer}
+                handleManualSubmit={handleManualSubmit}
                 formatTimeRemaining={formatTimeRemaining}
                 examSubmitted={examSubmitted}
-                fetchExamSubmission={fetchExamSubmission}
+                onRetry={() => {
+                  setExamResult(null);
+                  setExamSubmitted(false);
+                  setExamAnswers({});
+                  setExamStarted(false);
+                  setTimeRemaining(0);
+                  setActiveTab("exam");
+                }}
               />
             )}
 
@@ -784,25 +865,16 @@ const ExamTab = ({
   examAnswers,
   setExamAnswers,
   examResult,
-  onSubmit,
   isSubmitting,
   canAccess,
   examStarted,
   timeRemaining,
   startExamTimer,
+  handleManualSubmit,
   formatTimeRemaining,
   examSubmitted,
-  setActiveTab,
-  setExamSubmitted,
-  setExamResult,
-  fetchExamSubmission,
+  onRetry
 }) => {
-  useEffect(() => {
-    if (examSubmitted && !examResult) {
-      fetchExamSubmission();
-    }
-  }, [examSubmitted, examResult, fetchExamSubmission]);
-
   if (!canAccess) {
     return (
       <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-3xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
@@ -831,8 +903,19 @@ const ExamTab = ({
     );
   }
 
-  if (examResult) {
-    const questionResults = examResult.questionResults || {};
+  if (examResult || examSubmitted) {
+    const questionResults = examResult?.questionResults || {};
+    // Calculate student's total points earned
+    const studentTotalPoints = Object.values(
+      examResult.questionResults || {}
+    ).reduce((sum, result) => sum + (result.pointsEarned || 0), 0);
+
+    // Calculate total possible points from exam questions
+    const totalPossiblePoints =
+      exam.questions?.reduce(
+        (sum, question) => sum + (question.points || 0),
+        0
+      ) || 0;
     return (
       <div className="bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
@@ -909,7 +992,7 @@ const ExamTab = ({
                     examResult.passed ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  {examResult.score}%
+                  {studentTotalPoints} / {totalPossiblePoints}
                 </p>
               </div>
               <div>
@@ -970,12 +1053,7 @@ const ExamTab = ({
         {!examResult.passed && (
           <div className="text-center">
             <button
-              onClick={() => {
-                setExamResult(null);
-                setExamSubmitted(false);
-                setExamAnswers({});
-                setActiveTab("exam");
-              }}
+              onClick={onRetry}
               className="bg-blue-600 text-white px-6 py-3 cursor-pointer rounded-lg hover:bg-blue-700 transition-colors"
             >
               إعادة المحاولة
@@ -1056,7 +1134,7 @@ const ExamTab = ({
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-purple-600 mb-2">
-                  {exam.passingScore}
+                  %{exam.passingScore}
                 </div>
                 <p className="text-gray-600 font-medium">درجة النجاح</p>
               </div>
@@ -1266,7 +1344,7 @@ const ExamTab = ({
           </div>
 
           <button
-            onClick={onSubmit}
+            onClick={handleManualSubmit}
             disabled={!allQuestionsAnswered || isSubmitting}
             className={`group relative inline-flex items-center gap-3 px-12 py-4 rounded-2xl font-bold text-lg transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
               allQuestionsAnswered && !isSubmitting
