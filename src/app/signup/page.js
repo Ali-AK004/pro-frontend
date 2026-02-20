@@ -345,7 +345,7 @@ const SignUp = () => {
                     type="email"
                     required
                     autoComplete="email"
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
+                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
                     placeholder="أدخل بريدك الإلكتروني"
                     value={formData.email}
                     onChange={handleChange}
@@ -367,7 +367,7 @@ const SignUp = () => {
                       name="password"
                       type={showPassword ? "text" : "password"}
                       autoComplete="new-password"
-                      className={`font-main appearance-none relative block w-full pr-4 pl-10 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
+                      className={`font-main appearance-none relative block border-gray-300 w-full pr-4 pl-10 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
                       placeholder="أدخل كلمة المرور"
                       value={formData.password}
                       onChange={handleChange}
@@ -457,7 +457,7 @@ const SignUp = () => {
                     type="text"
                     required
                     maxLength="14"
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
+                    className={`font-main appearance-none relative border-gray-300 block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
                     placeholder="أدخل الرقم القومي (14 رقم)"
                     value={formData.nationalId}
                     onChange={handleChange}
@@ -477,7 +477,7 @@ const SignUp = () => {
                     name="dateOfBirth"
                     type="date"
                     required
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
+                    className={`font-main appearance-none border-gray-300 relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
                     value={formData.dateOfBirth}
                     onChange={handleChange}
                   />

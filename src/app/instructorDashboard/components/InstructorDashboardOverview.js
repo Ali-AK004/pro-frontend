@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { instructorAPI, handleAPIError } from '../services/instructorAPI';
+import { instructorAPI, handleAPIError, clearCache } from '../services/instructorAPI';
 import { useUserData } from '../../../../models/UserContext';
 import { toast } from 'react-toastify';
 import { FaArrowLeftLong } from "react-icons/fa6";
@@ -10,17 +10,69 @@ import {
   FiFileText,
   FiUsers,
   FiCode,
+  FiRefreshCw,
 } from 'react-icons/fi';
 import Link from 'next/link';
 import { getInstructorId } from '../../utils/roleHelpers';
 
 const InstructorDashboardOverview = ({ setActiveTab }) => {
   const { user } = useUserData();
-  const [stats, setStats] = useState({});
+  const [stats, setStats] = useState({
+    courses: 0,
+    lessons: 0,
+    students: 0,
+    revenue: 0
+  });
   const [recentCourses, setRecentCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const instructorId = getInstructorId(user);
+
+  const fetchDashboardData = async (skipCache = false) => {
+    if (!instructorId) return;
+    
+    try {
+      if (skipCache) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      
+      // Clear dashboard stats cache if skipping cache
+      if (skipCache) {
+        clearCache(`dashboard_stats_${instructorId}`);
+        clearCache(`courses_${instructorId}`);
+      }
+      
+      // Fetch dashboard stats
+      const dashboardStats = await instructorAPI.analytics.getDashboardStats(instructorId, skipCache);
+      
+      // Update stats state
+      setStats({
+        courses: dashboardStats.courses || 0,
+        lessons: dashboardStats.lessons || 0,
+        students: dashboardStats.students || 0,
+        revenue: dashboardStats.revenue || 0
+      });
+
+      // Fetch recent courses separately to ensure fresh data
+      const coursesResponse = await instructorAPI.courses.getByInstructor(instructorId, skipCache);
+      const courses = coursesResponse.data || [];
+      setRecentCourses(courses.slice(0, 5));
+
+      if (skipCache) {
+        toast.success("تم تحديث البيانات بنجاح");
+      }
+
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      toast.error(handleAPIError(error, 'فشل في تحميل بيانات لوحة التحكم'));
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (instructorId) {
@@ -28,24 +80,8 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
     }
   }, [instructorId]);
 
-  const fetchDashboardData = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Fetch dashboard stats using the appropriate instructor ID
-      const dashboardStats = await instructorAPI.analytics.getDashboardStats(instructorId);
-      setStats(dashboardStats);
-
-      // Fetch recent courses
-      const coursesResponse = await instructorAPI.courses.getByInstructor(instructorId);
-      const courses = coursesResponse.data || [];
-      setRecentCourses(courses.slice(0, 5));
-
-    } catch (error) {
-      toast.error(handleAPIError(error, 'فشل في تحميل بيانات لوحة التحكم'));
-    } finally {
-      setIsLoading(false);
-    }
+  const handleRefresh = () => {
+    fetchDashboardData(true);
   };
 
   const statCards = [
@@ -53,7 +89,6 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
       title: 'إجمالي الكورسات',
       value: stats.courses,
       icon: FiBook,
-      color: 'bg-blue-500',
       bgColor: 'bg-blue-50',
       textColor: 'text-blue-600',
     },
@@ -61,7 +96,6 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
       title: 'إجمالي الدروس',
       value: stats.lessons,
       icon: FiFileText,
-      color: 'bg-green-500',
       bgColor: 'bg-green-50',
       textColor: 'text-green-600',
     },
@@ -69,7 +103,6 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
       title: 'إجمالي الطلاب',
       value: stats.students,
       icon: FiUsers,
-      color: 'bg-purple-500',
       bgColor: 'bg-purple-50',
       textColor: 'text-purple-600',
     },
@@ -79,8 +112,8 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
     return (
       <div className="p-8">
         <div className="animate-pulse">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {[1, 2, 3, 4].map((i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {[1, 2, 3].map((i) => (
               <div key={i} className="bg-gray-200 h-32 rounded-xl"></div>
             ))}
           </div>
@@ -95,11 +128,11 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
 
   return (
     <div className="p-4 md:p-8">
-      {/* Header */}
-      <div className="mb-8 flexBetween flex flex-col-reverse gap-6 md:gap-0 md:flex-row">
+      {/* Header with Refresh Button */}
+      <div className="mb-8 flex flex-col-reverse gap-6 md:gap-0 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">
-            مرحباً، {user?.fullname}
+            مرحباً، {user?.fullname || user?.username}
           </h1>
           <p className="text-gray-600">
             {user?.role === 'INSTRUCTOR'
@@ -108,9 +141,11 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
             }
           </p>
         </div>
-        <Link href={'/'} className="flex items-center border rounded-md px-5 py-1 gap-3 border-secondary text-secondary hover:text-white hover:bg-[#87ceeb] transition duration-300">
-          <FaArrowLeftLong /> العودة للرئيسية
-        </Link>
+        <div className="flex">
+          <Link href={'/'} className="flex items-center border rounded-md px-5 py-2 gap-3 border-secondary text-secondary hover:text-white hover:bg-[#87ceeb] transition duration-300">
+            <FaArrowLeftLong /> العودة للرئيسية
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -122,14 +157,9 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
               key={index}
               className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
             >
-              <div className="flex flex-col md:flex-row gap-3 md:gap-0 items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 rounded-lg ${card.bgColor}`}>
                   <Icon className={`w-6 h-6 ${card.textColor}`} />
-                </div>
-                <div className={`text-sm font-medium ${
-                  card.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {card.change}
                 </div>
                 <div className="text-right">
                   <h3 className="regular-14 text-gray-600 mb-1">{card.title}</h3>
@@ -141,12 +171,17 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
         })}
       </div>
 
-      {/* Charts and Activity */}
+      {/* Recent Courses */}
       <div className="grid grid-cols-1 gap-6">
-        {/* Recent Courses */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-4">
             <h3 className="bold-20 text-gray-900">كورساتك الأخيرة</h3>
+            <button
+              onClick={() => setActiveTab('courses')}
+              className="text-secondary hover:border hover:border-[#87ceeb] cursor-pointer border rounded-sm px-3 py-1 hover:text-white hover:bg-[#87ceeb] transition font-semibold text-sm"
+            >
+              عرض الكل
+            </button>
           </div>
           <div className="space-y-4">
             {recentCourses.length === 0 ? (
@@ -162,15 +197,26 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
               </div>
             ) : (
               recentCourses.map((course) => (
-                <div key={course.id} className="flex flex-col md:flex-row md:items-start items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <div key={course.id} className="flex flex-col md:flex-row md:items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                   <div className="w-12 h-12 bg-secondary bg-opacity-10 rounded-lg flexCenter">
                     <FiBook className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1 md:text-right text-center">
                     <p className="bold-16 text-gray-900">{course.name}</p>
-                    <p className="regular-14 text-gray-500">{course.description}</p>
+                    <p className="regular-14 text-gray-500 line-clamp-1">{course.description || 'لا يوجد وصف'}</p>
                   </div>
-                  <p className="regular-12 text-gray-500">{course.lessonCount || 0} درس</p>
+                  <div className="flex items-center gap-4">
+                    <p className="regular-12 text-gray-500">{course.lessonCount || 0} درس</p>
+                    <button
+                      onClick={() => {
+                        setActiveTab('courses');
+                        // You might want to open this specific course
+                      }}
+                      className="text-secondary hover:border hover:border-[#87ceeb] cursor-pointer border rounded-sm px-3 py-1 hover:text-white hover:bg-[#87ceeb] transition font-semibold text-sm"
+                    >
+                      عرض
+                    </button>
+                  </div>
                 </div>
               ))
             )}
@@ -187,21 +233,21 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
             className="cursor-pointer p-4 bg-secondary bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
           >
             <FiBook className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
-            <p className="regular-14 text-white">إنشاء كورس</p>
+            <p className="regular-14 text-white">إدارة الكورسات</p>
           </button>
           <button
             onClick={() => setActiveTab('lessons')}
             className="cursor-pointer p-4 bg-green-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
           >
             <FiFileText className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
-            <p className="regular-14 text-white">إضافة درس</p>
+            <p className="regular-14 text-white">إدارة الدروس</p>
           </button>
           <button
             onClick={() => setActiveTab('access-codes')}
             className="cursor-pointer p-4 bg-purple-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
           >
             <FiCode className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
-            <p className="regular-14 text-white">إنشاء كود</p>
+            <p className="regular-14 text-white">إدارة أكواد الوصول</p>
           </button>
         </div>
       </div>

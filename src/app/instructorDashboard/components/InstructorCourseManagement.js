@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { instructorAPI, handleAPIError } from "../services/instructorAPI";
+import React, { useState, useEffect, useCallback } from "react";
+import { instructorAPI, handleAPIError, clearCache } from "../services/instructorAPI";
 import { useUserData } from "../../../../models/UserContext";
 import { MdDeleteForever } from "react-icons/md";
 import { Slide } from "react-toastify";
@@ -14,15 +14,16 @@ import {
   FiBook,
   FiFileText,
   FiX,
+  FiRefreshCw,
 } from "react-icons/fi";
 import { getInstructorId, getRolePermissions } from "../../utils/roleHelpers";
 import SecureSearchInput from "@/app/components/SecureSearchInput";
-import PhotoUpload from "./PhotoUpload";
 
 const InstructorCourseManagement = () => {
   const { user } = useUserData();
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -30,17 +31,13 @@ const InstructorCourseManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [courseToDelete, setCourseToDelete] = useState(null);
-  // const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
-  // const [editPhotoFile, setEditPhotoFile] = useState(null);
 
   const instructorId = getInstructorId(user);
   const permissions = getRolePermissions(user?.role);
 
-  // Add this check to ensure assistants have proper restrictions
-  // Use these instead
-const canCreateCourse = permissions.canCreateCourse;
-const canEditCourse = permissions.canEditCourse;
-const canDeleteCourse = permissions.canDeleteCourse;
+  const canCreateCourse = permissions.canCreateCourse;
+  const canEditCourse = permissions.canEditCourse;
+  const canDeleteCourse = permissions.canDeleteCourse;
 
   // Form states
   const [courseForm, setCourseForm] = useState({
@@ -55,24 +52,38 @@ const canDeleteCourse = permissions.canDeleteCourse;
     photoUrl: "",
   });
 
-  useEffect(() => {
-    if (instructorId) {
-      fetchCourses();
-    }
-  }, [instructorId]);
-
-  const fetchCourses = async () => {
+  // Use useCallback to memoize fetchCourses
+  const fetchCourses = useCallback(async (skipCache = false, showLoading = true) => {
+    if (!instructorId) return;
+    
     try {
-      setIsLoading(true);
-      const response =
-        await instructorAPI.courses.getByInstructor(instructorId);
-      setCourses(response.data || []);
+      if (showLoading) {
+        setIsLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
+      
+      const response = await instructorAPI.courses.getByInstructor(instructorId, skipCache);
+      
+      // Ensure we're setting an array
+      const coursesData = response.data || [];
+      setCourses(coursesData);
+  
+      
+      return coursesData;
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
-  };
+  }, [instructorId]);
+
+  useEffect(() => {
+    if (instructorId) {
+      fetchCourses();
+    }
+  }, [instructorId, fetchCourses]);
 
   const handleCreateCourse = async (e) => {
     e.preventDefault();
@@ -87,20 +98,52 @@ const canDeleteCourse = permissions.canDeleteCourse;
       return;
     }
 
+    // Validate URL format
+    try {
+      new URL(courseForm.photoUrl);
+    } catch {
+      toast.error("رابط الصورة غير صالح");
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const response = await instructorAPI.courses.create(
-        instructorId,
-        courseForm
-      );
-
-      setCourses((prevCourses) => [response.data, ...prevCourses]);
-
-      toast.success("تم إنشاء الكورس بنجاح");
-      setShowCreateModal(false);
-      setCourseForm({ name: "", description: "", photoUrl: "" });
+      const response = await instructorAPI.courses.create(instructorId, courseForm);
+      
+      // Get the new course data
+      const newCourse = response.data;
+      
+      if (newCourse) {
+        // Add lessonCount if not present
+        const courseWithDefaults = {
+          ...newCourse,
+          lessonCount: newCourse.lessonCount || 0,
+        };
+        
+        // Update local state immediately
+        setCourses(prevCourses => {
+          // Check if course already exists (prevent duplicates)
+          if (prevCourses.some(c => c.id === courseWithDefaults.id)) {
+            return prevCourses;
+          }
+          return [courseWithDefaults, ...prevCourses];
+        });
+        
+        toast.success("تم إنشاء الكورس بنجاح");
+        setShowCreateModal(false);
+        setCourseForm({ name: "", description: "", photoUrl: "" });
+        
+        // Refresh data in background to ensure consistency
+        setTimeout(() => {
+          fetchCourses(true, false);
+        }, 1000);
+      } else {
+        throw new Error("Invalid response data");
+      }
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء الكورس"));
+      // If creation fails, refresh the list to ensure consistency
+      fetchCourses(true);
     } finally {
       setIsLoading(false);
     }
@@ -119,6 +162,14 @@ const canDeleteCourse = permissions.canDeleteCourse;
       return;
     }
 
+    // Validate URL format
+    try {
+      new URL(editForm.photoUrl);
+    } catch {
+      toast.error("رابط الصورة غير صالح");
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await instructorAPI.courses.update(
@@ -126,70 +177,124 @@ const canDeleteCourse = permissions.canDeleteCourse;
         selectedCourse.id,
         editForm
       );
+      
       const updatedCourse = response.data;
-
-      // Update local state immediately
-      setCourses((prev) =>
-        prev.map((course) =>
-          course.id === selectedCourse.id
-            ? { ...course, ...updatedCourse }
-            : course
-        )
-      );
-
-      toast.success("تم تحديث الكورس بنجاح");
-      setShowEditModal(false);
+      
+      if (updatedCourse) {
+        // Update local state immediately
+        setCourses(prev =>
+          prev.map((course) =>
+            course.id === selectedCourse.id
+              ? { 
+                  ...course, 
+                  ...updatedCourse, 
+                  lessonCount: course.lessonCount // Preserve lesson count if not in response
+                }
+              : course
+          )
+        );
+        
+        toast.success("تم تحديث الكورس بنجاح");
+        setShowEditModal(false);
+        
+        // Refresh data in background to ensure consistency
+        setTimeout(() => {
+          fetchCourses(true, false);
+        }, 1000);
+      }
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحديث الكورس"));
+      // If update fails, refresh the list
+      fetchCourses(true);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // const handlePhotoUploaded = (photoData, isEdit = false) => {
-  //   if (isEdit) {
-  //     setEditForm((prev) => ({
-  //       ...prev,
-  //       photoUrl: photoData.url || photoData.secureUrl,
-  //     }));
-  //   } else {
-  //     setCourseForm((prev) => ({
-  //       ...prev,
-  //       photoUrl: photoData.url || photoData.secureUrl,
-  //     }));
-  //   }
-  //   toast.success("تم رفع صورة الكورس بنجاح");
-  // };
+  const confirmDeleteCourse = async () => {
+    if (!courseToDelete) return;
 
-  // const handlePhotoRemoved = (isEdit = false) => {
-  //   if (isEdit) {
-  //     setEditPhotoFile(null);
-  //     setEditForm((prev) => ({
-  //       ...prev,
-  //       photoUrl: "",
-  //     }));
-  //   } else {
-  //     setSelectedPhotoFile(null);
-  //     setCourseForm((prev) => ({
-  //       ...prev,
-  //       photoUrl: "",
-  //     }));
-  //   }
-  //   toast.success("تم حذف صورة الكورس");
-  // };
-
-  const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      fetchCourses();
+    if (!permissions.canDeleteCourse) {
+      toast.error("ليس لديك صلاحية لحذف الكورس");
       return;
     }
 
+    try {
+      setIsLoading(true);
+      
+      // Store the course ID and name before deletion for optimistic update
+      const deletedCourseId = courseToDelete.id;
+      const deletedCourseName = courseToDelete.name;
+      
+      // Call the API to delete
+      await instructorAPI.courses.delete(instructorId, deletedCourseId);
+      
+      // IMPORTANT: Force clear all caches for this instructor
+      clearCache(`courses_${instructorId}`);
+      clearCache(`course_${deletedCourseId}`);
+      
+      // Update local state immediately - remove the deleted course
+      setCourses(prevCourses => {
+        const filtered = prevCourses.filter((course) => course.id !== deletedCourseId);
+        return filtered;
+      });
+      
+      toast.success(`تم حذف الكورس "${deletedCourseName}" بنجاح`);
+      setShowDeleteModal(false);
+      setCourseToDelete(null);
+      
+      // Double-check with a fresh fetch to ensure consistency
+      // But do it after a small delay to let the backend cache clear
+      setTimeout(() => {
+        fetchCourses(true, false); // Pass true to skip cache, false to not show loading
+      }, 500);
+      
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في حذف الكورس"));
+      // If delete fails, refresh the list to ensure consistency
+      fetchCourses(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const cancelDeleteCourse = () => {
+    setShowDeleteModal(false);
+    setCourseToDelete(null);
+  };
+
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      await fetchCourses(true); // Skip cache when resetting search
+      return;
+    }
+
+    // Filter locally first for instant results
     const filteredCourses = courses.filter(
       (course) =>
         course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setCourses(filteredCourses);
+    
+    // If no local results, try searching on backend
+    if (filteredCourses.length === 0) {
+      try {
+        const response = await instructorAPI.courses.search(searchTerm);
+        if (response.data && response.data.length > 0) {
+          setCourses(response.data);
+        }
+      } catch (error) {
+        console.error("Search error:", error);
+      }
+    }
+  };
+
+  const handleSearchChange = (term) => {
+    setSearchTerm(term);
+    if (!term.trim()) {
+      fetchCourses(true);
+    }
   };
 
   const openEditModal = (course) => {
@@ -212,36 +317,20 @@ const canDeleteCourse = permissions.canDeleteCourse;
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteCourse = async () => {
-    if (!courseToDelete) return;
-
-    if (!permissions.canDeleteCourse) {
-      toast.error("ليس لديك صلاحية لحذف الكورس");
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      await instructorAPI.courses.delete(instructorId, courseToDelete.id);
-
-      // Remove the deleted course from local state
-      setCourses((prevCourses) =>
-        prevCourses.filter((course) => course.id !== courseToDelete.id)
-      );
-
-      toast.success("تم حذف الكورس بنجاح");
-      setShowDeleteModal(false);
-      setCourseToDelete(null);
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في حذف الكورس"));
-    } finally {
-      setIsLoading(false);
-    }
+  const closeCreateModal = () => {
+    setShowCreateModal(false);
+    setCourseForm({ name: "", description: "", photoUrl: "" });
   };
 
-  const cancelDeleteCourse = () => {
-    setShowDeleteModal(false);
-    setCourseToDelete(null);
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setSelectedCourse(null);
+    setEditForm({ name: "", description: "", photoUrl: "" });
+  };
+
+  const closeViewModal = () => {
+    setShowViewModal(false);
+    setSelectedCourse(null);
   };
 
   return (
@@ -257,9 +346,10 @@ const canDeleteCourse = permissions.canDeleteCourse;
         draggable
         pauseOnHover
         transition={Slide}
-        className={`z-50`}
+        className="z-50"
       />
-      {/* Header */}
+      
+      {/* Header with Refresh Button */}
       <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
         <div>
           <h1 className="bold-32 text-gray-900 mb-2">
@@ -270,15 +360,17 @@ const canDeleteCourse = permissions.canDeleteCourse;
             إنشاء وتعديل وإدارة كورساتك التعليمية
           </p>
         </div>
-        {canCreateCourse && (
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
-          >
-            <FiPlus className="w-5 h-5" />
-            إنشاء كورس جديد
-          </button>
-        )}
+        <div className="flex">
+          {canCreateCourse && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
+            >
+              <FiPlus className="w-5 h-5" />
+              إنشاء كورس جديد
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -286,8 +378,9 @@ const canDeleteCourse = permissions.canDeleteCourse;
         <div className="flex flex-col md:flex-row gap-4">
           <SecureSearchInput
             placeholder="البحث في الكورسات..."
-            onSearch={(term) => setSearchTerm(term)}
-            onEnterPress={handleSearch} // Added this prop
+            onSearch={handleSearchChange}
+            onEnterPress={handleSearch}
+            value={searchTerm}
             className="border border-gray-300 focus:ring-secondary"
             maxLength={100}
           />
@@ -324,12 +417,14 @@ const canDeleteCourse = permissions.canDeleteCourse;
             <p className="regular-16 text-gray-600 mb-4">
               لا توجد كورسات للعرض
             </p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="cursor-pointer bg-secondary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
-            >
-              إنشاء أول كورس
-            </button>
+            {canCreateCourse && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="cursor-pointer bg-secondary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
+              >
+                إنشاء أول كورس
+              </button>
+            )}
           </div>
         ) : (
           courses.map((course) => (
@@ -344,6 +439,10 @@ const canDeleteCourse = permissions.canDeleteCourse;
                     src={course.photoUrl}
                     alt={course.name}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://via.placeholder.com/400x200?text=No+Image";
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full flexCenter">
@@ -411,11 +510,11 @@ const canDeleteCourse = permissions.canDeleteCourse;
       {/* Create Course Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">إنشاء كورس جديد</h2>
               <button
-                onClick={() => setShowCreateModal(false)}
+                onClick={closeCreateModal}
                 className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
@@ -436,6 +535,7 @@ const canDeleteCourse = permissions.canDeleteCourse;
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                   placeholder="أدخل اسم الكورس"
+                  maxLength={100}
                 />
               </div>
 
@@ -454,6 +554,7 @@ const canDeleteCourse = permissions.canDeleteCourse;
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                   placeholder="أدخل وصف الكورس"
+                  maxLength={500}
                 />
               </div>
 
@@ -476,6 +577,22 @@ const canDeleteCourse = permissions.canDeleteCourse;
                 )}
               </div>
 
+              {/* Preview Image if URL exists */}
+              {courseForm.photoUrl && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600 mb-2">معاينة الصورة:</p>
+                  <img 
+                    src={courseForm.photoUrl} 
+                    alt="Preview" 
+                    className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://via.placeholder.com/128?text=Invalid+URL";
+                    }}
+                  />
+                </div>
+              )}
+
               <div className="flex gap-4 pt-4">
                 <button
                   type="submit"
@@ -486,7 +603,7 @@ const canDeleteCourse = permissions.canDeleteCourse;
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={closeCreateModal}
                   className="cursor-pointer flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
                 >
                   إلغاء
@@ -499,12 +616,12 @@ const canDeleteCourse = permissions.canDeleteCourse;
 
       {/* Edit Course Modal */}
       {showEditModal && selectedCourse && (
-        <div className="fixed inset-0 bg-black/20 bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-24 text-gray-900">تعديل الكورس</h2>
+              <h2 className="bold-24 text-gray-900">تعديل الكورس: {selectedCourse.name}</h2>
               <button
-                onClick={() => setShowEditModal(false)}
+                onClick={closeEditModal}
                 className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
@@ -524,6 +641,7 @@ const canDeleteCourse = permissions.canDeleteCourse;
                     setEditForm({ ...editForm, name: e.target.value })
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  maxLength={100}
                 />
               </div>
 
@@ -538,6 +656,7 @@ const canDeleteCourse = permissions.canDeleteCourse;
                     setEditForm({ ...editForm, description: e.target.value })
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  maxLength={500}
                 />
               </div>
 
@@ -560,6 +679,22 @@ const canDeleteCourse = permissions.canDeleteCourse;
                 )}
               </div>
 
+              {/* Preview Image if URL exists */}
+              {editForm.photoUrl && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600 mb-2">معاينة الصورة:</p>
+                  <img 
+                    src={editForm.photoUrl} 
+                    alt="Preview" 
+                    className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://via.placeholder.com/128?text=Invalid+URL";
+                    }}
+                  />
+                </div>
+              )}
+
               <div className="flex gap-4 pt-4">
                 <button
                   type="submit"
@@ -570,7 +705,7 @@ const canDeleteCourse = permissions.canDeleteCourse;
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowEditModal(false)}
+                  onClick={closeEditModal}
                   className="cursor-pointer flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
                 >
                   إلغاء
@@ -583,12 +718,12 @@ const canDeleteCourse = permissions.canDeleteCourse;
 
       {/* View Course Modal */}
       {showViewModal && selectedCourse && (
-        <div className="fixed inset-0 bg-black/20 bg-opacity-50 flexCenter z-50">
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="bold-24 text-gray-900">تفاصيل الكورس</h2>
               <button
-                onClick={() => setShowViewModal(false)}
+                onClick={closeViewModal}
                 className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <FiX className="w-6 h-6 text-gray-500" />
@@ -606,6 +741,10 @@ const canDeleteCourse = permissions.canDeleteCourse;
                         src={selectedCourse.photoUrl}
                         alt={selectedCourse.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "https://via.placeholder.com/400x200?text=No+Image";
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flexCenter">
@@ -659,6 +798,14 @@ const canDeleteCourse = permissions.canDeleteCourse;
                           : "غير محدد"}
                       </span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="regular-14 text-gray-600">
+                        المدرس:
+                      </span>
+                      <span className="bold-14 text-gray-900">
+                        {selectedCourse.instructorName || "غير محدد"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -666,7 +813,7 @@ const canDeleteCourse = permissions.canDeleteCourse;
               {/* Close Button */}
               <div className="flex justify-end pt-4 border-t border-gray-200">
                 <button
-                  onClick={() => setShowViewModal(false)}
+                  onClick={closeViewModal}
                   className="cursor-pointer bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors"
                 >
                   إغلاق
@@ -695,7 +842,7 @@ const canDeleteCourse = permissions.canDeleteCourse;
                 هل أنت متأكد من حذف كورس "{courseToDelete.name}"؟
               </p>
               <p className="regular-14 text-red-600 mb-6">
-                سيتم حذف جميع الدروس والمحتوى المرتبط بهذا الكورس نهائ ولا يمكن
+                سيتم حذف جميع الدروس والمحتوى المرتبط بهذا الكورس نهائياً ولا يمكن
                 التراجع عن هذا الإجراء.
               </p>
 
