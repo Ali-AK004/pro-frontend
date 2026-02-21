@@ -147,32 +147,32 @@ const InstructorAccessCodeManagement = () => {
     }
   };
 
-  const handleGenerateAccessCodes = async (e) => {
-    e.preventDefault();
-    try {
-      setIsLoading(true);
-      await instructorAPI.lessons.generateAccessCodes(
-        generateForm.lessonId,
-        generateForm.count
-      );
+  // const handleGenerateAccessCodes = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     setIsLoading(true);
+  //     await instructorAPI.lessons.generateAccessCodes(
+  //       generateForm.lessonId,
+  //       generateForm.count
+  //     );
 
-      toast.success(`تم إنشاء ${generateForm.count} كود وصول بنجاح`);
-      setShowGenerateModal(false);
-      setGenerateForm({ lessonId: "", count: 5 });
+  //     toast.success(`تم إنشاء ${generateForm.count} كود وصول بنجاح`);
+  //     setShowGenerateModal(false);
+  //     setGenerateForm({ lessonId: "", count: 5 });
 
-      // Reset pagination and refresh the access codes list
-      setPagination((prev) => ({
-        ...prev,
-        page: 0,
-        hasMore: true,
-      }));
-      await fetchAccessCodes();
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في إنشاء أكواد الوصول"));
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     // Reset pagination and refresh the access codes list
+  //     setPagination((prev) => ({
+  //       ...prev,
+  //       page: 0,
+  //       hasMore: true,
+  //     }));
+  //     await fetchAccessCodes();
+  //   } catch (error) {
+  //     toast.error(handleAPIError(error, "فشل في إنشاء أكواد الوصول"));
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
   const copyToClipboard = (code) => {
     navigator.clipboard
       .writeText(code)
@@ -254,14 +254,14 @@ const InstructorAccessCodeManagement = () => {
             <span className="hidden sm:inline">تحميل الأكواد</span>
             <span className="sm:hidden">تحميل</span>
           </button>
-          <button
+          {/* <button
             onClick={() => setShowGenerateModal(true)}
             className="cursor-pointer bg-secondary flex-1/2 text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl"
           >
             <FiPlus className="w-4 h-4 lg:w-5 lg:h-5" />
             <span className="hidden sm:inline">إنشاء أكواد جديدة</span>
             <span className="sm:hidden">جديد</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -432,12 +432,12 @@ const InstructorAccessCodeManagement = () => {
                     <p className="regular-14 text-gray-600 mb-4">
                       لا توجد أكواد وصول للعرض
                     </p>
-                    <button
+                    {/* <button
                       onClick={() => setShowGenerateModal(true)}
                       className="cursor-pointer bg-secondary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
                     >
                       إنشاء أول كود
-                    </button>
+                    </button> */}
                   </td>
                 </tr>
               ) : (
@@ -554,12 +554,12 @@ const InstructorAccessCodeManagement = () => {
             <p className="regular-14 text-gray-600 mb-4">
               لا توجد أكواد وصول للعرض
             </p>
-            <button
+            {/* <button
               onClick={() => setShowGenerateModal(true)}
               className="cursor-pointer bg-secondary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
             >
               إنشاء أول كود
-            </button>
+            </button> */}
           </div>
         ) : (
           filteredCodes.map((code, index) => (
@@ -688,7 +688,7 @@ const InstructorAccessCodeManagement = () => {
       </div>
 
       {/* Generate Access Codes Modal */}
-      {showGenerateModal && (
+      {/* {showGenerateModal && (
         <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
@@ -785,7 +785,7 @@ const InstructorAccessCodeManagement = () => {
             </form>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

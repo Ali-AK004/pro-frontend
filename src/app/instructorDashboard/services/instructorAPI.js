@@ -328,13 +328,13 @@ export const instructorAPI = {
     },
 
     // Generate access codes for lesson
-    generateAccessCodes: (lessonId, count) => {
-      // Clear access codes cache for this lesson
-      clearCache(`accessCodes_${lessonId}`);
-      return apiClient.post(
-        `/lessons/${lessonId}/generate-codes?count=${count}`,
-      );
-    },
+    // generateAccessCodes: (lessonId, count) => {
+    //   // Clear access codes cache for this lesson
+    //   clearCache(`accessCodes_${lessonId}`);
+    //   return apiClient.post(
+    //     `/lessons/${lessonId}/generate-codes?count=${count}`,
+    //   );
+    // },
 
     // Check if lesson has exam
     hasExam: (lessonId) =>
