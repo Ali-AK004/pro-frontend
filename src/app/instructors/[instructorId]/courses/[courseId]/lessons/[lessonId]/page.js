@@ -60,6 +60,8 @@ const LessonPage = () => {
     }
   }, [lessonId]);
 
+
+
   // Update URL hash when tab changes and read from hash on load
   useEffect(() => {
     const handleHashChange = () => {
@@ -101,6 +103,8 @@ const LessonPage = () => {
     };
   }, []);
 
+
+
   useEffect(() => {
     if (
       examStarted &&
@@ -125,7 +129,10 @@ const LessonPage = () => {
       setError(null);
 
       const response = await studentAPI.lessons.getLessonDetails(lessonId);
-      setLessonData(response.data);
+      setLessonData({
+        ...response.data,
+        remainingVideoViews: response.data.remainingVideoViews || 0
+      });
 
       // Fetch instructor data using URL parameter (more reliable)
       try {
@@ -152,6 +159,18 @@ const LessonPage = () => {
       toast.error(handleAPIError(error, "فشل في تحميل بيانات الدرس"));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const recordVideoView = async () => {
+    try {
+      const response = await studentAPI.lessons.recordVideoView(lessonId);
+      // Update remaining views from response
+      setLessonData(prev => ({ ...prev, remainingVideoViews: response.data.remainingVideoViews }));
+      return response;
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تسجيل المشاهدة"));
+      throw error;
     }
   };
 
@@ -368,11 +387,10 @@ const LessonPage = () => {
   const handleVideoComplete = async () => {
     try {
       await studentAPI.lessons.markVideoWatched(lessonId);
-      toast.success("تم تسجيل مشاهدة الفيديو");
-      // Refresh lesson data
-      await fetchLessonData();
+      toast.success("تم تسجيل المشاهدة");
+      await fetchLessonData(); // تحديث البيانات (بما فيها الحالة)
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تسجيل مشاهدة الفيديو"));
+      toast.error(handleAPIError(error, "فشل في تسجيل المشاهدة"));
     }
   };
 
@@ -599,6 +617,8 @@ const LessonPage = () => {
                 canAccess={canAccessVideo}
                 accessError={accessError}
                 progressStatus={lessonData?.progress?.progressStatus}
+                remainingVideoViews={lessonData?.remainingVideoViews}
+                onRecordView={recordVideoView}
               />
             )}
 
@@ -635,32 +655,29 @@ const TabButton = ({
   return (
     <button
       onClick={() => canClick && setActiveTab(id)}
-      className={`group relative flex items-center gap-3 px-6 py-4 rounded-t-2xl transition-all duration-300 font-semibold cursor-pointer ${
-        isActive
-          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
-          : canClick
-            ? "bg-white/80 backdrop-blur-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 shadow-sm hover:shadow-md border border-gray-200 hover:border-blue-300"
-            : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-300"
-      }`}
+      className={`group relative flex items-center gap-3 px-6 py-4 rounded-t-2xl transition-all duration-300 font-semibold cursor-pointer ${isActive
+        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
+        : canClick
+          ? "bg-white/80 backdrop-blur-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 shadow-sm hover:shadow-md border border-gray-200 hover:border-blue-300"
+          : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-300"
+        }`}
       disabled={!canClick}
     >
       <div
-        className={`p-2 rounded-lg transition-all duration-300 ${
-          isActive
-            ? "bg-white/20"
-            : canClick
-              ? "bg-gray-100 group-hover:bg-blue-100"
-              : "bg-gray-200"
-        }`}
+        className={`p-2 rounded-lg transition-all duration-300 ${isActive
+          ? "bg-white/20"
+          : canClick
+            ? "bg-gray-100 group-hover:bg-blue-100"
+            : "bg-gray-200"
+          }`}
       >
         <Icon
-          className={`w-5 h-5 transition-all duration-300 ${
-            isActive
-              ? "text-white"
-              : canClick
-                ? "text-gray-600 group-hover:text-blue-600"
-                : "text-gray-400"
-          }`}
+          className={`w-5 h-5 transition-all duration-300 ${isActive
+            ? "text-white"
+            : canClick
+              ? "text-gray-600 group-hover:text-blue-600"
+              : "text-gray-400"
+            }`}
         />
       </div>
       <span className="text-sm">{label}</span>
@@ -768,7 +785,7 @@ const OverviewTab = ({
               </span>
             </div>
 
-            {instructorData.fullname && (
+            {instructorData && instructorData.fullname && (
               <div className="flex items-center gap-3">
                 <FaUser className="w-4 h-4 text-gray-500" />
                 <span className="regular-14 text-gray-700">
@@ -920,11 +937,10 @@ const ExamTab = ({
       <div className="bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           <div
-            className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-6 ${
-              examResult.passed
-                ? "bg-green-100 text-green-600"
-                : "bg-red-100 text-red-600"
-            }`}
+            className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-6 ${examResult.passed
+              ? "bg-green-100 text-green-600"
+              : "bg-red-100 text-red-600"
+              }`}
           >
             {examResult.passed ? (
               <FaCheckCircle className="w-12 h-12" />
@@ -988,9 +1004,8 @@ const ExamTab = ({
               <div>
                 <p className="text-sm text-gray-500">درجتك</p>
                 <p
-                  className={`text-2xl font-bold ${
-                    examResult.passed ? "text-green-600" : "text-red-600"
-                  }`}
+                  className={`text-2xl font-bold ${examResult.passed ? "text-green-600" : "text-red-600"
+                    }`}
                 >
                   {studentTotalPoints} / {totalPossiblePoints}
                 </p>
@@ -1013,11 +1028,10 @@ const ExamTab = ({
               return (
                 <div
                   key={questionId}
-                  className={`p-4 border rounded-lg ${
-                    result.correct
-                      ? "bg-green-50 border-green-200"
-                      : "bg-red-50 border-red-200"
-                  }`}
+                  className={`p-4 border rounded-lg ${result.correct
+                    ? "bg-green-50 border-green-200"
+                    : "bg-red-50 border-red-200"
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -1035,11 +1049,10 @@ const ExamTab = ({
                       )}
                     </div>
                     <span
-                      className={`p-3 rounded-full flexCenter text-sm ${
-                        result.correct
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
+                      className={`p-3 rounded-full flexCenter text-sm ${result.correct
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                        }`}
                     >
                       {result.correct ? "صحيح" : "خطأ"}
                     </span>
@@ -1198,11 +1211,10 @@ const ExamTab = ({
         {/* Timer Display */}
         <div className="mb-6">
           <div
-            className={`inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-2xl shadow-lg ${
-              timeRemaining <= 300
-                ? "bg-red-500 text-white animate-pulse"
-                : "bg-white/80 text-gray-800"
-            }`}
+            className={`inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-2xl shadow-lg ${timeRemaining <= 300
+              ? "bg-red-500 text-white animate-pulse"
+              : "bg-white/80 text-gray-800"
+              }`}
           >
             <FaClock className="w-6 h-6" />
             <span>الوقت المتبقي: {formatTimeRemaining(timeRemaining)}</span>
@@ -1263,18 +1275,16 @@ const ExamTab = ({
               {question.answers?.map((answer, answerIndex) => (
                 <label
                   key={answer.id}
-                  className={`group/answer flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md ${
-                    isAnswerSelected(question.id, answer.id)
-                      ? "border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 shadow-lg"
-                      : "border-gray-200 hover:border-blue-300 bg-white/50 hover:bg-blue-50/50"
-                  }`}
+                  className={`group/answer flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md ${isAnswerSelected(question.id, answer.id)
+                    ? "border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 shadow-lg"
+                    : "border-gray-200 hover:border-blue-300 bg-white/50 hover:bg-blue-50/50"
+                    }`}
                 >
                   <div
-                    className={`relative flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300 ${
-                      isAnswerSelected(question.id, answer.id)
-                        ? "border-blue-500 bg-blue-500"
-                        : "border-gray-300 group-hover/answer:border-blue-400"
-                    }`}
+                    className={`relative flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300 ${isAnswerSelected(question.id, answer.id)
+                      ? "border-blue-500 bg-blue-500"
+                      : "border-gray-300 group-hover/answer:border-blue-400"
+                      }`}
                   >
                     <input
                       type={
@@ -1300,20 +1310,18 @@ const ExamTab = ({
 
                   <div className="flex items-center gap-3 flex-1">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                        isAnswerSelected(question.id, answer.id)
-                          ? "bg-white/20 text-blue-700"
-                          : "bg-gray-100 text-gray-600 group-hover/answer:bg-blue-100 group-hover/answer:text-blue-600"
-                      }`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${isAnswerSelected(question.id, answer.id)
+                        ? "bg-white/20 text-blue-700"
+                        : "bg-gray-100 text-gray-600 group-hover/answer:bg-blue-100 group-hover/answer:text-blue-600"
+                        }`}
                     >
                       {String.fromCharCode(65 + answerIndex)}
                     </div>
                     <span
-                      className={`text-lg font-medium transition-colors duration-300 ${
-                        isAnswerSelected(question.id, answer.id)
-                          ? "text-blue-900"
-                          : "text-gray-700 group-hover/answer:text-blue-700"
-                      }`}
+                      className={`text-lg font-medium transition-colors duration-300 ${isAnswerSelected(question.id, answer.id)
+                        ? "text-blue-900"
+                        : "text-gray-700 group-hover/answer:text-blue-700"
+                        }`}
                     >
                       {answer.answerText}
                     </span>
@@ -1346,11 +1354,10 @@ const ExamTab = ({
           <button
             onClick={handleManualSubmit}
             disabled={!allQuestionsAnswered || isSubmitting}
-            className={`group relative inline-flex items-center gap-3 px-12 py-4 rounded-2xl font-bold text-lg transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
-              allQuestionsAnswered && !isSubmitting
-                ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
+            className={`group relative inline-flex items-center gap-3 px-12 py-4 rounded-2xl font-bold text-lg transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${allQuestionsAnswered && !isSubmitting
+              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
           >
             {isSubmitting ? (
               <>
@@ -1387,16 +1394,79 @@ const VideoTab = ({
   accessError,
   videoUrl,
   progressStatus,
+  remainingVideoViews,
+  onRecordView,
 }) => {
+  const [viewRecordError, setViewRecordError] = useState(null);
+  const hasRecordedView = useRef(false);
+  const autoMarkTriggered = useRef(false);
+
+  useEffect(() => {
+    if (canAccess && remainingVideoViews === 0 &&
+      progressStatus !== 'VIDEO_WATCHED' &&
+      progressStatus !== 'ASSIGNMENT_DONE' &&
+      !autoMarkTriggered.current) {
+      autoMarkTriggered.current = true;
+      onVideoComplete();
+    }
+  }, [canAccess, remainingVideoViews, progressStatus, onVideoComplete]);
+
+  useEffect(() => {
+    if (canAccess && remainingVideoViews > 0 && !hasRecordedView.current) {
+      onRecordView()
+        .then((response) => {
+          hasRecordedView.current = true;
+          const newRemaining = response?.data?.remainingVideoViews;
+          if (newRemaining === 0 &&
+            progressStatus !== 'VIDEO_WATCHED' &&
+            progressStatus !== 'ASSIGNMENT_DONE' &&
+            !autoMarkTriggered.current) {
+            autoMarkTriggered.current = true;
+            onVideoComplete();
+          }
+        })
+        .catch((err) => {
+          setViewRecordError(err.message || "فشل في تسجيل المشاهدة");
+        });
+    }
+  }, [canAccess, remainingVideoViews, onRecordView, progressStatus, onVideoComplete]);
+
   if (!canAccess) {
+    return <AccessDenied message={accessError} />;
+  }
+
+  if (viewRecordError) {
+    return <div className="text-red-500">{viewRecordError}</div>;
+  }
+
+  if (remainingVideoViews <= 0 && progressStatus !== 'VIDEO_WATCHED' && progressStatus !== 'ASSIGNMENT_DONE') {
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="text-center">
           <FaLock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="bold-18 text-gray-600 mb-2">الفيديو مقفل</h3>
+          <h3 className="bold-18 text-gray-600 mb-2">انتهت المشاهدات المتاحة</h3>
           <p className="regular-14 text-gray-500">
-            {accessError ||
-              "تحتاج إلى اجتياز الامتحان أولاً للوصول إلى الفيديو"}
+            لقد استنفدت عدد المشاهدات المسموح بها. يرجى الضغط على زر "تم المشاهدة" إذا لم يتم التحديث تلقائياً.
+          </p>
+          <button
+            onClick={onVideoComplete}
+            className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors"
+          >
+            تم المشاهدة
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (remainingVideoViews <= 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="text-center">
+          <FaLock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h3 className="bold-18 text-gray-600 mb-2">انتهت المشاهدات المتاحة</h3>
+          <p className="regular-14 text-gray-500">
+            لقد استنفدت عدد المشاهدات المسموح بها (4). لا يمكنك مشاهدة الفيديو مرة أخرى.
           </p>
         </div>
       </div>
@@ -1404,30 +1474,25 @@ const VideoTab = ({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm md:p-6">
-      <h2 className="bold-24 text-gray-900 mb-6 mx-2 hidden lg:block">
-        فيديو الدرس
-      </h2>
+    <><div>
+      <p className="text-sm text-gray-500 mb-2">المشاهدات المتبقية: {remainingVideoViews - 1}</p>
+      <LessonVideoPlayer
+        lesson={{
+          id: lesson?.id,
+          name: lesson?.name,
+          onVideoEnd: onVideoComplete,
+          description: lesson?.description,
+          videoUrl: videoUrl || lesson?.videoUrl,
+          videoThumbnailUrl: lesson?.videoThumbnailUrl,
+          videoDuration: lesson?.videoDuration,
+          videoStatus: lesson?.videoStatus,
+          hasVideo: !!(videoUrl || lesson?.videoUrl),
+        }}
+        onVideoEnd={onVideoComplete}
+        autoplay={false}
+        showVideoInfo={true} />
 
-      <div className="w-[calc(100% + 1px)] -mx-10 -mt-10 md:-mx-15 lg:mx-0 lg:mt-0 md:w-auto">
-        <LessonVideoPlayer
-          lesson={{
-            id: lesson?.id,
-            name: lesson?.name,
-            description: lesson?.description,
-            videoUrl: videoUrl || lesson?.videoUrl,
-            videoThumbnailUrl: lesson?.videoThumbnailUrl,
-            videoDuration: lesson?.videoDuration,
-            videoStatus: lesson?.videoStatus,
-            hasVideo: !!(videoUrl || lesson?.videoUrl),
-          }}
-          onVideoEnd={onVideoComplete}
-          autoplay={false}
-          showVideoInfo={true}
-        />
-      </div>
-
-      <div className="bg-blue-50 border mt-5 border-blue-200 rounded-lg p-4">
+    </div><div className="bg-blue-50 border mt-5 border-blue-200 rounded-lg p-4">
         <div className="flex items-center flex-col md:flex-row gap-6 justify-between">
           <div className="flex items-center gap-3">
             <FaEye className="w-5 h-5 text-blue-500" />
@@ -1440,25 +1505,21 @@ const VideoTab = ({
           </div>
           <button
             onClick={onVideoComplete}
-            disabled={
-              progressStatus === "VIDEO_WATCHED" ||
+            disabled={progressStatus === "VIDEO_WATCHED" ||
+              progressStatus === "ASSIGNMENT_DONE"}
+            className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-colors ${progressStatus === "VIDEO_WATCHED" ||
               progressStatus === "ASSIGNMENT_DONE"
-            }
-            className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-colors ${
-              progressStatus === "VIDEO_WATCHED" ||
-              progressStatus === "ASSIGNMENT_DONE"
-                ? "bg-green-100 text-green-700 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700"
-            }`}
+              ? "bg-green-100 text-green-700 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700"}`}
           >
             {progressStatus === "VIDEO_WATCHED" ||
-            progressStatus === "ASSIGNMENT_DONE"
+              progressStatus === "ASSIGNMENT_DONE"
               ? "✓ تم المشاهدة"
               : "تم المشاهدة"}
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -1630,11 +1691,10 @@ const AssignmentTab = ({
             <button
               onClick={onSubmit}
               disabled={!submission.trim() || isSubmitting || isOverdue}
-              className={`px-6 py-2 rounded-lg cursor-pointer bold-14 transition-colors ${
-                submission.trim() && !isSubmitting && !isOverdue
-                  ? "bg-accent text-white hover:bg-opacity-90"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
+              className={`px-6 py-2 rounded-lg cursor-pointer bold-14 transition-colors ${submission.trim() && !isSubmitting && !isOverdue
+                ? "bg-accent text-white hover:bg-opacity-90"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
             >
               {isSubmitting ? "جاري التسليم..." : "تسليم الواجب"}
             </button>
@@ -1647,6 +1707,24 @@ const AssignmentTab = ({
           )}
         </div>
       )}
+    </div>
+  );
+};
+
+// Access Denied Component
+const AccessDenied = ({ message }) => {
+  return (
+    <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-3xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-400/20 to-orange-400/20 rounded-full blur-2xl"></div>
+      <div className="relative text-center">
+        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-red-500 to-orange-600 rounded-full mb-6 shadow-lg">
+          <FaLock className="w-12 h-12 text-white" />
+        </div>
+        <h3 className="text-3xl font-bold text-gray-900 mb-4">الدخول مقيد</h3>
+        <p className="text-lg text-gray-600 leading-relaxed max-w-md mx-auto">
+          {message || "تحتاج إلى شراء الدرس للوصول إلى هذا المحتوى والاستفادة من جميع المزايا التعليمية"}
+        </p>
+      </div>
     </div>
   );
 };

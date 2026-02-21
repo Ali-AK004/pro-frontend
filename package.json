@@ -13,7 +13,7 @@
     "critters": "^0.0.23",
     "hls.js": "^1.6.7",
     "isomorphic-dompurify": "^2.9.0",
-    "next": "15.3.4",
+    "next": "^15.5.12",
     "postcss": "^8.5.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -24,8 +24,8 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "eslint": "^9.30.1",
-    "eslint-config-next": "^15.3.5",
+    "eslint": "^4.0.0",
+    "eslint-config-next": "^0.2.4",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.11"
   }

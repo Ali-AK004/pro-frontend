@@ -86,7 +86,7 @@ export const adminAPI = {
     getAllInstructors: () => apiClient.get("/instructors"),
 
     // Get all assistants
-    getAllAssistants: () => apiClient.get("/Assistants"),
+    getAllAssistants: () => apiClient.get("/assistants"),
 
     // Search students by username
     searchStudents: (usernamePart) => {
@@ -146,11 +146,11 @@ export const adminAPI = {
         timeout: 300000, // 5 minutes timeout for video uploads
         onUploadProgress: onUploadProgress
           ? (progressEvent) => {
-              const percentCompleted = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
-              );
-              onUploadProgress(percentCompleted);
-            }
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            onUploadProgress(percentCompleted);
+          }
           : undefined,
       }),
 
@@ -364,11 +364,11 @@ export const adminAPI = {
         timeout: 300000, // 5 minutes timeout for video uploads
         onUploadProgress: onUploadProgress
           ? (progressEvent) => {
-              const percentCompleted = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
-              );
-              onUploadProgress(percentCompleted);
-            }
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            onUploadProgress(percentCompleted);
+          }
           : undefined,
       });
     },

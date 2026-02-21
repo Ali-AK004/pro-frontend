@@ -12,6 +12,7 @@ const apiClient = axios.create({
   },
 });
 
+
 // Request interceptor for authentication
 apiClient.interceptors.request.use(
   (config) => {
@@ -92,7 +93,9 @@ export const studentAPI = {
       apiClient.get(
         `/students/lessons/${lessonId}/video-url?expirationSeconds=${expirationSeconds}`
       ),
+    recordVideoView: (lessonId) => apiClient.post(`/students/lessons/${lessonId}/record-view`),
   },
+
 
   // Payment Management
   payments: {
