@@ -142,11 +142,9 @@ const InstructorLessonManagement = () => {
 
     try {
       setIsLoading(true);
-      console.log("Creating lesson...");
 
       let res;
       if (selectedVideoFile) {
-        console.log("Uploading with video...");
         const formData = new FormData();
         formData.append("file", selectedVideoFile);
         formData.append("name", lessonForm.name);
@@ -161,19 +159,16 @@ const InstructorLessonManagement = () => {
           lessonForm.courseId,
           formData,
           (progress) => {
-            console.log("Upload progress:", progress);
             setUploadProgress(progress);
           }
         );
       } else {
-        console.log("Uploading without video...");
         res = await instructorAPI.lessons.create(
           lessonForm.courseId,
           lessonForm
         );
       }
 
-      console.log("API response:", res); // 👈 check if this logs
       toast.success("تم إنشاء الدرس بنجاح");
       setShowCreateModal(false);
       setLessonForm({
@@ -192,7 +187,6 @@ const InstructorLessonManagement = () => {
       console.error("Error creating lesson:", error);
       toast.error(handleAPIError(error, "فشل في إنشاء الدرس"));
     } finally {
-      console.log("Finally block hit"); // 👈 check if this logs
       setIsLoading(false);
       setUploadProgress(0);
     }

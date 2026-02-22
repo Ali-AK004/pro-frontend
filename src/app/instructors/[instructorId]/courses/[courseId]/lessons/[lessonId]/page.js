@@ -60,8 +60,6 @@ const LessonPage = () => {
     }
   }, [lessonId]);
 
-
-
   // Update URL hash when tab changes and read from hash on load
   useEffect(() => {
     const handleHashChange = () => {
@@ -102,8 +100,6 @@ const LessonPage = () => {
       }
     };
   }, []);
-
-
 
   useEffect(() => {
     if (
@@ -251,6 +247,7 @@ const LessonPage = () => {
       toast.error(handleAPIError(error, "فشل في تقديم الامتحان"));
     }
   };
+  
   const handleAutoSubmit = async () => {
     try {
       // Only submit if there are answers
@@ -279,13 +276,11 @@ const LessonPage = () => {
           : answer;
       });
 
-
       // Submit exam
       const response = await examAPI.exams.submit(
         lessonData.exam.id,
         formattedAnswers
       );
-
 
       // Add delay before fetching results
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -892,6 +887,7 @@ const ExamTab = ({
   examSubmitted,
   onRetry
 }) => {
+  console.log(examResult)
   if (!canAccess) {
     return (
       <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-3xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
@@ -1157,10 +1153,6 @@ const ExamTab = ({
                 </div>
                 <p className="text-gray-600 font-medium">دقيقة</p>
               </div>
-              {/* <div className="text-center">
-                <div className="text-3xl font-bold text-orange-600 mb-2">1</div>
-                <p className="text-gray-600 font-medium">محاولة واحدة</p>
-              </div> */}
             </div>
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
@@ -1386,7 +1378,7 @@ const ExamTab = ({
   );
 };
 
-// Video Tab Component
+// Video Tab Component - MODIFIED VERSION
 const VideoTab = ({
   lesson,
   onVideoComplete,
@@ -1398,8 +1390,33 @@ const VideoTab = ({
   onRecordView,
 }) => {
   const [viewRecordError, setViewRecordError] = useState(null);
-  const hasRecordedView = useRef(false);
+  const [isRecording, setIsRecording] = useState(false);
   const autoMarkTriggered = useRef(false);
+  const hasRecordedPageView = useRef(false);
+
+  // Record view on page load/refresh (but not on tab switches)
+  useEffect(() => {
+    const recordViewOnPageLoad = async () => {
+      // Check if we've already recorded a view in this component instance
+      // This prevents recording on tab switches since component remounts
+      if (
+        canAccess && 
+        remainingVideoViews > 0 && 
+        !hasRecordedPageView.current &&
+        progressStatus !== 'VIDEO_WATCHED' &&
+        progressStatus !== 'ASSIGNMENT_DONE'
+      ) {
+        hasRecordedPageView.current = true;
+        try {
+          await onRecordView();
+        } catch (error) {
+          console.error("Failed to record page load view:", error);
+        }
+      }
+    };
+
+    recordViewOnPageLoad();
+  }, [canAccess, remainingVideoViews, onRecordView, progressStatus]); // Run once when component mounts
 
   useEffect(() => {
     if (canAccess && remainingVideoViews === 0 &&
@@ -1411,26 +1428,44 @@ const VideoTab = ({
     }
   }, [canAccess, remainingVideoViews, progressStatus, onVideoComplete]);
 
-  useEffect(() => {
-    if (canAccess && remainingVideoViews > 0 && !hasRecordedView.current) {
-      onRecordView()
-        .then((response) => {
-          hasRecordedView.current = true;
-          const newRemaining = response?.data?.remainingVideoViews;
-          if (newRemaining === 0 &&
-            progressStatus !== 'VIDEO_WATCHED' &&
-            progressStatus !== 'ASSIGNMENT_DONE' &&
-            !autoMarkTriggered.current) {
-            autoMarkTriggered.current = true;
-            onVideoComplete();
-          }
-        })
-        .catch((err) => {
-          setViewRecordError(err.message || "فشل في تسجيل المشاهدة");
-        });
+  const handleWatchButtonClick = async () => {
+    if (
+      isRecording ||
+      progressStatus === "VIDEO_WATCHED" ||
+      progressStatus === "ASSIGNMENT_DONE"
+    ) {
+      return;
     }
-  }, [canAccess, remainingVideoViews, onRecordView, progressStatus, onVideoComplete]);
 
+    setIsRecording(true);
+    try {
+      // 1. Record a view if any views are left
+      if (remainingVideoViews > 0) {
+        await onRecordView(); // this will decrement remainingViews in parent
+      }
+
+      // 2. Mark video as watched (this will update progressStatus)
+      await onVideoComplete();
+
+      toast.success("تم تسجيل المشاهدة");
+    } catch (error) {
+      // Error toasts are already shown inside onRecordView/onVideoComplete
+    } finally {
+      setIsRecording(false);
+    }
+  };
+  useEffect(() => {
+    if (canAccess && remainingVideoViews === 0 &&
+      progressStatus !== 'VIDEO_WATCHED' &&
+      progressStatus !== 'ASSIGNMENT_DONE' &&
+      !autoMarkTriggered.current) {
+      autoMarkTriggered.current = true;
+      onVideoComplete();
+    }
+  }, [canAccess, remainingVideoViews, progressStatus, onVideoComplete]);
+
+  // REMOVED: The automatic view-recording useEffect that was causing tab switch views
+  
   if (!canAccess) {
     return <AccessDenied message={accessError} />;
   }
@@ -1449,10 +1484,13 @@ const VideoTab = ({
             لقد استنفدت عدد المشاهدات المسموح بها. يرجى الضغط على زر "تم المشاهدة" إذا لم يتم التحديث تلقائياً.
           </p>
           <button
-            onClick={onVideoComplete}
+            onClick={handleWatchButtonClick}
+            disabled={progressStatus === "VIDEO_WATCHED" || 
+                     progressStatus === "ASSIGNMENT_DONE" || 
+                     isRecording}
             className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors"
           >
-            تم المشاهدة
+            {isRecording ? "جاري التسجيل..." : "تم المشاهدة"}
           </button>
         </div>
       </div>
@@ -1475,7 +1513,7 @@ const VideoTab = ({
 
   return (
     <><div>
-      <p className="text-sm text-gray-500 mb-2">المشاهدات المتبقية: {remainingVideoViews - 1}</p>
+      <p className="text-sm text-gray-500 mb-2">المشاهدات المتبقية: {remainingVideoViews}</p>
       <LessonVideoPlayer
         lesson={{
           id: lesson?.id,
@@ -1504,16 +1542,22 @@ const VideoTab = ({
             </div>
           </div>
           <button
-            onClick={onVideoComplete}
-            disabled={progressStatus === "VIDEO_WATCHED" ||
-              progressStatus === "ASSIGNMENT_DONE"}
-            className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-colors ${progressStatus === "VIDEO_WATCHED" ||
+            onClick={handleWatchButtonClick}
+            disabled={
+              progressStatus === "VIDEO_WATCHED" ||
+              progressStatus === "ASSIGNMENT_DONE" ||
+              isRecording
+            }
+            className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-colors ${
+              progressStatus === "VIDEO_WATCHED" ||
               progressStatus === "ASSIGNMENT_DONE"
-              ? "bg-green-100 text-green-700 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                ? "bg-green-100 text-green-700 cursor-not-allowed"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
           >
-            {progressStatus === "VIDEO_WATCHED" ||
-              progressStatus === "ASSIGNMENT_DONE"
+            {isRecording ? "جاري التسجيل..." : 
+             progressStatus === "VIDEO_WATCHED" ||
+             progressStatus === "ASSIGNMENT_DONE"
               ? "✓ تم المشاهدة"
               : "تم المشاهدة"}
           </button>
