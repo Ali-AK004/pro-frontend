@@ -339,6 +339,38 @@ export const adminAPI = {
       ),
   },
 
+studentLessons: {
+  // Get paginated student lesson records with optional filters
+  getStudentLessons: (params) => {
+    // params can include: studentId, lessonId, status, page, size
+    return apiClient.get("/student-lessons", { params });
+  },
+
+  // Get single student lesson record by its ID
+  getStudentLesson: (studentLessonId) =>
+    apiClient.get(`/student-lessons/${studentLessonId}`),
+
+  // Update student lesson record
+  updateStudentLesson: (studentLessonId, data) =>
+    apiClient.put(`/student-lessons/${studentLessonId}`, data),
+
+  // Reset student lesson data (delete exam/assignment submissions, reset progress)
+  resetStudentLesson: (studentLessonId) =>
+    apiClient.post(`/student-lessons/${studentLessonId}/reset`),
+
+  // Grant new lesson access to a student
+  grantLessonAccess: (data) =>
+    apiClient.post("/student-lessons/grant", data),
+
+  // Revoke access (delete the record)
+  revokeLessonAccess: (studentLessonId) =>
+    apiClient.delete(`/student-lessons/${studentLessonId}`),
+
+  // Extend access by a number of days
+  extendLessonAccess: (studentLessonId, days) =>
+    apiClient.post(`/student-lessons/${studentLessonId}/extend?days=${days}`),
+},
+
   // Video Management
   videos: {
     // Upload a new video

@@ -17,6 +17,7 @@ import AccessCodeManagement from "./components/AccessCodeManagement";
 import LessonExpirationManagement from "./components/LessonExpirationManagement";
 import AIChat from "../components/AIChat";
 import PerformanceMonitor from "../components/PerformanceMonitor";
+import AdminStudentLessonsPage from "./components/AdminStudentLessonsPage";
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -79,6 +80,8 @@ const AdminDashboard = () => {
         );
       case "access-codes":
         return <AccessCodeManagement />;
+      case "student-lessons":
+        return <AdminStudentLessonsPage />;
       case "lesson-expiration":
         return <LessonExpirationManagement />;
       case "analytics":
