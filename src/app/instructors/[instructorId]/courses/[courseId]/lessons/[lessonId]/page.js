@@ -35,6 +35,7 @@ const LessonPage = () => {
   const { user } = useUserData();
   const examTimerRef = useRef(null);
   const autoSubmitGuardRef = useRef(false);
+  const hasViewBeenRecordedInSessionRef = useRef(false);
 
   // State management
   const [lessonData, setLessonData] = useState(null);
@@ -247,7 +248,7 @@ const LessonPage = () => {
       toast.error(handleAPIError(error, "فشل في تقديم الامتحان"));
     }
   };
-  
+
   const handleAutoSubmit = async () => {
     try {
       // Only submit if there are answers
@@ -614,6 +615,7 @@ const LessonPage = () => {
                 progressStatus={lessonData?.progress?.progressStatus}
                 remainingVideoViews={lessonData?.remainingVideoViews}
                 onRecordView={recordVideoView}
+                hasViewBeenRecordedInSessionRef={hasViewBeenRecordedInSessionRef}
               />
             )}
 
@@ -1388,35 +1390,37 @@ const VideoTab = ({
   progressStatus,
   remainingVideoViews,
   onRecordView,
+  hasViewBeenRecordedInSessionRef,
 }) => {
   const [viewRecordError, setViewRecordError] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const autoMarkTriggered = useRef(false);
-  const hasRecordedPageView = useRef(false);
 
-  // Record view on page load/refresh (but not on tab switches)
+  // Record view on component mount if not already recorded in this session
+  // This allows refresh to count as a view but tab switching to be free
   useEffect(() => {
-    const recordViewOnPageLoad = async () => {
-      // Check if we've already recorded a view in this component instance
-      // This prevents recording on tab switches since component remounts
+    const recordSessionView = async () => {
       if (
-        canAccess && 
-        remainingVideoViews > 0 && 
-        !hasRecordedPageView.current &&
+        canAccess &&
+        remainingVideoViews > 0 &&
+        !hasViewBeenRecordedInSessionRef.current &&
         progressStatus !== 'VIDEO_WATCHED' &&
         progressStatus !== 'ASSIGNMENT_DONE'
       ) {
-        hasRecordedPageView.current = true;
+        hasViewBeenRecordedInSessionRef.current = true;
         try {
           await onRecordView();
         } catch (error) {
-          console.error("Failed to record page load view:", error);
+          // Reset ref if recording fails so user can try again by refreshing
+          hasViewBeenRecordedInSessionRef.current = false;
+          setViewRecordError(error.message || "فشل في تسجيل المشاهدة");
         }
       }
     };
 
-    recordViewOnPageLoad();
-  }, [canAccess, remainingVideoViews, onRecordView, progressStatus]); // Run once when component mounts
+    recordSessionView();
+  }, [canAccess, remainingVideoViews, onRecordView, progressStatus, hasViewBeenRecordedInSessionRef]);
+
 
   useEffect(() => {
     if (canAccess && remainingVideoViews === 0 &&
@@ -1428,7 +1432,7 @@ const VideoTab = ({
     }
   }, [canAccess, remainingVideoViews, progressStatus, onVideoComplete]);
 
-  const handleWatchButtonClick = async () => {
+  const handleMarkAsWatched = async () => {
     if (
       isRecording ||
       progressStatus === "VIDEO_WATCHED" ||
@@ -1449,23 +1453,17 @@ const VideoTab = ({
 
       toast.success("تم تسجيل المشاهدة");
     } catch (error) {
-      // Error toasts are already shown inside onRecordView/onVideoComplete
+      // Error handled by props
     } finally {
       setIsRecording(false);
     }
   };
-  useEffect(() => {
-    if (canAccess && remainingVideoViews === 0 &&
-      progressStatus !== 'VIDEO_WATCHED' &&
-      progressStatus !== 'ASSIGNMENT_DONE' &&
-      !autoMarkTriggered.current) {
-      autoMarkTriggered.current = true;
-      onVideoComplete();
-    }
-  }, [canAccess, remainingVideoViews, progressStatus, onVideoComplete]);
 
-  // REMOVED: The automatic view-recording useEffect that was causing tab switch views
-  
+  const handleVideoEnd = async () => {
+    if (progressStatus === "VIDEO_WATCHED" || progressStatus === "ASSIGNMENT_DONE") return;
+    await handleMarkAsWatched();
+  };
+
   if (!canAccess) {
     return <AccessDenied message={accessError} />;
   }
@@ -1484,10 +1482,10 @@ const VideoTab = ({
             لقد استنفدت عدد المشاهدات المسموح بها. يرجى الضغط على زر "تم المشاهدة" إذا لم يتم التحديث تلقائياً.
           </p>
           <button
-            onClick={handleWatchButtonClick}
-            disabled={progressStatus === "VIDEO_WATCHED" || 
-                     progressStatus === "ASSIGNMENT_DONE" || 
-                     isRecording}
+            onClick={handleMarkAsWatched}
+            disabled={progressStatus === "VIDEO_WATCHED" ||
+              progressStatus === "ASSIGNMENT_DONE" ||
+              isRecording}
             className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors"
           >
             {isRecording ? "جاري التسجيل..." : "تم المشاهدة"}
@@ -1518,7 +1516,7 @@ const VideoTab = ({
         lesson={{
           id: lesson?.id,
           name: lesson?.name,
-          onVideoEnd: onVideoComplete,
+          onVideoEnd: handleMarkAsWatched,
           description: lesson?.description,
           videoUrl: videoUrl || lesson?.videoUrl,
           videoThumbnailUrl: lesson?.videoThumbnailUrl,
@@ -1526,7 +1524,7 @@ const VideoTab = ({
           videoStatus: lesson?.videoStatus,
           hasVideo: !!(videoUrl || lesson?.videoUrl),
         }}
-        onVideoEnd={onVideoComplete}
+        onVideoEnd={handleMarkAsWatched}
         autoplay={false}
         showVideoInfo={true} />
 
@@ -1542,24 +1540,23 @@ const VideoTab = ({
             </div>
           </div>
           <button
-            onClick={handleWatchButtonClick}
+            onClick={handleMarkAsWatched}
             disabled={
               progressStatus === "VIDEO_WATCHED" ||
               progressStatus === "ASSIGNMENT_DONE" ||
               isRecording
             }
-            className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-colors ${
-              progressStatus === "VIDEO_WATCHED" ||
+            className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-colors ${progressStatus === "VIDEO_WATCHED" ||
               progressStatus === "ASSIGNMENT_DONE"
-                ? "bg-green-100 text-green-700 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700"
-            }`}
+              ? "bg-green-100 text-green-700 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
           >
-            {isRecording ? "جاري التسجيل..." : 
-             progressStatus === "VIDEO_WATCHED" ||
-             progressStatus === "ASSIGNMENT_DONE"
-              ? "✓ تم المشاهدة"
-              : "تم المشاهدة"}
+            {isRecording ? "جاري التسجيل..." :
+              progressStatus === "VIDEO_WATCHED" ||
+                progressStatus === "ASSIGNMENT_DONE"
+                ? "✓ تم المشاهدة"
+                : "تم المشاهدة"}
           </button>
         </div>
       </div>
