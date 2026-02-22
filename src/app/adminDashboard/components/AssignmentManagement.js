@@ -182,6 +182,21 @@ const AssignmentManagement = () => {
     }
   };
 
+  // دوال جديدة
+  const handleReopenAssignment = async (assignmentId, studentId) => {
+    try {
+      setIsLoading(true);
+      await adminAPI.assignments.reopenAssignment(assignmentId, studentId);
+      toast.success('تم إعادة فتح الواجب للطالب');
+      // إعادة تحميل التسليمات
+      if (selectedAssignment) handleViewSubmissions(selectedAssignment);
+    } catch (error) {
+      toast.error(handleAPIError(error, 'فشل إعادة الفتح'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filteredAssignments = assignments.filter((assignment) =>
     assignment.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -332,6 +347,7 @@ const AssignmentManagement = () => {
           assignment={selectedAssignment}
           submissions={assignmentSubmissions}
           onGrade={handleGradeSubmission}
+          onReopen={handleReopenAssignment}
           isLoading={isLoading}
         />
       )}
@@ -497,6 +513,7 @@ const SubmissionsModal = ({
   assignment,
   submissions,
   onGrade,
+  onReopen,
   isLoading,
 }) => {
   const [gradingSubmission, setGradingSubmission] = useState(null);
@@ -608,11 +625,10 @@ const SubmissionsModal = ({
                             step="0.01"
                             value={gradeValue}
                             onChange={(e) => setGradeValue(e.target.value)}
-                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                              gradeErrors.grade
+                            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${gradeErrors.grade
                                 ? "border-red-300"
                                 : "border-gray-300"
-                            }`}
+                              }`}
                             placeholder={`من 0 إلى ${assignment.maxPoints}`}
                           />
                           {gradeErrors.grade && (
@@ -653,14 +669,22 @@ const SubmissionsModal = ({
                       </div>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => startGrading(submission)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-                    >
-                      {submission.grade !== null
-                        ? "تعديل التقييم"
-                        : "تقييم الواجب"}
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => startGrading(submission)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                      >
+                        {submission.grade !== null
+                          ? "تعديل التقييم"
+                          : "تقييم الواجب"}
+                      </button>
+                      <button
+                        onClick={() => onReopen(assignment.id, submission.studentId)}
+                        className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors cursor-pointer"
+                      >
+                        إعادة فتح
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}

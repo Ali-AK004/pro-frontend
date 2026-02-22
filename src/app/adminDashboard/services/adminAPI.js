@@ -70,6 +70,11 @@ generalApiClient.interceptors.response.use(
 );
 
 export const adminAPI = {
+  // ==================== DASHBOARD STATS ====================
+  dashboard: {
+    getStats: () => apiClient.get('/stats'),
+  },
+
   // User Management
   users: {
     // Create instructor
@@ -103,6 +108,10 @@ export const adminAPI = {
 
     // Update user (student, instructor, or assistant)
     updateUser: (userId, data) => apiClient.put(`/users/${userId}`, data),
+
+    // Update user password
+    updatePassword: (userId, data) =>
+      apiClient.put(`/users/${userId}/password`, data),
 
     // Update instructor profile - Fixed endpoint path
     updateInstructorProfile: (instructorId, data) =>
@@ -157,6 +166,19 @@ export const adminAPI = {
     // Update lesson
     update: (lessonId, data) => apiClient.put(`/lessons/${lessonId}`, data),
 
+    // ضمن lessons object
+updateWithVideo: (lessonId, formData, onUploadProgress) =>
+  apiClient.put(`/lessons/${lessonId}/with-video`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 300000,
+    onUploadProgress: onUploadProgress
+      ? (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onUploadProgress(percentCompleted);
+        }
+      : undefined,
+  }),
+  
     // Delete lesson
     delete: (lessonId) => apiClient.delete(`/lessons/${lessonId}`),
 
@@ -165,8 +187,15 @@ export const adminAPI = {
       apiClient.get(`/courses/${courseId}/lessons?page=${page}&size=${size}`),
 
     // Generate access codes
-    generateAccessCodes: (lessonId, count) =>
-      apiClient.post(`/lessons/${lessonId}/generate-codes?count=${count}`),
+    generateAccessCodes: (lessonId, count, expiryDate = null) => {
+      let url = `/lessons/${lessonId}/generate-codes?count=${count}`;
+      if (expiryDate) url += `&expiryDate=${expiryDate}`;
+      return apiClient.post(url);
+    },
+
+    // Copy lesson to another course
+    copy: (lessonId, targetCourseId) =>
+      apiClient.post(`/lessons/${lessonId}/copy?targetCourseId=${targetCourseId}`),
 
     // Check if lesson has exam
     hasExam: (lessonId) =>
@@ -206,6 +235,18 @@ export const adminAPI = {
     // Get exams by instructor
     getByInstructor: (instructorId) =>
       generalApiClient.get(`/exams/instructors/${instructorId}`),
+
+    // إضافة الدوال الجديدة:
+    updateExam: (examId, data) => generalApiClient.put(`/exams/${examId}`, data),
+    getExamResults: (examId, page = 0, size = 10) =>
+      generalApiClient.get(`/exams/${examId}/results?page=${page}&size=${size}`),
+    gradeSubmission: (submissionId, score, feedback = '') =>
+      generalApiClient.post(`/exams/submissions/${submissionId}/grade?score=${score}&feedback=${encodeURIComponent(feedback)}`),
+    copyExam: (examId, targetLessonId) =>
+      generalApiClient.post(`/exams/${examId}/copy?targetLessonId=${targetLessonId}`),
+
+    // الحصول على جميع الامتحانات مع فلترة (lessonId, instructorId)
+    getAllWithFilters: (params) => generalApiClient.get('/exams', { params }),
   },
 
   // Assignment Management
@@ -251,6 +292,18 @@ export const adminAPI = {
     // Get assignment submissions
     getSubmissions: (assignmentId) =>
       generalApiClient.get(`/assignments/${assignmentId}/submissions`),
+
+    // إضافة الدوال الجديدة:
+    updateAssignment: (assignmentId, data) => generalApiClient.put(`/assignments/${assignmentId}`, data),
+    getAssignmentSubmissions: (assignmentId, page = 0, size = 10) =>
+      generalApiClient.get(`/assignments/${assignmentId}/submissions?page=${page}&size=${size}`),
+    gradeSubmission: (submissionId, grade, feedback = '') =>
+      generalApiClient.post(`/assignments/submissions/${submissionId}/grade?grade=${grade}&feedback=${encodeURIComponent(feedback)}`),
+    reopenAssignment: (assignmentId, studentId) =>
+      generalApiClient.post(`/assignments/${assignmentId}/reopen?studentId=${studentId}`),
+
+    // الحصول على جميع الواجبات مع فلترة
+    getAllWithFilters: (params) => generalApiClient.get('/assignments', { params }),
   },
 
   // Access Code Management
@@ -273,6 +326,43 @@ export const adminAPI = {
     delete: (codeId) => apiClient.delete(`/access-codes/${codeId}`),
 
     deleteUsed: () => apiClient.delete("/access-codes/used"),
+
+    // تعديل دالة generate لتدعم تاريخ انتهاء
+    generate: (lessonId, count, expiryDate = null) => {
+      let url = `/lessons/${lessonId}/generate-codes?count=${count}`;
+      if (expiryDate) url += `&expiryDate=${expiryDate}`;
+      return apiClient.post(url);
+    },
+
+    // إرسال كود بالبريد
+    sendByEmail: (codeId, studentEmail) =>
+      apiClient.post(`/access-codes/${codeId}/send-email?studentEmail=${encodeURIComponent(studentEmail)}`),
+  },
+
+  // ==================== ADVANCED SEARCH ====================
+  search: {
+    users: (params) => apiClient.get('/users/search', { params }),
+  },
+
+  // ==================== EXPORT ====================
+  export: {
+    users: (role = null) => {
+      const url = role ? `/users/export?role=${role}` : '/users/export';
+      return apiClient.get(url, { responseType: 'blob' });
+    },
+    // يمكن إضافة تصدير للدروس، الأكواد، إلخ لاحقاً
+  },
+
+  // ==================== AUDIT LOGS ====================
+  auditLogs: {
+    getLogs: (page = 0, size = 20) =>
+      apiClient.get(`/audit-logs?page=${page}&size=${size}`),
+  },
+
+  // ==================== PAYMENT STATS ====================
+  payments: {
+    getStats: () => apiClient.get('/payments/stats'),
+    getAll: (page = 0, size = 10) => apiClient.get(`/payments?page=${page}&size=${size}`),
   },
 
   analytics: {
@@ -339,37 +429,37 @@ export const adminAPI = {
       ),
   },
 
-studentLessons: {
-  // Get paginated student lesson records with optional filters
-  getStudentLessons: (params) => {
-    // params can include: studentId, lessonId, status, page, size
-    return apiClient.get("/student-lessons", { params });
+  studentLessons: {
+    // Get paginated student lesson records with optional filters
+    getStudentLessons: (params) => {
+      // params can include: studentId, lessonId, status, page, size
+      return apiClient.get("/student-lessons", { params });
+    },
+
+    // Get single student lesson record by its ID
+    getStudentLesson: (studentLessonId) =>
+      apiClient.get(`/student-lessons/${studentLessonId}`),
+
+    // Update student lesson record
+    updateStudentLesson: (studentLessonId, data) =>
+      apiClient.put(`/student-lessons/${studentLessonId}`, data),
+
+    // Reset student lesson data (delete exam/assignment submissions, reset progress)
+    resetStudentLesson: (studentLessonId) =>
+      apiClient.post(`/student-lessons/${studentLessonId}/reset`),
+
+    // Grant new lesson access to a student
+    grantLessonAccess: (data) =>
+      apiClient.post("/student-lessons/grant", data),
+
+    // Revoke access (delete the record)
+    revokeLessonAccess: (studentLessonId) =>
+      apiClient.delete(`/student-lessons/${studentLessonId}`),
+
+    // Extend access by a number of days
+    extendLessonAccess: (studentLessonId, days) =>
+      apiClient.post(`/student-lessons/${studentLessonId}/extend?days=${days}`),
   },
-
-  // Get single student lesson record by its ID
-  getStudentLesson: (studentLessonId) =>
-    apiClient.get(`/student-lessons/${studentLessonId}`),
-
-  // Update student lesson record
-  updateStudentLesson: (studentLessonId, data) =>
-    apiClient.put(`/student-lessons/${studentLessonId}`, data),
-
-  // Reset student lesson data (delete exam/assignment submissions, reset progress)
-  resetStudentLesson: (studentLessonId) =>
-    apiClient.post(`/student-lessons/${studentLessonId}/reset`),
-
-  // Grant new lesson access to a student
-  grantLessonAccess: (data) =>
-    apiClient.post("/student-lessons/grant", data),
-
-  // Revoke access (delete the record)
-  revokeLessonAccess: (studentLessonId) =>
-    apiClient.delete(`/student-lessons/${studentLessonId}`),
-
-  // Extend access by a number of days
-  extendLessonAccess: (studentLessonId, days) =>
-    apiClient.post(`/student-lessons/${studentLessonId}/extend?days=${days}`),
-},
 
   // Video Management
   videos: {

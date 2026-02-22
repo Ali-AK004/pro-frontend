@@ -16,6 +16,8 @@ import {
   FiHash,
   FiChevronDown,
   FiChevronUp,
+  FiToggleLeft,
+  FiToggleRight,
 } from "react-icons/fi";
 
 const UserManagement = () => {
@@ -75,6 +77,43 @@ const UserManagement = () => {
     fetchAssistants();
   }, [activeUserType]);
 
+  const handleToggleUserStatus = async (user) => {
+    try {
+      setIsLoading(true);
+
+      // تحضير البيانات للتحديث (نرسل فقط الحقول المطلوبة)
+      const updateData = {
+        enabled: !user.enabled
+      };
+
+      await adminAPI.users.updateUser(user.id, updateData);
+      toast.success(`تم ${!user.enabled ? 'تفعيل' : 'تعطيل'} المستخدم بنجاح`);
+
+      // تحديث قائمة المستخدمين
+      setUsers(prevUsers =>
+        prevUsers.map(u =>
+          u.id === user.id ? { ...u, enabled: !u.enabled } : u
+        )
+      );
+
+      // تحديث قوائم المدرسين والمساعدين إذا لزم الأمر
+      if (user.role === 'INSTRUCTOR') {
+        setInstructors(prev =>
+          prev.map(i => i.id === user.id ? { ...i, enabled: !i.enabled } : i)
+        );
+      } else if (user.role === 'ASSISTANT') {
+        setAssistants(prev =>
+          prev.map(a => a.id === user.id ? { ...a, enabled: !a.enabled } : a)
+        );
+      }
+
+    } catch (error) {
+      toast.error(handleAPIError(error, 'فشل في تحديث حالة المستخدم'));
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
@@ -97,7 +136,7 @@ const UserManagement = () => {
       setIsLoading(false);
     }
   };
-
+  console.log(users);
   const fetchInstructors = async () => {
     try {
       const response = await adminAPI.users.getAllInstructors();
@@ -431,11 +470,10 @@ const UserManagement = () => {
           <button
             key={type.id}
             onClick={() => setActiveUserType(type.id)}
-            className={`px-4 py-2 md:px-6 md:py-3 cursor-pointer rounded-lg bold-14 md:bold-16 transition-all duration-300 ${
-              activeUserType === type.id
-                ? "bg-accent text-white shadow-lg"
-                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-            }`}
+            className={`px-4 py-2 md:px-6 md:py-3 cursor-pointer rounded-lg bold-14 md:bold-16 transition-all duration-300 ${activeUserType === type.id
+              ? "bg-accent text-white shadow-lg"
+              : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+              }`}
           >
             {type.label}
           </button>
@@ -479,90 +517,64 @@ const UserManagement = () => {
           </div>
         ) : (
           <>
-            {/* Desktop Table (hidden on mobile) */}
-            <div className="hidden xl:block overflow-x-auto">
-              <table className="w-full">
+            {/* Desktop Table - Simplified */}
+            <div className="block overflow-x-auto" style={{ width: '100%', overflowX: 'auto' }}>
+              <table className="w-full border-collapse" style={{ minWidth: '800px', tableLayout: 'fixed' }}>
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-4 text-right bold-14 text-gray-900">
-                      ID
-                    </th>
-                    <th className="px-6 py-4 text-right bold-14 text-gray-900">
-                      الاسم
-                    </th>
-                    <th className="px-6 py-4 text-right bold-14 text-gray-900">
-                      البريد الإلكتروني
-                    </th>
-                    <th className="px-6 py-4 text-right bold-14 text-gray-900">
-                      رقم الهاتف
-                    </th>
-                    <th className="px-6 py-4 text-right bold-14 text-gray-900">
-                      المحافظة
-                    </th>
-                    <th className="px-6 py-4 text-center bold-14 text-gray-900">
-                      الإجراءات
-                    </th>
+                    <th className="px-3 py-3 text-right text-xs font-bold text-gray-900 w-[70px]">المعرف</th>
+                    <th className="px-3 py-3 text-right text-xs font-bold text-gray-900 w-[150px]">المستخدم</th>
+                    <th className="px-3 py-3 text-right text-xs font-bold text-gray-900 w-[180px]">البريد الإلكتروني</th>
+                    <th className="px-3 py-3 text-right text-xs font-bold text-gray-900 w-[100px]">المحافظة</th>
+                    <th className="px-3 py-3 text-center text-xs font-bold text-gray-900 w-[70px]">الحالة</th>
+                    <th className="px-3 py-3 text-center text-xs font-bold text-gray-900 w-[120px]">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {users.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-3 text-xs text-gray-600 truncate" title={user.id}>
+                        {user.id.substring(0, 6)}...
+                      </td>
+                      <td className="px-3 py-3">
                         <div className="flex items-center gap-2">
-                          <FiHash className="w-4 h-4 text-gray-400" />
-                          <span className="regular-14 text-gray-600">
-                            {user.id}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-accent rounded-full flexCenter">
-                            <FiUser className="w-5 h-5 text-white" />
+                          <div className="w-8 h-8 bg-accent rounded-full flexCenter overflow-hidden flex-shrink-0">
+                            {user.avatarUrl ? (
+                              <img src={user.avatarUrl} alt={user.fullname} className="w-full h-full object-cover" />
+                            ) : (
+                              <FiUser className="w-4 h-4 text-white" />
+                            )}
                           </div>
-                          <div>
-                            <div className="bold-14 text-gray-900">
-                              {user.fullname || user.username}
-                            </div>
-                            <div className="regular-12 text-gray-500">
-                              @{user.username}
-                            </div>
+                          <div className="truncate">
+                            <div className="text-xs font-medium text-gray-900 truncate">{user.fullname || 'غير محدد'}</div>
+                            <div className="text-xs text-gray-500 truncate">@{user.username}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 regular-14 text-gray-900">
+                      <td className="px-3 py-3 text-xs text-gray-600 truncate" title={user.email}>
                         {user.email}
                       </td>
-                      <td className="px-6 py-4 regular-14 text-gray-900">
-                        {user.phoneNumber || "-"}
+                      <td className="px-3 py-3 text-xs text-gray-600 truncate" title={user.government}>
+                        {user.government || '-'}
                       </td>
-                      <td className="px-6 py-4 regular-14 text-gray-900">
-                        {user.government || "-"}
+                      <td className="px-3 py-3 text-center">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                          {user.enabled ? 'نشط' : 'معطل'}
+                        </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setShowViewModal(true);
-                            }}
-                            className="p-2 text-blue-600 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors"
-                            title="عرض التفاصيل"
-                          >
+                      <td className="px-3 py-3">
+                        <div className="flex items-center justify-center gap-1">
+                          <button onClick={() => handleToggleUserStatus(user)} className={`p-1 rounded hover:bg-gray-100 ${user.enabled ? 'text-orange-600' : 'text-green-600'}`} title={user.enabled ? 'تعطيل' : 'تفعيل'}>
+                            {user.enabled ? <FiToggleRight className="w-4 h-4 rotate-180" /> : <FiToggleLeft className="w-4 h-4" />}
+                          </button>
+                          <button onClick={() => { setSelectedUser(user); setShowViewModal(true); }} className="p-1 text-blue-600 hover:bg-blue-50 rounded" title="عرض">
                             <FiEye className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => handleEditUser(user)}
-                            className="p-2 text-green-600 hover:bg-green-50 cursor-pointer rounded-lg transition-colors"
-                            title="تعديل البيانات"
-                          >
+                          <button onClick={() => handleEditUser(user)} className="p-1 text-green-600 hover:bg-green-50 rounded" title="تعديل">
                             <FiEdit className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => handleDeleteClick(user.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
-                            title="حذف المستخدم"
-                          >
+                          <button onClick={() => handleDeleteClick(user.id)} className="p-1 text-red-600 hover:bg-red-50 rounded" title="حذف">
                             <FiTrash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -637,6 +649,21 @@ const UserManagement = () => {
                         </div>
                       )}
                       <div className="flex items-center justify-end gap-2 pt-2">
+                        {/* زر تبديل الحالة */}
+                        <button
+                          onClick={() => handleToggleUserStatus(user)}
+                          className={`p-2 rounded-sm transition-colors ${user.enabled
+                            ? 'text-orange-600 border bg-orange-600/20 border-orange-600'
+                            : 'text-green-600 border bg-green-600/20 border-green-600'
+                            }`}
+                          title={user.enabled ? 'تعطيل المستخدم' : 'تفعيل المستخدم'}
+                        >
+                          {user.enabled ? (
+                            <FiToggleRight className="w-4 h-4 rotate-180" />
+                          ) : (
+                            <FiToggleLeft className="w-4 h-4" />
+                          )}
+                        </button>
                         <button
                           onClick={() => {
                             setSelectedUser(user);
@@ -695,21 +722,19 @@ const UserManagement = () => {
               <div className="flex gap-2 md:gap-4">
                 <button
                   onClick={() => setCreateUserType("instructor")}
-                  className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer bold-14 transition-all ${
-                    createUserType === "instructor"
-                      ? "bg-accent text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer bold-14 transition-all ${createUserType === "instructor"
+                    ? "bg-accent text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
                 >
                   مدرس
                 </button>
                 <button
                   onClick={() => setCreateUserType("assistant")}
-                  className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer bold-14 transition-all ${
-                    createUserType === "assistant"
-                      ? "bg-accent text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer bold-14 transition-all ${createUserType === "assistant"
+                    ? "bg-accent text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
                 >
                   مساعد
                 </button>
@@ -1200,6 +1225,19 @@ const UserManagement = () => {
                     </div>
                   </div>
                 )}
+                <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
+                  {selectedUser.enabled ? (
+                    <FiToggleRight className="w-4 h-4 md:w-5 md:h-5 text-green-600 rotate-180" />
+                  ) : (
+                    <FiToggleLeft className="w-4 h-4 md:w-5 md:h-5 text-red-600" />
+                  )}
+                  <div>
+                    <p className="regular-12 text-gray-500">الحالة</p>
+                    <p className={`bold-14 ${selectedUser.enabled ? 'text-green-600' : 'text-red-600'}`}>
+                      {selectedUser.enabled ? 'نشط' : 'معطل'}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

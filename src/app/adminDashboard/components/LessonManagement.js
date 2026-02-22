@@ -175,34 +175,37 @@ const LessonManagement = () => {
     }
   };
 
-  const handleUpdateLesson = async (e) => {
-    e.preventDefault();
-    try {
-      setIsLoading(true);
+const handleUpdateLesson = async (e) => {
+  e.preventDefault();
+  try {
+    setIsLoading(true);
+
+    if (editVideoFile) {
+      // إذا تم اختيار ملف فيديو جديد، استخدم endpoint رفع الفيديو
+      const formData = new FormData();
+      formData.append("file", editVideoFile);
+      formData.append("name", editForm.name);
+      formData.append("description", editForm.description);
+      formData.append("price", editForm.price);
+      formData.append("free", "false"); // أو حسب الحالة
+      if (editForm.photoUrl) formData.append("photoUrl", editForm.photoUrl);
+
+      await adminAPI.lessons.updateWithVideo(selectedLesson.id, formData, (progress) => setUploadProgress(progress));
+    } else {
+      // تحديث بدون فيديو
       await adminAPI.lessons.update(selectedLesson.id, editForm);
-
-      // Update the local state immediately
-      setAllLessons((prevLessons) =>
-        prevLessons.map((lesson) =>
-          lesson.id === selectedLesson.id ? { ...lesson, ...editForm } : lesson
-        )
-      );
-
-      // Also update the filtered lessons if the current lesson is in view
-      setLessons((prevLessons) =>
-        prevLessons.map((lesson) =>
-          lesson.id === selectedLesson.id ? { ...lesson, ...editForm } : lesson
-        )
-      );
-
-      toast.success("تم تحديث الدرس بنجاح");
-      setShowEditModal(false);
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
-    } finally {
-      setIsLoading(false);
     }
-  };
+
+    toast.success("تم تحديث الدرس بنجاح");
+    setShowEditModal(false);
+    fetchAllLessons(); // إعادة تحميل الدروس
+  } catch (error) {
+    toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
+  } finally {
+    setIsLoading(false);
+    setUploadProgress(0);
+  }
+};
 
   const handleDeleteLesson = async () => {
     if (!lessonToDelete) return;

@@ -11,6 +11,7 @@ import {
   FiTrash2,
   FiChevronDown,
   FiChevronUp,
+  FiMail,
 } from "react-icons/fi";
 
 const AccessCodeManagement = () => {
@@ -40,6 +41,7 @@ const AccessCodeManagement = () => {
   const [generateForm, setGenerateForm] = useState({
     lessonId: "",
     count: 10,
+    expiryDate: "", // تاريخ انتهاء اختياري
   });
 
   useEffect(() => {
@@ -131,13 +133,10 @@ const AccessCodeManagement = () => {
     e.preventDefault();
     try {
       setIsLoading(true);
-      const response = await adminAPI.lessons.generateAccessCodes(
-        generateForm.lessonId,
-        generateForm.count
-      );
+      await adminAPI.accessCodes.generate(generateForm.lessonId, generateForm.count, generateForm.expiryDate);
       toast.success(`تم إنشاء ${generateForm.count} كود وصول بنجاح`);
       setShowGenerateModal(false);
-      setGenerateForm({ lessonId: "", count: 10 });
+      setGenerateForm({ lessonId: "", count: 10, expiryDate: "" });
       fetchAccessCodes();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في إنشاء أكواد الوصول"));
@@ -161,8 +160,7 @@ const AccessCodeManagement = () => {
     const codes = accessCodes
       .map(
         (item) =>
-          `${item.code} - ${item.lessonName || "غير محدد"} - ${
-            item.used ? "مستخدم" : "غير مستخدم"
+          `${item.code} - ${item.lessonName || "غير محدد"} - ${item.used ? "مستخدم" : "غير مستخدم"
           }`
       )
       .join("\n");
@@ -350,6 +348,9 @@ const AccessCodeManagement = () => {
                     <th className="px-6 py-4 text-right bold-14 text-gray-900 whitespace-nowrap min-w-[120px]">
                       تاريخ الإنشاء
                     </th>
+                    <th className="px-6 py-4 text-right bold-14 text-gray-900 whitespace-nowrap min-w-[120px]">
+                      تاريخ الانتهاء
+                    </th>
                     <th className="px-6 py-4 text-right bold-14 text-gray-900 whitespace-nowrap min-w-[100px]">
                       الإجراءات
                     </th>
@@ -383,11 +384,10 @@ const AccessCodeManagement = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm whitespace-nowrap ${
-                            item.used
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm whitespace-nowrap ${item.used
                               ? "bg-red-100 text-red-800"
                               : "bg-green-100 text-green-800"
-                          }`}
+                            }`}
                         >
                           {item.used ? (
                             <>
@@ -407,6 +407,9 @@ const AccessCodeManagement = () => {
                           {new Date(item.createdAt).toLocaleDateString("ar-EG")}
                         </div>
                       </td>
+                      <td className="px-6 py-4 regular-14 text-gray-500">
+                        {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString('ar-EG') : 'بدون'}
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <button
@@ -422,6 +425,20 @@ const AccessCodeManagement = () => {
                             title="حذف الكود"
                           >
                             <FiTrash2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              const email = prompt('أدخل البريد الإلكتروني للطالب:');
+                              if (email) {
+                                adminAPI.accessCodes.sendByEmail(item.id, email)
+                                  .then(() => toast.success('تم إرسال الكود'))
+                                  .catch(err => toast.error(handleAPIError(err)));
+                              }
+                            }}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
+                            title="إرسال بالبريد"
+                          >
+                            <FiMail className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -489,9 +506,8 @@ const AccessCodeManagement = () => {
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          item.used ? "bg-red-100" : "bg-green-100"
-                        }`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${item.used ? "bg-red-100" : "bg-green-100"
+                          }`}
                       >
                         {item.used ? (
                           <FiX className="w-5 h-5 text-red-600" />
@@ -550,11 +566,10 @@ const AccessCodeManagement = () => {
                       <div>
                         <p className="regular-12 text-gray-500">الحالة</p>
                         <span
-                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-                            item.used
+                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${item.used
                               ? "bg-red-100 text-red-800"
                               : "bg-green-100 text-green-800"
-                          }`}
+                            }`}
                         >
                           {item.used ? (
                             <>
@@ -676,6 +691,17 @@ const AccessCodeManagement = () => {
                 <p className="regular-12 text-gray-500 mt-1">
                   الحد الأقصى: 100 كود
                 </p>
+              </div>
+
+              <div>
+                <label className="block bold-14 mb-2">تاريخ انتهاء الصلاحية (اختياري)</label>
+                <input
+                  type="date"
+                  value={generateForm.expiryDate}
+                  onChange={(e) => setGenerateForm({ ...generateForm, expiryDate: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg"
+                  min={new Date().toISOString().split('T')[0]}
+                />
               </div>
 
               <div className="flex gap-3 md:gap-4 pt-4">

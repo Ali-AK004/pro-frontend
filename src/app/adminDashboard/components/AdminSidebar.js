@@ -110,6 +110,12 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       description: "إدارة ومراقبة انتهاء صلاحية الدروس",
     },
     {
+      id: "audit-logs",
+      label: "سجل الأحداث",
+      icon: FiClock,
+      description: "عرض سجل إجراءات المسؤولين",
+    },
+    {
       id: "ai-chat",
       label: "المساعد الذكي",
       icon: FiMessageCircle,
@@ -142,8 +148,8 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 right-0 w-80 lg:w-80 sm:w-72 bg-white/95 backdrop-blur-md shadow-2xl border-l border-gray-200/50 z-40 transform transition-transform duration-300 ease-in-out flex flex-col ${isMobileMenuOpen
-            ? "translate-x-0"
-            : "translate-x-full md:translate-x-0"
+          ? "translate-x-0"
+          : "translate-x-full md:translate-x-0"
           }`}
       >
         {/* Header */}
@@ -180,8 +186,8 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
                       setIsMobileMenuOpen(false); // Close mobile menu when item is selected
                     }}
                     className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 group cursor-pointer relative overflow-hidden ${isActive
-                        ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-xl transform scale-[1.02]"
-                        : "hover:bg-white/80 hover:shadow-lg text-gray-700 hover:text-red-600"
+                      ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-xl transform scale-[1.02]"
+                      : "hover:bg-white/80 hover:shadow-lg text-gray-700 hover:text-red-600"
                       }`}
                   >
                     {/* Background decoration for active state */}
@@ -191,14 +197,14 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
 
                     <div
                       className={`relative p-3 rounded-xl transition-all duration-300 ${isActive
-                          ? "bg-white/20 backdrop-blur-sm"
-                          : "bg-gray-100 group-hover:bg-red-50 group-hover:scale-110"
+                        ? "bg-white/20 backdrop-blur-sm"
+                        : "bg-gray-100 group-hover:bg-red-50 group-hover:scale-110"
                         }`}
                     >
                       <Icon
                         className={`w-5 h-5 transition-colors ${isActive
-                            ? "text-white"
-                            : "text-gray-600 group-hover:text-red-600"
+                          ? "text-white"
+                          : "text-gray-600 group-hover:text-red-600"
                           }`}
                       />
                     </div>
@@ -206,16 +212,16 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
                     <div className="text-right flex-1 relative">
                       <div
                         className={`text-base font-semibold transition-colors ${isActive
-                            ? "text-white"
-                            : "text-gray-900 group-hover:text-red-600"
+                          ? "text-white"
+                          : "text-gray-900 group-hover:text-red-600"
                           }`}
                       >
                         {item.label}
                       </div>
                       <div
                         className={`text-sm transition-colors ${isActive
-                            ? "text-white/80"
-                            : "text-gray-500 group-hover:text-red-500"
+                          ? "text-white/80"
+                          : "text-gray-500 group-hover:text-red-500"
                           }`}
                       >
                         {item.description}

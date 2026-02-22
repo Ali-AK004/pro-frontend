@@ -18,6 +18,7 @@ import LessonExpirationManagement from "./components/LessonExpirationManagement"
 import AIChat from "../components/AIChat";
 import PerformanceMonitor from "../components/PerformanceMonitor";
 import AdminStudentLessonsPage from "./components/AdminStudentLessonsPage";
+import AuditLogsPage from "./components/AuditLogsPage";
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -75,7 +76,7 @@ const AdminDashboard = () => {
             className="p-4 shadow-sm overflow-hidden"
             style={{ height: "100vh" }}
           >
-            <AIChat isOpen={true} onClose={() => {}} />
+            <AIChat isOpen={true} onClose={() => { }} />
           </div>
         );
       case "access-codes":
@@ -84,6 +85,8 @@ const AdminDashboard = () => {
         return <AdminStudentLessonsPage />;
       case "lesson-expiration":
         return <LessonExpirationManagement />;
+      case "audit-logs":
+        return <AuditLogsPage />;
       case "analytics":
         return <DashboardOverview />; // For now, use the same component
       default:

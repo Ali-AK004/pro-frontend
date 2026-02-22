@@ -10,6 +10,7 @@ import {
   FiClock,
   FiAward,
   FiBarChart,
+  FiCopy,
 } from "react-icons/fi";
 import ExamCreationModal from "./Modal/ExamCreationModal";
 
@@ -29,6 +30,17 @@ const ExamManagement = () => {
   const [examToDelete, setExamToDelete] = useState(null);
   const [selectedLessonFilter, setSelectedLessonFilter] = useState("");
   const [allExams, setAllExams] = useState([]);
+
+  // ... بعد useState الحالية، أضف:
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [copyExamData, setCopyExamData] = useState({ examId: '', targetLessonId: '' });
+  const [resultsPage, setResultsPage] = useState(0);
+  const [resultsSize] = useState(10);
+  const [resultsTotalPages, setResultsTotalPages] = useState(0);
+  const [showGradeModal, setShowGradeModal] = useState(false);
+  const [gradingSubmission, setGradingSubmission] = useState(null);
+  const [gradeValue, setGradeValue] = useState('');
+  const [feedback, setFeedback] = useState('');
 
   useEffect(() => {
     fetchLessons();
@@ -183,15 +195,49 @@ const ExamManagement = () => {
     setShowDeleteModal(true);
   };
 
-  const handleViewResults = async (exam) => {
+  // دالة نسخ الامتحان
+  const handleCopyExam = async () => {
     try {
       setIsLoading(true);
-      const response = await adminAPI.exams.getResults(exam.id);
+      await adminAPI.exams.copyExam(copyExamData.examId, copyExamData.targetLessonId);
+      toast.success('تم نسخ الامتحان بنجاح');
+      setShowCopyModal(false);
+      fetchExams();
+    } catch (error) {
+      toast.error(handleAPIError(error, 'فشل نسخ الامتحان'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // دالة عرض النتائج مع Pagination
+  const handleViewResults = async (exam, page = 0) => {
+    try {
+      setIsLoading(true);
+      const response = await adminAPI.exams.getExamResults(exam.id, page, resultsSize);
       setExamResults(response.data);
+      setResultsPage(response.data.number || 0);
+      setResultsTotalPages(response.data.totalPages || 0);
       setSelectedExam(exam);
       setShowResultsModal(true);
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل نتائج الامتحان"));
+      toast.error(handleAPIError(error, 'فشل تحميل النتائج'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // دالة التصحيح اليدوي
+  const handleGradeSubmission = async () => {
+    try {
+      setIsLoading(true);
+      await adminAPI.exams.gradeSubmission(gradingSubmission.submissionId, gradeValue, feedback);
+      toast.success('تم حفظ التصحيح');
+      setShowGradeModal(false);
+      // إعادة تحميل النتائج
+      if (selectedExam) handleViewResults(selectedExam, resultsPage);
+    } catch (error) {
+      toast.error(handleAPIError(error, 'فشل في حفظ التصحيح'));
     } finally {
       setIsLoading(false);
     }
@@ -359,6 +405,16 @@ const ExamManagement = () => {
                     <span className="hidden sm:inline">تعديل</span>
                   </button>
                   <button
+                    onClick={() => {
+                      setCopyExamData({ examId: exam.id, targetLessonId: '' });
+                      setShowCopyModal(true);
+                    }}
+                    className="flex-1 bg-purple-50 text-purple-600 py-3 border border-purple-600 px-2 sm:px-4 rounded-lg hover:bg-purple-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
+                  >
+                    <FiCopy className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">نسخ</span>
+                  </button>
+                  <button
                     onClick={() => openDeleteModal(exam)}
                     className="bg-red-50 flex-1 text-red-600 border border-red-600 py-3 px-2 sm:px-4 rounded-lg hover:bg-red-100 transition-colors cursor-pointer flexCenter"
                   >
@@ -420,7 +476,49 @@ const ExamManagement = () => {
           }}
           exam={selectedExam}
           results={examResults}
+          page={resultsPage}
+          totalPages={resultsTotalPages}
+          onPageChange={(p) => handleViewResults(selectedExam, p)}
+          onGrade={(submission) => {
+            setGradingSubmission(submission);
+            setGradeValue(submission.totalScore || '');
+            setFeedback('');
+            setShowGradeModal(true);
+          }}
         />
+      )}
+
+      {/* Grade Submission Modal */}
+      {showGradeModal && gradingSubmission && (
+        <div className="fixed inset-0 bg-black/50 flexCenter z-[60]">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h2 className="bold-24 mb-4">تصحيح يدوي</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">الدرجة (%)</label>
+                <input
+                  type="number"
+                  value={gradeValue}
+                  onChange={(e) => setGradeValue(e.target.value)}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-accent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">ملاحظات</label>
+                <textarea
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-accent"
+                  rows="3"
+                ></textarea>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={handleGradeSubmission} disabled={isLoading} className="flex-1 bg-accent text-white py-2 rounded-lg hover:bg-opacity-90">حفظ</button>
+              <button onClick={() => setShowGradeModal(false)} className="flex-1 bg-gray-200 py-2 rounded-lg hover:bg-gray-300">إلغاء</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Delete Confirmation Modal */}
@@ -468,12 +566,35 @@ const ExamManagement = () => {
           </div>
         </div>
       )}
+
+      {/* Copy Exam Modal */}
+      {showCopyModal && (
+        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <h2 className="bold-24 mb-4">نسخ الامتحان</h2>
+            <select
+              value={copyExamData.targetLessonId}
+              onChange={(e) => setCopyExamData({ ...copyExamData, targetLessonId: e.target.value })}
+              className="w-full p-3 border rounded-lg mb-4"
+            >
+              <option value="">اختر الدرس الهدف</option>
+              {lessons.map(lesson => (
+                <option key={lesson.id} value={lesson.id}>{lesson.name}</option>
+              ))}
+            </select>
+            <div className="flex gap-3">
+              <button onClick={handleCopyExam} disabled={!copyExamData.targetLessonId || isLoading} className="flex-1 bg-accent text-white py-2 rounded-lg">نسخ</button>
+              <button onClick={() => setShowCopyModal(false)} className="flex-1 bg-gray-200 py-2 rounded-lg">إلغاء</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 // Exam Results Modal Component
-const ExamResultsModal = ({ isOpen, onClose, exam, results }) => {
+const ExamResultsModal = ({ isOpen, onClose, exam, results, page, totalPages, onPageChange, onGrade }) => {
   if (!isOpen) return null;
 
   return (
@@ -498,33 +619,86 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results }) => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div className="bg-blue-50 p-4 rounded-lg text-center">
               <div className="text-2xl font-bold text-blue-600 mb-1">
-                {results.totalSubmissions}
+                {results.totalSubmissions || 0}
               </div>
               <div className="text-sm text-blue-600">إجمالي المحاولات</div>
             </div>
             <div className="bg-green-50 p-4 rounded-lg text-center">
               <div className="text-2xl font-bold text-green-600 mb-1">
-                {results.passedCount}
+                {results.passedCount || 0}
               </div>
               <div className="text-sm text-green-600">عدد الناجحين</div>
             </div>
             <div className="bg-purple-50 p-4 rounded-lg text-center">
               <div className="text-2xl font-bold text-purple-600 mb-1">
-                {results.passRate?.toFixed(1)}%
+                {results.passRate?.toFixed(1) || 0}%
               </div>
               <div className="text-sm text-purple-600">معدل النجاح</div>
             </div>
             <div className="bg-orange-50 p-4 rounded-lg text-center">
               <div className="text-2xl font-bold text-orange-600 mb-1">
-                {results.averageScore?.toFixed(1)}%
+                {results.averageScore?.toFixed(1) || 0}%
               </div>
               <div className="text-sm text-orange-600">المتوسط العام</div>
             </div>
           </div>
 
+          {/* Submissions List */}
+          <div className="mt-8">
+            <h3 className="bold-18 text-gray-900 mb-4">نتائج الطلاب</h3>
+            <div className="bg-white border rounded-lg overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200 text-right">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500">الطالب</th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500">الدرجة</th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500">الحالة</th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {(results.content || []).length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="px-6 py-8 text-center text-gray-500">لا توجد محاولات لهذا الاختبار بعد</td>
+                    </tr>
+                  ) : (
+                    (results.content || []).map(submission => (
+                      <tr key={submission.submissionId}>
+                        <td className="px-6 py-4 whitespace-nowrap">{submission.studentFullname || submission.studentUsername}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{submission.totalScore}%</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 rounded-full text-xs ${submission.passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            {submission.passed ? 'ناجح' : 'راسب'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button onClick={() => onGrade(submission)} className="text-accent hover:underline cursor-pointer">تصحيح يدوي</button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-6 gap-2">
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => onPageChange(i)}
+                    className={`px-3 py-1 rounded ${page === i ? 'bg-accent text-white' : 'bg-gray-200 hover:bg-gray-300'} cursor-pointer`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Question Statistics */}
           {results.questionStats && results.questionStats.length > 0 && (
-            <div>
+            <div className="mt-12">
               <h3 className="bold-18 text-gray-900 mb-4">إحصائيات الأسئلة</h3>
               <div className="space-y-4">
                 {results.questionStats.map((questionStat, index) => (
@@ -549,14 +723,14 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results }) => {
                         <div
                           className="bg-green-500 h-2 rounded-full"
                           style={{
-                            width: `${(questionStat.correctCount / questionStat.totalAttempts) * 100}%`,
+                            width: `${(questionStat.correctCount / (questionStat.totalAttempts || 1)) * 100}%`,
                           }}
                         ></div>
                       </div>
                       <span className="text-sm text-gray-600">
                         {(
                           (questionStat.correctCount /
-                            questionStat.totalAttempts) *
+                            (questionStat.totalAttempts || 1)) *
                           100
                         ).toFixed(1)}
                         %
