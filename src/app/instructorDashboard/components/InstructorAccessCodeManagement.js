@@ -310,7 +310,7 @@ const InstructorAccessCodeManagement = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6 mb-6">
         <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center gap-3">
             <div className="p-2 lg:p-3 bg-blue-100 rounded-lg">
@@ -351,28 +351,7 @@ const InstructorAccessCodeManagement = () => {
               </p>
             </div>
           </div>
-        </div>
-
-        <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="p-2 lg:p-3 bg-purple-100 rounded-lg">
-              <FiFileText className="w-5 lg:w-6 h-5 lg:h-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="regular-12 text-gray-500">معدل الاستخدام</p>
-              <p className="bold-16 lg:bold-20 text-gray-900">
-                {accessCodes.length > 0
-                  ? Math.round(
-                      (accessCodes.filter((c) => c.isUsed).length /
-                        accessCodes.length) *
-                        100
-                    )
-                  : 0}
-                %
-              </p>
-            </div>
-          </div>
-        </div>
+        </div>  
       </div>
 
       {/* Desktop Table View */}
