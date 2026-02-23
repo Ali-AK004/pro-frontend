@@ -1,633 +1,743 @@
-"use client";
-import React, { useState } from "react";
-import Link from "next/link";
-import { FaEyeSlash, FaRegEye } from "react-icons/fa";
-import authAPI from "../services/authAPI";
-import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
+import { examAPI } from "../../../services/examAPI";
+import {
+  FiX,
+  FiPlus,
+  FiTrash2,
+  FiSave,
+  FiBook,
+  FiClock,
+  FiAward,
+  FiHelpCircle,
+  FiAlertCircle,
+} from "react-icons/fi";
 
-const SignUp = () => {
-  const [formData, setFormData] = useState({
-    fullname: "",
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    nationalId: "",
-    phoneNumber: "",
-    parentPhoneNumber: "",
-    dateOfBirth: "",
-    government: "",
-  });
+const ExamCreationModal = ({
+  onClose,
+  onSubmit,
+  groupedLessons = [], // New prop for grouped lessons
+  lessons = [], // Keep for backward compatibility
+  courses = [], // Keep for backward compatibility
+  initialData = null,
+  isLoading = false,
+  isEdit = false,
+  errors = {},
+  setErrors = () => {},
+}) => {
+  const [examData, setExamData] = useState(
+    examAPI.validation.createDefaultExam()
+  );
 
-  const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-  const router = useRouter();
-
-  // قائمة المحافظات المصرية
-  const governorates = [
-    "القاهرة",
-    "الجيزة",
-    "الإسكندرية",
-    "الدقهلية",
-    "البحر الأحمر",
-    "البحيرة",
-    "الفيوم",
-    "الغربية",
-    "الإسماعيلية",
-    "المنوفية",
-    "المنيا",
-    "القليوبية",
-    "الوادي الجديد",
-    "السويس",
-    "أسوان",
-    "أسيوط",
-    "بني سويف",
-    "بورسعيد",
-    "دمياط",
-    "الشرقية",
-    "جنوب سيناء",
-    "كفر الشيخ",
-    "مطروح",
-    "الأقصر",
-    "قنا",
-    "شمال سيناء",
-    "سوهاج",
-  ];
-
-  // Debounced username check
-  const checkUsernameAvailability = async (username) => {
-    if (!username || username.length < 3) return;
-
-    setIsCheckingUsername(true);
-    try {
-      const response = await authAPI.checkUsername(username);
-      if (!response.available) {
-        setErrors((prev) => ({
-          ...prev,
-          username: "اسم المستخدم غير متاح",
-        }));
-      }
-    } catch (error) {
-      toast.error("خطأ في مراجعة اسم المستخدم");
-    } finally {
-      setIsCheckingUsername(false);
+  useEffect(() => {
+    if (initialData && isEdit) {
+      // Ensure all fields have proper default values to avoid controlled/uncontrolled issues
+      const defaultExam = examAPI.validation.createDefaultExam();
+      setExamData({
+        ...defaultExam,
+        ...initialData,
+        examId: initialData.id,
+        lessonId: initialData.lessonId || "",
+        title: initialData.title || "",
+        passingScore: initialData.passingScore || defaultExam.passingScore,
+        timeLimitMinutes:
+          initialData.timeLimitMinutes || defaultExam.timeLimitMinutes,
+        questions: initialData.questions || defaultExam.questions,
+      });
+    } else {
+      setExamData(examAPI.validation.createDefaultExam());
     }
-  };
+  }, [initialData, isEdit]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
+  const handleInputChange = (field, value) => {
+    setExamData((prev) => ({
       ...prev,
-      [name]: value,
+      [field]: value,
     }));
 
-    // Clear error when user starts typing in any field
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-        // Clear both phone errors if either phone field changes
-        ...(name === "phoneNumber" || name === "parentPhoneNumber"
-          ? {
-              phoneNumber: "",
-              parentPhoneNumber: "",
-            }
-          : {}),
-        // Clear confirm password error if password changes
-        ...(name === "password" ? { confirmPassword: "" } : {}),
-      }));
-    }
-
-    // Check username availability with debounce
-    if (name === "username" && value.length >= 3) {
-      if (window.usernameTimeout) {
-        clearTimeout(window.usernameTimeout);
-      }
-      window.usernameTimeout = setTimeout(() => {
-        checkUsernameAvailability(value);
-      }, 1000);
-    }
-
-    // Validate password match in real-time - FIXED VERSION
-    if (name === "password" || name === "confirmPassword") {
-      const passwordValue = name === "password" ? value : formData.password;
-      const confirmPasswordValue =
-        name === "confirmPassword" ? value : formData.confirmPassword;
-
-      if (
-        passwordValue &&
-        confirmPasswordValue &&
-        passwordValue !== confirmPasswordValue
-      ) {
-        setErrors((prev) => ({
-          ...prev,
-          confirmPassword: "كلمة المرور غير متطابقة",
-        }));
-      } else if (errors.confirmPassword) {
-        setErrors((prev) => ({
-          ...prev,
-          confirmPassword: "",
-        }));
-      }
-    }
-
-    // Validate phone numbers in real-time - FIXED VERSION
-    if (name === "phoneNumber" || name === "parentPhoneNumber") {
-      const phoneValue = name === "phoneNumber" ? value : formData.phoneNumber;
-      const parentPhoneValue =
-        name === "parentPhoneNumber" ? value : formData.parentPhoneNumber;
-
-      if (phoneValue && parentPhoneValue && phoneValue === parentPhoneValue) {
-        setErrors((prev) => ({
-          ...prev,
-          phoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
-          parentPhoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
-        }));
-      } else if (
-        errors.phoneNumber &&
-        errors.parentPhoneNumber &&
-        phoneValue !== parentPhoneValue
-      ) {
-        setErrors((prev) => ({
-          ...prev,
-          phoneNumber: "",
-          parentPhoneNumber: "",
-        }));
-      }
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleQuestionChange = (questionIndex, field, value) => {
+    setExamData((prev) => ({
+      ...prev,
+      questions: prev.questions.map((question, index) =>
+        index === questionIndex ? { ...question, [field]: value } : question
+      ),
+    }));
+  };
+
+  const handleAnswerChange = (questionIndex, answerIndex, field, value) => {
+    setExamData((prev) => ({
+      ...prev,
+      questions: prev.questions.map((question, qIndex) =>
+        qIndex === questionIndex
+          ? {
+              ...question,
+              answers: question.answers.map((answer, aIndex) =>
+                aIndex === answerIndex ? { ...answer, [field]: value } : answer
+              ),
+            }
+          : question
+      ),
+    }));
+  };
+
+  const addQuestion = () => {
+    setExamData((prev) => ({
+      ...prev,
+      questions: [
+        ...prev.questions,
+        examAPI.validation.createDefaultQuestion(),
+      ],
+    }));
+  };
+
+  const removeQuestion = (questionIndex) => {
+    if (examData.questions.length <= 1) return;
+
+    setExamData((prev) => ({
+      ...prev,
+      questions: prev.questions.filter((_, index) => index !== questionIndex),
+    }));
+  };
+
+  const addAnswer = (questionIndex) => {
+    setExamData((prev) => ({
+      ...prev,
+      questions: prev.questions.map((question, index) =>
+        index === questionIndex
+          ? {
+              ...question,
+              answers: [
+                ...question.answers,
+                { answerText: "", correct: false },
+              ],
+            }
+          : question
+      ),
+    }));
+  };
+
+  const removeAnswer = (questionIndex, answerIndex) => {
+    const question = examData.questions[questionIndex];
+    if (question.answers.length <= 1) return;
+
+    setExamData((prev) => ({
+      ...prev,
+      questions: prev.questions.map((q, qIndex) =>
+        qIndex === questionIndex
+          ? {
+              ...q,
+              answers: q.answers.filter((_, aIndex) => aIndex !== answerIndex),
+            }
+          : q
+      ),
+    }));
+  };
+
+  const handleQuestionTypeChange = (questionIndex, newType) => {
+    const newQuestion = examAPI.validation.createDefaultQuestion(newType);
+
+    setExamData((prev) => ({
+      ...prev,
+      questions: prev.questions.map((question, index) =>
+        index === questionIndex
+          ? {
+              ...newQuestion,
+              questionText: question.questionText,
+              points: question.points,
+            }
+          : question
+      ),
+    }));
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      setErrors({ confirmPassword: "كلمة المرور غير متطابقة" });
+    // Clear previous errors
+    setErrors({});
+
+    // Basic validation
+    const validationErrors = {};
+
+    if (!examData.lessonId) {
+      validationErrors.lessonId = "يجب اختيار الدرس";
+    }
+
+    if (!examData.title?.trim()) {
+      validationErrors.title = "عنوان الامتحان مطلوب";
+    }
+
+    if (examData.passingScore < 0 || examData.passingScore > 100) {
+      validationErrors.passingScore = "درجة النجاح يجب أن تكون بين 0 و 100";
+    }
+
+    if (examData.timeLimitMinutes <= 0) {
+      validationErrors.timeLimitMinutes =
+        "وقت الامتحان يجب أن يكون أكبر من صفر";
+    }
+
+    if (examData.questions.length === 0) {
+      validationErrors.questions = "يجب إضافة سؤال واحد على الأقل";
+    }
+
+    // Validate questions and answers
+    examData.questions.forEach((question, qIndex) => {
+      if (!question.questionText?.trim()) {
+        validationErrors[`question_${qIndex}_text`] = "نص السؤال مطلوب";
+      }
+
+      if (question.points <= 0) {
+        validationErrors[`question_${qIndex}_points`] =
+          "يجب أن تكون النقاط أكبر من صفر";
+      }
+
+      // Validate answers - check for empty answer text
+      question.answers.forEach((answer, aIndex) => {
+        if (!answer.answerText?.trim()) {
+          validationErrors[`question_${qIndex}_answer_${aIndex}`] =
+            "نص الإجابة مطلوب";
+        }
+      });
+
+      if (question.answers.length < 2) {
+        validationErrors[`question_${qIndex}_answers`] =
+          "يجب أن يحتوي السؤال على إجابتين على الأقل";
+      }
+
+      const correctAnswers = question.answers.filter((a) => a.correct).length;
+
+      if (question.questionType === "SINGLE_CHOICE" && correctAnswers !== 1) {
+        validationErrors[`question_${qIndex}_correct`] =
+          "يجب اختيار إجابة صحيحة واحدة";
+      }
+
+      if (question.questionType === "MULTIPLE_CHOICE" && correctAnswers < 1) {
+        validationErrors[`question_${qIndex}_correct`] =
+          "يجب اختيار إجابة صحيحة واحدة على الأقل";
+      }
+
+      if (question.questionType === "TRUE_FALSE" && correctAnswers !== 1) {
+        validationErrors[`question_${qIndex}_correct`] =
+          "يجب اختيار إجابة صحيحة واحدة";
+      }
+    });
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+
+      // Scroll to the first error
+      const firstErrorKey = Object.keys(validationErrors)[0];
+      const firstErrorElement = document.querySelector(
+        `[data-error="${firstErrorKey}"]`
+      );
+      if (firstErrorElement) {
+        firstErrorElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+
       return;
     }
 
-    if (formData.phoneNumber === formData.parentPhoneNumber) {
-      setErrors({
-        phoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
-        parentPhoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
-      });
-      return;
-    }
+    onSubmit(examData);
+  };
 
-    setIsLoading(true);
-    setErrors({}); // Clear previous errors
-
-    try {
-      const response = await authAPI.signup({
-        fullname: formData.fullname,
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        nationalId: formData.nationalId,
-        phoneNumber: formData.phoneNumber,
-        parentPhoneNumber: formData.parentPhoneNumber,
-        dateOfBirth: formData.dateOfBirth,
-        government: formData.government,
-      });
-      router.push("/login");
-      return response.data;
-    } catch (error) {
-      setErrors({ general: error.message || "حدث خطأ أثناء إنشاء الحساب" });
-    } finally {
-      setIsLoading(false);
+  // Helper function to render the lesson select options
+  const renderLessonOptions = () => {
+    // If groupedLessons is provided, use it
+    if (groupedLessons && groupedLessons.length > 0) {
+      return groupedLessons.map((group) => (
+        <optgroup key={group.courseId} label={group.courseName}>
+          {group.lessons.map((lesson) => (
+            <option key={lesson.id} value={lesson.id}>
+              {lesson.name}
+            </option>
+          ))}
+        </optgroup>
+      ));
     }
+    
+    // Fallback to old method if groupedLessons is not provided
+    return courses.map((course) => {
+      const courseLessons = lessons.filter(
+        (lesson) => lesson.courseId === course.id
+      );
+      if (courseLessons.length === 0) return null;
+      return (
+        <optgroup key={course.id} label={course.name}>
+          {courseLessons.map((lesson) => (
+            <option key={lesson.id} value={lesson.id}>
+              {lesson.name}
+            </option>
+          ))}
+        </optgroup>
+      );
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4 relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
-      </div>
+    <div className="fixed inset-0 bg-black/20 flexCenter z-50">
+      <div className="bg-white rounded-xl w-full max-w-4xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 className="bold-24 text-gray-900">
+            {isEdit ? "تعديل الامتحان" : "إنشاء امتحان جديد"}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
+          >
+            <FiX className="w-6 h-6 text-gray-500" />
+          </button>
+        </div>
 
-      <div className="relative w-full max-w-4xl mx-auto">
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
-          {/* Header with gradient */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12 text-center">
-            <div className="inline-block mb-4 bg-white/20 rounded-md px-5 py-2 backdrop-blur-sm">
-              <Link href="/" className="flexCenter gap-2">
-                <Image
-                  src={"/logo.png"}
-                  width={225}
-                  height={206}
-                  alt="logo"
-                  className="w-15 h-15 object-contain"
+        {/* Content */}
+        <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
+          <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
+            {errors.general && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg flex items-start gap-2">
+                <FiAlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                <span>{errors.general}</span>
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Lesson Selection */}
+              <div>
+                <label className="block bold-14 text-gray-700 mb-2">
+                  <FiBook className="inline w-4 h-4 ml-1" />
+                  الدرس
+                </label>
+                <select
+                  value={examData.lessonId}
+                  onChange={(e) =>
+                    handleInputChange("lessonId", e.target.value)
+                  }
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
+                    errors.lessonId ? "border-red-300" : "border-gray-300"
+                  }`}
+                  required
+                >
+                  <option value="">اختر الدرس</option>
+                  {renderLessonOptions()}
+                </select>
+                {errors.lessonId && (
+                  <p className="mt-1 text-sm text-red-600">{errors.lessonId}</p>
+                )}
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="block bold-14 text-gray-700 mb-2">
+                  عنوان الامتحان
+                </label>
+                <input
+                  type="text"
+                  value={examData.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
+                    errors.title ? "border-red-300" : "border-gray-300"
+                  }`}
+                  placeholder="أدخل عنوان الامتحان"
+                  required
                 />
-                <span className="text-2xl font-bold text-white">
-                  أكاديميتنا
-                </span>
-              </Link>
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-2">
-              انضم إلى عائلة أكادميتنا
-            </h2>
-            <p className="text-blue-100">
-              ابدأ رحلتك التعليمية معنا واحصل على أفضل النتائج
-            </p>
-          </div>
+                {errors.title && (
+                  <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                )}
+              </div>
 
-          {/* Form Container */}
-          <div className="px-8 py-8">
-            {/* Form */}
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Full Name */}
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor="fullname"
-                    className="block text-sm font-semibold text-gray-700 mb-2"
+              {/* Passing Score */}
+              <div>
+                <label className="block bold-14 text-gray-700 mb-2">
+                  <FiAward className="inline w-4 h-4 ml-1" />
+                  درجة النجاح (%)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={examData.passingScore}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    handleInputChange(
+                      "passingScore",
+                      value === "" ? "" : parseFloat(value) || 0
+                    );
+                  }}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
+                    errors.passingScore ? "border-red-300" : "border-gray-300"
+                  }`}
+                  required
+                />
+                {errors.passingScore && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.passingScore}
+                  </p>
+                )}
+              </div>
+
+              {/* Time Limit */}
+              <div>
+                <label className="block bold-14 text-gray-700 mb-2">
+                  <FiClock className="inline w-4 h-4 ml-1" />
+                  مدة الامتحان (دقيقة)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={examData.timeLimitMinutes}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    handleInputChange(
+                      "timeLimitMinutes",
+                      value === "" ? "" : parseInt(value) || 1
+                    );
+                  }}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
+                    errors.timeLimitMinutes
+                      ? "border-red-300"
+                      : "border-gray-300"
+                  }`}
+                  required
+                  step="5"
+                />
+                {errors.timeLimitMinutes && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.timeLimitMinutes}
+                  </p>
+                )}
+              </div>
+
+              {/* Questions Section */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="bold-18 text-gray-900 flex items-center gap-2">
+                    <FiHelpCircle className="w-5 h-5" />
+                    الأسئلة ({examData.questions.length})
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={addQuestion}
+                    className="bg-accent cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2"
                   >
-                    الاسم الكامل
-                  </label>
-                  <input
-                    id="fullname"
-                    name="fullname"
-                    type="text"
-                    required
-                    autoComplete="name"
-                    className={`w-full px-4 py-4 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 text-right ${
-                      errors.fullname
-                        ? "border-red-300 focus:ring-red-500 bg-red-50"
-                        : "border-gray-200 focus:ring-blue-500"
-                    }`}
-                    placeholder="أدخل اسمك الكامل"
-                    value={formData.fullname}
-                    onChange={handleChange}
-                  />
+                    <FiPlus className="w-4 h-4" />
+                    إضافة سؤال
+                  </button>
                 </div>
 
-                {/* اسم المستخدم */}
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor="username"
-                    className="block bold-14 text-gray-700 mb-2"
-                  >
-                    اسم المستخدم
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="username"
-                      name="username"
-                      type="text"
-                      required
-                      autoComplete="username"
-                      className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                        errors.username
-                          ? "border-red-300 focus:ring-red-500"
-                          : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                      }`}
-                      placeholder="أدخل اسم المستخدم"
-                      value={formData.username}
-                      onChange={handleChange}
-                    />
-                    {isCheckingUsername && (
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                      </div>
-                    )}
+                {errors.questions && (
+                  <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg">
+                    {errors.questions}
                   </div>
-                  {errors.username && (
-                    <p className="mt-2 regular-14 text-red-600 flex items-center">
-                      <svg
-                        className="h-4 w-4 ml-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      {errors.username}
-                    </p>
-                  )}
-                  {formData.username &&
-                    formData.username.length >= 3 &&
-                    !errors.username &&
-                    !isCheckingUsername && (
-                      <p className="mt-2 regular-14 text-green-600 flex items-center">
-                        <svg
-                          className="h-4 w-4 ml-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        اسم المستخدم متاح
-                      </p>
-                    )}
-                </div>
+                )}
 
-                {/* البريد الإلكتروني */}
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor="email"
-                    className="block bold-14 text-gray-700 mb-2"
-                  >
-                    البريد الإلكتروني
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    autoComplete="email"
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
-                    placeholder="أدخل بريدك الإلكتروني"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                {/* كلمة المرور */}
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="block bold-14 text-gray-700 mb-2"
-                  >
-                    كلمة المرور
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="password"
-                      required
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      autoComplete="new-password"
-                      className={`font-main appearance-none relative block border-gray-300 w-full pr-4 pl-10 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
-                      placeholder="أدخل كلمة المرور"
-                      value={formData.password}
-                      onChange={handleChange}
-                    />
-                    <button
-                      type="button"
-                      className="absolute cursor-pointer left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <FaEyeSlash className="h-5 w-5" />
-                      ) : (
-                        <FaRegEye className="h-5 w-5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* تأكيد كلمة المرور */}
-                <div>
-                  <label
-                    htmlFor="confirmPassword"
-                    className="block bold-14 text-gray-700 mb-2"
-                  >
-                    تأكيد كلمة المرور
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      autoComplete="new-password"
-                      className={`font-main appearance-none relative block w-full pr-4 pl-10 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                        errors.confirmPassword
-                          ? "border-red-300 focus:ring-red-500"
-                          : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                      }`}
-                      placeholder="أعد إدخال كلمة المرور"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                    />
-                    <button
-                      type="button"
-                      className="absolute cursor-pointer left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
+                <div className="space-y-6">
+                  {examData.questions.map((question, questionIndex) => (
+                    <div
+                      key={questionIndex}
+                      className={
+                        errors[`question_${questionIndex}_text`]
+                          ? "border-l-4 border-red-500 pl-3"
+                          : ""
                       }
                     >
-                      {showConfirmPassword ? (
-                        <FaEyeSlash className="h-5 w-5" />
-                      ) : (
-                        <FaRegEye className="h-5 w-5" />
-                      )}
-                    </button>
-                  </div>
-                  {errors.confirmPassword && (
-                    <p className="mt-2 regular-14 text-red-600 flex items-center">
-                      <svg
-                        className="h-4 w-4 ml-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      {errors.confirmPassword}
-                    </p>
-                  )}
-                </div>
-
-                {/* الرقم القومي */}
-                <div>
-                  <label
-                    htmlFor="nationalId"
-                    className="block bold-14 text-gray-700 mb-2"
-                  >
-                    الرقم القومي
-                  </label>
-                  <input
-                    id="nationalId"
-                    name="nationalId"
-                    type="text"
-                    required
-                    maxLength="14"
-                    className={`font-main appearance-none relative border-gray-300 block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
-                    placeholder="أدخل الرقم القومي (14 رقم)"
-                    value={formData.nationalId}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                {/* تاريخ الميلاد */}
-                <div>
-                  <label
-                    htmlFor="dateOfBirth"
-                    className="block bold-14 text-gray-700 mb-2"
-                  >
-                    تاريخ الميلاد
-                  </label>
-                  <input
-                    id="dateOfBirth"
-                    name="dateOfBirth"
-                    type="date"
-                    required
-                    className={`font-main appearance-none border-gray-300 relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
-                    value={formData.dateOfBirth}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="phoneNumber"
-                    className="block bold-14 text-gray-700 mb-2"
-                  >
-                    هاتف الطالب
-                  </label>
-                  <input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    type="tel"
-                    maxLength="11"
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                      errors.phoneNumber
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                    }`}
-                    placeholder="01xxxxxxxxx"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                  />
-                  {errors.phoneNumber && (
-                    <p className="mt-2 regular-14 text-red-600">
-                      {errors.phoneNumber}
-                    </p>
-                  )}
-                </div>
-
-                {/* هاتف ولي الأمر */}
-                <div>
-                  <label
-                    htmlFor="parentPhoneNumber"
-                    className="block bold-14 text-gray-700 mb-2"
-                  >
-                    هاتف ولي الأمر
-                  </label>
-                  <input
-                    id="parentPhoneNumber"
-                    name="parentPhoneNumber"
-                    type="tel"
-                    maxLength="11"
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                      errors.parentPhoneNumber
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                    }`}
-                    placeholder="01xxxxxxxxx"
-                    value={formData.parentPhoneNumber}
-                    onChange={handleChange}
-                  />
-                  {errors.parentPhoneNumber && (
-                    <p className="mt-2 regular-14 text-red-600">
-                      {errors.parentPhoneNumber}
-                    </p>
-                  )}
-                </div>
-
-                {/* المحافظة */}
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor="government"
-                    className="block bold-14 text-gray-700 mb-2"
-                  >
-                    المحافظة
-                  </label>
-                  <select
-                    id="government"
-                    name="government"
-                    className={`font-main relative block w-full px-4 py-3 border rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                      errors.government
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                    }`}
-                    value={formData.government}
-                    onChange={handleChange}
-                  >
-                    <option value="">اختر المحافظة</option>
-                    {governorates.map((gov, index) => (
-                      <option key={index} value={gov}>
-                        {gov}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* General Error */}
-              {errors.general && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                  <div className="flex items-center">
-                    <svg
-                      className="h-5 w-5 text-red-400 ml-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      <QuestionEditor
+                        key={questionIndex}
+                        question={question}
+                        questionIndex={questionIndex}
+                        onQuestionChange={handleQuestionChange}
+                        onAnswerChange={handleAnswerChange}
+                        onQuestionTypeChange={handleQuestionTypeChange}
+                        onAddAnswer={addAnswer}
+                        onRemoveAnswer={removeAnswer}
+                        onRemoveQuestion={removeQuestion}
+                        canRemoveQuestion={examData.questions.length > 1}
+                        errors={errors}
+                        setErrors={setErrors}
                       />
-                    </svg>
-                    <p className="text-sm text-red-700">{errors.general}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="font-main cursor-pointer w-full flexCenter py-3 px-6 bg-accent text-white bold-16 rounded-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
-                >
-                  {isLoading ? (
-                    <div className="flexCenter">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-2"></div>
-                      جاري إنشاء الحساب...
                     </div>
-                  ) : (
-                    "إنشاء الحساب"
-                  )}
-                </button>
+                  ))}
+                </div>
               </div>
             </form>
+          </div>
+        </div>
 
-            {/* Footer */}
-            <div className="text-center mt-8">
-              <p className="text-gray-600">
-                لديك حساب بالفعل؟{" "}
-                <Link
-                  href="/login"
-                  className="font-semibold hover:border-b hover:border-b-blue-700 border-b border-b-transparent text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  تسجيل الدخول
-                </Link>
-              </p>
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-4 p-6 border-t border-gray-200">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+          >
+            إلغاء
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            ) : (
+              <FiSave className="w-4 h-4" />
+            )}
+            {isEdit ? "حفظ التغييرات" : "إنشاء الامتحان"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Question Editor Component
+const QuestionEditor = ({
+  question,
+  questionIndex,
+  onQuestionChange,
+  onAnswerChange,
+  onQuestionTypeChange,
+  onAddAnswer,
+  onRemoveAnswer,
+  onRemoveQuestion,
+  canRemoveQuestion,
+  errors,
+  setErrors = () => {},
+}) => {
+  const questionTypes = [
+    { value: "SINGLE_CHOICE", label: "اختيار واحد" },
+    { value: "MULTIPLE_CHOICE", label: "اختيار متعدد" },
+    { value: "TRUE_FALSE", label: "صح أم خطأ" },
+  ];
+
+  return (
+    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="bold-16 text-gray-900">السؤال {questionIndex + 1}</h4>
+        {canRemoveQuestion && (
+          <button
+            type="button"
+            onClick={() => onRemoveQuestion(questionIndex)}
+            className="text-red-500 cursor-pointer hover:text-red-700 transition-colors"
+          >
+            <FiTrash2 className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-4">
+        {/* Question Text */}
+        <div>
+          <label className="block bold-14 text-gray-700 mb-2">نص السؤال</label>
+          <textarea
+            value={question.questionText}
+            data-error={`question_${questionIndex}_text`}
+            onChange={(e) =>
+              onQuestionChange(questionIndex, "questionText", e.target.value)
+            }
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent resize-none ${
+              errors[`question_${questionIndex}_text`]
+                ? "border-red-300"
+                : "border-gray-300"
+            }`}
+            rows="2"
+            placeholder="أدخل نص السؤال"
+            required
+          />
+          {errors[`question_${questionIndex}_text`] && (
+            <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
+              <FiAlertCircle className="w-4 h-4" />
+              {errors[`question_${questionIndex}_text`]}
             </div>
+          )}
+        </div>
+
+        {/* Question Type and Points */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Question Type */}
+          <div>
+            <label className="block bold-14 text-gray-700 mb-2">
+              نوع السؤال
+            </label>
+            <select
+              value={question.questionType}
+              onChange={(e) =>
+                onQuestionTypeChange(questionIndex, e.target.value)
+              }
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+            >
+              {questionTypes.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Points */}
+          <div>
+            <label className="block bold-14 text-gray-700 mb-2">الدرجات</label>
+            <input
+              type="number"
+              min="0"
+              step="5"
+              value={question.points}
+              onChange={(e) => {
+                const value = e.target.value;
+                onQuestionChange(
+                  questionIndex,
+                  "points",
+                  value === "" ? "" : parseFloat(value) || 0.01
+                );
+              }}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
+                errors[`question_${questionIndex}_points`]
+                  ? "border-red-300"
+                  : "border-gray-300"
+              }`}
+              required
+            />
+            {errors[`question_${questionIndex}_points`] && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors[`question_${questionIndex}_points`]}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Answers */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <label className="block bold-14 text-gray-700">الإجابات</label>
+            {question.questionType !== "TRUE_FALSE" && (
+              <button
+                type="button"
+                onClick={() => onAddAnswer(questionIndex)}
+                className="text-accent px-2 py-1 cursor-pointer border rounded-sm hover:text-accent-dark transition-colors flexCenter gap-1"
+              >
+                <FiPlus className="w-4 h-4" />
+                إضافة إجابة
+              </button>
+            )}
+          </div>
+
+          {errors[`question_${questionIndex}_answers`] && (
+            <p className="mb-2 text-sm text-red-600">
+              {errors[`question_${questionIndex}_answers`]}
+            </p>
+          )}
+
+          {errors[`question_${questionIndex}_correct`] && (
+            <p className="mb-2 text-sm text-red-600">
+              {errors[`question_${questionIndex}_correct`]}
+            </p>
+          )}
+
+          <div className="space-y-2">
+            {question.answers.map((answer, answerIndex) => (
+              <div key={answerIndex} className="flex items-center gap-3">
+                <input
+                  type={
+                    question.questionType === "MULTIPLE_CHOICE"
+                      ? "checkbox"
+                      : "radio"
+                  }
+                  name={`question_${questionIndex}_correct`}
+                  checked={answer.correct}
+                  onChange={(e) => {
+                    if (question.questionType === "MULTIPLE_CHOICE") {
+                      onAnswerChange(
+                        questionIndex,
+                        answerIndex,
+                        "correct",
+                        e.target.checked
+                      );
+                    } else {
+                      // For single choice and true/false, uncheck others
+                      question.answers.forEach((_, aIndex) => {
+                        onAnswerChange(
+                          questionIndex,
+                          aIndex,
+                          "correct",
+                          aIndex === answerIndex
+                        );
+                      });
+                    }
+                  }}
+                  className="w-4 h-4 text-accent focus:ring-accent border-gray-300 rounded"
+                />
+
+                <input
+                  type="text"
+                  value={
+                    question.questionType === "TRUE_FALSE"
+                      ? answer.answerText === "true"
+                        ? "صحيح"
+                        : answer.answerText === "false"
+                          ? "خطأ"
+                          : answer.answerText
+                      : answer.answerText
+                  }
+                  onChange={(e) => {
+                    onAnswerChange(
+                      questionIndex,
+                      answerIndex,
+                      "answerText",
+                      e.target.value
+                    );
+                    // Clear error when user starts typing
+                    if (
+                      errors[`question_${questionIndex}_answer_${answerIndex}`]
+                    ) {
+                      setErrors((prev) => {
+                        const newErrors = { ...prev };
+                        delete newErrors[
+                          `question_${questionIndex}_answer_${answerIndex}`
+                        ];
+                        return newErrors;
+                      });
+                    }
+                  }}
+                  className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
+                    errors[`question_${questionIndex}_answer_${answerIndex}`]
+                      ? "border-red-300"
+                      : "border-gray-300"
+                  }`}
+                  placeholder="نص الإجابة"
+                  disabled={question.questionType === "TRUE_FALSE"}
+                  required
+                  data-error={`question_${questionIndex}_answer_${answerIndex}`}
+                />
+
+                {errors[`question_${questionIndex}_answer_${answerIndex}`] && (
+                  <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <FiAlertCircle className="w-4 h-4" />
+                    {errors[`question_${questionIndex}_answer_${answerIndex}`]}
+                  </div>
+                )}
+
+                {question.questionType !== "TRUE_FALSE" &&
+                  question.answers.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveAnswer(questionIndex, answerIndex)}
+                      className="text-red-500 cursor-pointer hover:text-red-700 transition-colors"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                    </button>
+                  )}
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -635,4 +745,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default ExamCreationModal;
