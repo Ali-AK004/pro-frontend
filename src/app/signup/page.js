@@ -113,12 +113,16 @@ const SignUp = () => {
       }, 1000);
     }
 
-    // Validate password match in real-time
+    // Validate password match in real-time - FIXED VERSION
     if (name === "password" || name === "confirmPassword") {
+      const passwordValue = name === "password" ? value : formData.password;
+      const confirmPasswordValue =
+        name === "confirmPassword" ? value : formData.confirmPassword;
+
       if (
-        formData.password &&
-        formData.confirmPassword &&
-        formData.password !== formData.confirmPassword
+        passwordValue &&
+        confirmPasswordValue &&
+        passwordValue !== confirmPasswordValue
       ) {
         setErrors((prev) => ({
           ...prev,
@@ -132,30 +136,32 @@ const SignUp = () => {
       }
     }
 
-    // Validate phone numbers in real-time
-    if (
-      (name === "phoneNumber" || name === "parentPhoneNumber") &&
-      formData.phoneNumber &&
-      formData.parentPhoneNumber &&
-      formData.phoneNumber === formData.parentPhoneNumber
-    ) {
-      setErrors((prev) => ({
-        ...prev,
-        phoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
-        parentPhoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
-      }));
-    } else if (
-      errors.phoneNumber &&
-      errors.parentPhoneNumber &&
-      formData.phoneNumber !== formData.parentPhoneNumber
-    ) {
-      setErrors((prev) => ({
-        ...prev,
-        phoneNumber: "",
-        parentPhoneNumber: "",
-      }));
+    // Validate phone numbers in real-time - FIXED VERSION
+    if (name === "phoneNumber" || name === "parentPhoneNumber") {
+      const phoneValue = name === "phoneNumber" ? value : formData.phoneNumber;
+      const parentPhoneValue =
+        name === "parentPhoneNumber" ? value : formData.parentPhoneNumber;
+
+      if (phoneValue && parentPhoneValue && phoneValue === parentPhoneValue) {
+        setErrors((prev) => ({
+          ...prev,
+          phoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
+          parentPhoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
+        }));
+      } else if (
+        errors.phoneNumber &&
+        errors.parentPhoneNumber &&
+        phoneValue !== parentPhoneValue
+      ) {
+        setErrors((prev) => ({
+          ...prev,
+          phoneNumber: "",
+          parentPhoneNumber: "",
+        }));
+      }
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 

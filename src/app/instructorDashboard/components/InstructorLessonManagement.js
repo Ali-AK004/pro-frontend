@@ -451,7 +451,7 @@ const InstructorLessonManagement = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           <div className="md:col-span-3 flex">
             <SecureSearchInput
               placeholder="البحث في الدروس..."
@@ -472,12 +472,6 @@ const InstructorLessonManagement = () => {
               </option>
             ))}
           </select>
-          <button
-            onClick={handleSearch}
-            className="cursor-pointer md:col-span-1 md:flex-0 bg-secondary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
-          >
-            بحث
-          </button>
         </div>
       </div>
 
@@ -1075,3 +1069,4 @@ const InstructorLessonManagement = () => {
 };
 
 export default InstructorLessonManagement;
+

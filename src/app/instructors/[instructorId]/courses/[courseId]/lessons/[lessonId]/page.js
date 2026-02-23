@@ -383,8 +383,7 @@ const LessonPage = () => {
   const handleVideoComplete = async () => {
     try {
       await studentAPI.lessons.markVideoWatched(lessonId);
-      toast.success("تم تسجيل المشاهدة");
-      await fetchLessonData(); // تحديث البيانات (بما فيها الحالة)
+      await fetchLessonData();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تسجيل المشاهدة"));
     }

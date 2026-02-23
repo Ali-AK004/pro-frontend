@@ -31,6 +31,7 @@ const InstructorExamManagement = () => {
   const [selectedExam, setSelectedExam] = useState(null);
   const [examResults, setExamResults] = useState(null);
   const [examToDelete, setExamToDelete] = useState(null);
+  const [allLessons, setAllLessons] = useState([]); // All lessons for modal
 
   // Get instructor ID from user object
   const instructorId = user?.instructorId || user?.id;
@@ -38,6 +39,7 @@ const InstructorExamManagement = () => {
   useEffect(() => {
     if (instructorId) {
       fetchCourses();
+      fetchAllLessons(); // Fetch all lessons for modal
     }
   }, [instructorId]);
 
@@ -83,6 +85,37 @@ const InstructorExamManagement = () => {
     }
   };
 
+  // Fetch all lessons for the modal (same pattern as AssignmentManagement)
+  const fetchAllLessons = async () => {
+    try {
+      const response = await instructorAPI.courses.getByInstructor(instructorId);
+      const coursesData = response.data || [];
+
+      let allLessonsData = [];
+      for (const course of coursesData) {
+        try {
+          const lessonsResponse = await instructorAPI.courses.getLessons(course.id);
+          const courseLessons = lessonsResponse.data || [];
+          // Add course information to each lesson for optgroups
+          const lessonsWithCourse = courseLessons.map((lesson) => ({
+            ...lesson,
+            courseId: course.id,
+            courseName: course.name,
+          }));
+          allLessonsData = [...allLessonsData, ...lessonsWithCourse];
+        } catch (error) {
+          console.error(`Error fetching lessons for course ${course.id}:`, error);
+          // Don't show toast for each error, just log it
+        }
+      }
+
+      setAllLessons(allLessonsData);
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تحميل جميع الدروس"));
+      setAllLessons([]);
+    }
+  };
+
   const fetchExams = async () => {
     if (!selectedLesson) return;
 
@@ -103,7 +136,11 @@ const InstructorExamManagement = () => {
       await instructorAPI.exams.create(examData.lessonId, examData);
       toast.success("تم إنشاء الامتحان بنجاح");
       setShowCreateModal(false);
-      fetchExams();
+      
+      // If the created exam belongs to the currently selected lesson, refresh the list
+      if (selectedLesson === examData.lessonId) {
+        fetchExams();
+      }
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "فشل في إنشاء الامتحان";
@@ -138,7 +175,11 @@ const InstructorExamManagement = () => {
       toast.success("تم تحديث الامتحان بنجاح");
       setShowEditModal(false);
       setSelectedExam(null);
-      fetchExams();
+      
+      // If the updated exam belongs to the currently selected lesson, refresh the list
+      if (selectedLesson === examData.lessonId) {
+        fetchExams();
+      }
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "فشل في تحديث الامتحان";
@@ -178,7 +219,11 @@ const InstructorExamManagement = () => {
       toast.success("تم حذف الامتحان بنجاح");
       setShowDeleteModal(false);
       setExamToDelete(null);
-      fetchExams();
+      
+      // If the deleted exam belongs to the currently selected lesson, refresh the list
+      if (selectedLesson === examToDelete.lessonId) {
+        fetchExams();
+      }
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف الامتحان"));
     } finally {
@@ -205,23 +250,25 @@ const InstructorExamManagement = () => {
     }
   };
 
-  // Get lessons for the selected course or all lessons for instructor
-  const getAvailableLessons = () => {
-    if (selectedCourse) {
-      // Add courseId to lessons if not present
-      return lessons.map((lesson) => ({
-        ...lesson,
-        courseId: lesson.courseId || selectedCourse,
-      }));
-    }
-    // Return all lessons from all courses with courseId
-    return courses.reduce((allLessons, course) => {
-      const courseLessons = (course.lessons || []).map((lesson) => ({
-        ...lesson,
-        courseId: lesson.courseId || course.id,
-      }));
-      return [...allLessons, ...courseLessons];
-    }, []);
+  // Get grouped lessons for the modal (all lessons with course info)
+  const getGroupedLessons = () => {
+    // Group all lessons by their course
+    const grouped = {};
+    
+    allLessons.forEach(lesson => {
+      const courseId = lesson.courseId;
+      if (!grouped[courseId]) {
+        grouped[courseId] = {
+          courseId: courseId,
+          courseName: lesson.courseName || "غير معروف",
+          lessons: []
+        };
+      }
+      grouped[courseId].lessons.push(lesson);
+    });
+
+    // Convert to array and filter out groups with no lessons
+    return Object.values(grouped).filter(group => group.lessons.length > 0);
   };
 
   return (
@@ -398,11 +445,10 @@ const InstructorExamManagement = () => {
             setErrors({});
           }}
           onSubmit={handleCreateExam}
-          lessons={getAvailableLessons()}
-          courses={courses.sort((a, b) => a.name.localeCompare(b.name))}
+          groupedLessons={getGroupedLessons()} // Pass grouped lessons
           isLoading={isLoading}
           errors={errors}
-          setErrors={setErrors} // Add this line
+          setErrors={setErrors}
         />
       )}
 
@@ -416,13 +462,12 @@ const InstructorExamManagement = () => {
             setErrors({});
           }}
           onSubmit={handleUpdateExam}
-          lessons={getAvailableLessons()}
-          courses={courses.sort((a, b) => a.name.localeCompare(b.name))}
+          groupedLessons={getGroupedLessons()} // Pass grouped lessons
           initialData={selectedExam}
           isLoading={isLoading}
           isEdit={true}
           errors={errors}
-          setErrors={setErrors} // Add this line
+          setErrors={setErrors}
         />
       )}
 
@@ -489,7 +534,7 @@ const InstructorExamManagement = () => {
   );
 };
 
-// Exam Results Modal Component
+// Exam Results Modal Component (unchanged)
 const ExamResultsModal = ({ isOpen, onClose, exam, results }) => {
   if (!isOpen) return null;
 
