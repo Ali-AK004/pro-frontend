@@ -136,7 +136,6 @@ const UserManagement = () => {
       setIsLoading(false);
     }
   };
-  console.log(users);
   const fetchInstructors = async () => {
     try {
       const response = await adminAPI.users.getAllInstructors();

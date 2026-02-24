@@ -17,7 +17,7 @@ import {
 } from "react-icons/fi";
 
 const InstructorProfileManagement = () => {
-  const { user, setUser } = useUserData();
+  const { user, setUser } = useUserData(); // Remove refreshUserData, use setUser
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [instructorData, setInstructorData] = useState(null);
@@ -27,6 +27,7 @@ const InstructorProfileManagement = () => {
   const canEditProfile = !isAssistant; // Only instructors can edit their profile
 
   const [profileForm, setProfileForm] = useState({
+    fullname: "",
     phoneNumber: "",
     username: "",
     avatarUrl: "",
@@ -38,9 +39,15 @@ const InstructorProfileManagement = () => {
       if (instructorId) {
         try {
           setIsLoading(true);
-          const response = await instructorAPI.profile.getById(instructorId);
+
+          const response = await instructorAPI.profile.getById(
+            instructorId,
+            true,
+          );
+
           setInstructorData(response.data);
           setProfileForm({
+            fullname: response.data.fullname || "",
             phoneNumber: response.data.phoneNumber || "",
             username: response.data.username || "",
             avatarUrl: response.data.avatarUrl || "",
@@ -69,11 +76,20 @@ const InstructorProfileManagement = () => {
       setIsLoading(true);
       const response = await instructorAPI.profile.update(user.id, profileForm);
 
-      // Update user context with new data
-      setUser(response.data);
-
       // Update local instructor data state
       setInstructorData(response.data);
+
+      // CRITICAL FIX: Update the global user context with the new data
+      // Merge the updated fields with the existing user object
+      setUser({
+        ...user,
+        fullname: response.data.fullname,
+        username: response.data.username,
+        phoneNumber: response.data.phoneNumber,
+        avatarUrl: response.data.avatarUrl,
+        bio: response.data.bio,
+        // Keep all other user properties
+      });
 
       toast.success("تم تحديث الملف الشخصي بنجاح");
       setIsEditing(false);
@@ -87,6 +103,7 @@ const InstructorProfileManagement = () => {
   const handleCancel = () => {
     const dataSource = instructorData || user;
     setProfileForm({
+      fullname: dataSource.fullname || "",
       phoneNumber: dataSource.phoneNumber || "",
       username: dataSource.username || "",
       avatarUrl: dataSource.avatarUrl || "",
@@ -149,11 +166,6 @@ const InstructorProfileManagement = () => {
                     </div>
                   )}
                 </div>
-                {isEditing && canEditProfile && (
-                  <button className="cursor-pointer absolute bottom-0 right-0 bg-secondary text-white p-2 rounded-full hover:bg-opacity-90 transition-colors">
-                    <FiCamera className="w-4 h-4" />
-                  </button>
-                )}
               </div>
 
               <h4 className="bold-18 text-gray-900 mb-1">
@@ -209,11 +221,26 @@ const InstructorProfileManagement = () => {
                     <FiUser className="w-4 h-4" />
                     الاسم الكامل
                   </label>
-                  <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                    <p className="regular-14 text-gray-900">
-                      {instructorData?.fullname || "غير محدد"}
-                    </p>
-                  </div>
+                  {isEditing && canEditProfile ? (
+                    <input
+                      type="text"
+                      value={profileForm.fullname || ""} // Added fallback empty string
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          fullname: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                      required
+                    />
+                  ) : (
+                    <div className="px-4 py-3 bg-gray-50 rounded-lg">
+                      <p className="regular-14 text-gray-900">
+                        {instructorData?.fullname || "غير محدد"}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Username */}
@@ -225,7 +252,7 @@ const InstructorProfileManagement = () => {
                   {isEditing && canEditProfile ? (
                     <input
                       type="text"
-                      value={profileForm.username}
+                      value={profileForm.username || ""} // Added fallback empty string
                       onChange={(e) =>
                         setProfileForm({
                           ...profileForm,
@@ -270,13 +297,14 @@ const InstructorProfileManagement = () => {
                   {isEditing && canEditProfile ? (
                     <input
                       type="tel"
-                      value={profileForm.phoneNumber}
+                      value={profileForm.phoneNumber || ""} // Added fallback empty string
                       onChange={(e) =>
                         setProfileForm({
                           ...profileForm,
                           phoneNumber: e.target.value,
                         })
                       }
+                      maxLength={11}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
                       required
                     />
@@ -340,7 +368,7 @@ const InstructorProfileManagement = () => {
                 {isEditing && canEditProfile ? (
                   <textarea
                     rows={4}
-                    value={profileForm.bio}
+                    value={profileForm.bio || ""} // Added fallback empty string
                     onChange={(e) =>
                       setProfileForm({ ...profileForm, bio: e.target.value })
                     }
@@ -365,7 +393,7 @@ const InstructorProfileManagement = () => {
                   </label>
                   <input
                     type="url"
-                    value={profileForm.avatarUrl}
+                    value={profileForm.avatarUrl || ""} // Added fallback empty string
                     onChange={(e) =>
                       setProfileForm({
                         ...profileForm,

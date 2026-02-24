@@ -46,7 +46,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
       router.replace("/");
       window.location.href = "/";
     } catch (error) {
-      toast.error("خطأ في تسجيل الخروج");
+      console.error("خطأ في تسجيل الخروج");
       router.replace("/");
       window.location.href = "/";
     }

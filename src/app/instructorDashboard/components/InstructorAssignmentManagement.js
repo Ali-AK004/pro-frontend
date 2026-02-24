@@ -45,8 +45,33 @@ const InstructorAssignmentManagement = React.memo(() => {
   useEffect(() => {
     if (instructorId) {
       fetchCourses();
-      fetchAllLessons(); // Fetch all lessons for modal
+      fetchAllLessons();
+
+      // Add event listener for lesson deletions
+      const handleLessonDeleted = (event) => {
+        console.log(
+          "Lesson deleted event received in AssignmentManagement:",
+          event.detail,
+        );
+        // Force refresh all lessons
+        fetchAllLessons();
+
+        // If the current selected lesson is the deleted one, clear the selection
+        if (selectedLesson === event.detail.lessonId) {
+          setSelectedLesson("");
+        }
+      };
+
+      window.addEventListener("lessonDeleted", handleLessonDeleted);
+
+      return () => {
+        window.removeEventListener("lessonDeleted", handleLessonDeleted);
+      };
     }
+  }, [instructorId, selectedLesson]); // Add selectedLesson to dependencies
+
+  useEffect(() => {
+    fetchAllLessons();
   }, [instructorId]);
 
   useEffect(() => {
@@ -96,7 +121,7 @@ const InstructorAssignmentManagement = React.memo(() => {
       for (const course of coursesData) {
         try {
           const lessonsResponse = await instructorAPI.courses.getLessons(
-            course.id
+            course.id,
           );
           const courseLessons = lessonsResponse.data || [];
           // Add course information to each lesson for optgroups
@@ -107,7 +132,11 @@ const InstructorAssignmentManagement = React.memo(() => {
           }));
           allLessonsData = [...allLessonsData, ...lessonsWithCourse];
         } catch (error) {
-          toast.error(`خطأ في احضار حصص الكورس: ${course.id}:`)
+          console.error(
+            `Error fetching lessons for course ${course.id}:`,
+            error,
+          );
+          // Don't show toast for each error, just log it
         }
       }
 
@@ -142,7 +171,7 @@ const InstructorAssignmentManagement = React.memo(() => {
       setIsLoading(true);
       await instructorAPI.assignments.create(
         assignmentData.lessonId,
-        assignmentData
+        assignmentData,
       );
       toast.success("تم إنشاء الواجب بنجاح");
       setShowCreateModal(false);
@@ -195,7 +224,7 @@ const InstructorAssignmentManagement = React.memo(() => {
     try {
       setIsLoading(true);
       const response = await instructorAPI.assignments.getSubmissions(
-        assignment.id
+        assignment.id,
       );
 
       // Handle paginated response - submissions are in the 'content' field
@@ -236,7 +265,7 @@ const InstructorAssignmentManagement = React.memo(() => {
   };
 
   const filteredAssignments = assignments.filter((assignment) =>
-    assignment.title.toLowerCase().includes(searchTerm.toLowerCase())
+    assignment.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -434,7 +463,7 @@ const InstructorAssignmentManagement = React.memo(() => {
 
       {/* Submissions Modal */}
       {showSubmissionsModal && selectedAssignment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
               <div className="flex justify-between items-center">
@@ -450,7 +479,7 @@ const InstructorAssignmentManagement = React.memo(() => {
                     setSelectedAssignment(null);
                     setAssignmentSubmissions([]);
                   }}
-                  className="text-white hover:text-gray-200 transition-colors"
+                  className="text-white cursor-pointer hover:text-gray-200 transition-colors"
                 >
                   <FiX className="w-6 h-6" />
                 </button>
@@ -491,7 +520,7 @@ const InstructorAssignmentManagement = React.memo(() => {
                           <p className="text-sm text-gray-500">
                             تاريخ التسليم:{" "}
                             {new Date(
-                              submission.submissionDate
+                              submission.submissionDate,
                             ).toLocaleDateString("ar-EG")}
                           </p>
                           <p className="text-xs text-gray-400">
@@ -536,7 +565,7 @@ const InstructorAssignmentManagement = React.memo(() => {
                           <input
                             type="number"
                             placeholder="الدرجة"
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-0"
                             min="0"
                             max="100"
                             id={`grade-${submission.submissionId || submission.id}`}
@@ -544,7 +573,7 @@ const InstructorAssignmentManagement = React.memo(() => {
                           <input
                             type="text"
                             placeholder="تعليق (اختياري)"
-                            className="flex-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="flex-2 px-3 py-2 focus:outline-0 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             id={`feedback-${submission.submissionId || submission.id}`}
                           />
                           <button
@@ -552,20 +581,20 @@ const InstructorAssignmentManagement = React.memo(() => {
                               const submissionId =
                                 submission.submissionId || submission.id;
                               const grade = document.getElementById(
-                                `grade-${submissionId}`
+                                `grade-${submissionId}`,
                               ).value;
                               const feedback = document.getElementById(
-                                `feedback-${submissionId}`
+                                `feedback-${submissionId}`,
                               ).value;
                               if (grade) {
                                 handleGradeSubmission(
                                   submissionId,
                                   parseFloat(grade),
-                                  feedback
+                                  feedback,
                                 );
                               }
                             }}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                            className="px-4 py-2 cursor-pointer bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                           >
                             تقييم
                           </button>
@@ -592,7 +621,7 @@ const AssignmentCard = ({
 }) => {
   const isOverdue = assignmentAPI.validation.isOverdue(assignment.dueDate);
   const timeRemaining = assignmentAPI.validation.getTimeRemaining(
-    assignment.dueDate
+    assignment.dueDate,
   );
 
   return (
@@ -614,13 +643,7 @@ const AssignmentCard = ({
         </p>
 
         {/* Assignment Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="flex items-center gap-2">
-            <FiCalendar className="w-4 h-4 text-blue-500" />
-            <span className="regular-12 text-gray-600">
-              {assignmentAPI.validation.formatDate(assignment.dueDate)}
-            </span>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <div className="flex items-center gap-2">
             <FiAward className="w-4 h-4 text-green-500" />
             <span className="regular-12 text-gray-600">
@@ -631,16 +654,6 @@ const AssignmentCard = ({
             <FiUsers className="w-4 h-4 text-purple-500" />
             <span className="regular-12 text-gray-600">
               {assignment.submissionCount || 0} تسليم
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <FiClock
-              className={`w-4 h-4 ${isOverdue ? "text-red-500" : "text-orange-500"}`}
-            />
-            <span
-              className={`regular-12 ${isOverdue ? "text-red-600" : "text-gray-600"}`}
-            >
-              {timeRemaining}
             </span>
           </div>
         </div>

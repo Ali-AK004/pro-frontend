@@ -60,7 +60,7 @@ const AccessCodeManagement = () => {
       const response = await adminAPI.accessCodes.getAll(
         selectedLesson === "" ? null : selectedLesson,
         page,
-        size
+        size,
       );
       const newAccessCodes = response.data?.content || [];
       const pageInfo = response.data || {};
@@ -69,7 +69,7 @@ const AccessCodeManagement = () => {
       const currentPage = pageInfo.number || 0;
 
       setAccessCodes((prev) =>
-        loadMore ? [...prev, ...newAccessCodes] : newAccessCodes
+        loadMore ? [...prev, ...newAccessCodes] : newAccessCodes,
       );
 
       setPagination((prev) => ({
@@ -105,7 +105,7 @@ const AccessCodeManagement = () => {
           const lessonsResponse = await adminAPI.lessons.getByCourse(
             course.id,
             0,
-            100
+            100,
           );
           const courseLessons =
             lessonsResponse.data?.content || lessonsResponse.data || [];
@@ -117,7 +117,9 @@ const AccessCodeManagement = () => {
           }));
           allLessons = [...allLessons, ...lessonsWithCourse];
         } catch (error) {
-          toast.error(handleAPIError(error, `خطأ في إحضار حصص الكورس: ${course.id}:`));
+          toast.error(
+            handleAPIError(error, `خطأ في إحضار حصص الكورس: ${course.id}:`),
+          );
         }
       }
 
@@ -133,7 +135,11 @@ const AccessCodeManagement = () => {
     e.preventDefault();
     try {
       setIsLoading(true);
-      await adminAPI.accessCodes.generate(generateForm.lessonId, generateForm.count, generateForm.expiryDate);
+      await adminAPI.accessCodes.generate(
+        generateForm.lessonId,
+        generateForm.count,
+        generateForm.expiryDate,
+      );
       toast.success(`تم إنشاء ${generateForm.count} كود وصول بنجاح`);
       setShowGenerateModal(false);
       setGenerateForm({ lessonId: "", count: 10, expiryDate: "" });
@@ -160,8 +166,9 @@ const AccessCodeManagement = () => {
     const codes = accessCodes
       .map(
         (item) =>
-          `${item.code} - ${item.lessonName || "غير محدد"} - ${item.used ? "مستخدم" : "غير مستخدم"
-          }`
+          `${item.code} - ${item.lessonName || "غير محدد"} - ${
+            item.used ? "مستخدم" : "غير مستخدم"
+          }`,
       )
       .join("\n");
 
@@ -280,7 +287,7 @@ const AccessCodeManagement = () => {
             {courses.map((course) => {
               // Filter lessons that belong to this course
               const courseLessons = lessons.filter(
-                (lesson) => lesson.courseId === course.id
+                (lesson) => lesson.courseId === course.id,
               );
 
               // Only render optgroup if course has lessons
@@ -384,10 +391,11 @@ const AccessCodeManagement = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm whitespace-nowrap ${item.used
+                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm whitespace-nowrap ${
+                            item.used
                               ? "bg-red-100 text-red-800"
                               : "bg-green-100 text-green-800"
-                            }`}
+                          }`}
                         >
                           {item.used ? (
                             <>
@@ -408,7 +416,11 @@ const AccessCodeManagement = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 regular-14 text-gray-500">
-                        {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString('ar-EG') : 'بدون'}
+                        {item.expiryDate
+                          ? new Date(item.expiryDate).toLocaleDateString(
+                              "ar-EG",
+                            )
+                          : "بدون"}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
@@ -426,7 +438,7 @@ const AccessCodeManagement = () => {
                           >
                             <FiTrash2 className="w-4 h-4" />
                           </button>
-                          <button
+                          {/* <button
                             onClick={() => {
                               const email = prompt('أدخل البريد الإلكتروني للطالب:');
                               if (email) {
@@ -439,7 +451,7 @@ const AccessCodeManagement = () => {
                             title="إرسال بالبريد"
                           >
                             <FiMail className="w-4 h-4" />
-                          </button>
+                          </button> */}
                         </div>
                       </td>
                     </tr>
@@ -506,8 +518,9 @@ const AccessCodeManagement = () => {
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${item.used ? "bg-red-100" : "bg-green-100"
-                          }`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          item.used ? "bg-red-100" : "bg-green-100"
+                        }`}
                       >
                         {item.used ? (
                           <FiX className="w-5 h-5 text-red-600" />
@@ -566,10 +579,11 @@ const AccessCodeManagement = () => {
                       <div>
                         <p className="regular-12 text-gray-500">الحالة</p>
                         <span
-                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${item.used
+                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
+                            item.used
                               ? "bg-red-100 text-red-800"
                               : "bg-green-100 text-green-800"
-                            }`}
+                          }`}
                         >
                           {item.used ? (
                             <>
@@ -694,13 +708,20 @@ const AccessCodeManagement = () => {
               </div>
 
               <div>
-                <label className="block bold-14 mb-2">تاريخ انتهاء الصلاحية (اختياري)</label>
+                <label className="block bold-14 mb-2">
+                  تاريخ انتهاء الصلاحية (اختياري)
+                </label>
                 <input
                   type="date"
                   value={generateForm.expiryDate}
-                  onChange={(e) => setGenerateForm({ ...generateForm, expiryDate: e.target.value })}
+                  onChange={(e) =>
+                    setGenerateForm({
+                      ...generateForm,
+                      expiryDate: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-2 border rounded-lg"
-                  min={new Date().toISOString().split('T')[0]}
+                  min={new Date().toISOString().split("T")[0]}
                 />
               </div>
 

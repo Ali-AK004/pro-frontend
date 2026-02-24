@@ -14,6 +14,7 @@ import {
   FaImage,
   FaChalkboardTeacher,
   FaUserShield,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import { useUserData } from "../../../models/UserContext";
 import Image from "next/image";
@@ -35,7 +36,7 @@ const Profile = () => {
 
   const isLoading = !user;
 
-  // جلب الحصص من الـ API
+  // جلب الحصص من الـ API بناءً على دور المستخدم
   useEffect(() => {
     const fetchUserLessons = async () => {
       if (!user) return;
@@ -44,15 +45,39 @@ const Profile = () => {
         setIsLoadingLessons(true);
         setLessonsError(null);
 
-        const response = await axios.get(
-          `${apiConfig.baseURL}${API_ENDPOINTS.STUDENTS.MY_LESSONS}`,
-          {
-            withCredentials: true,
-          }
-        );
+        let response;
 
-        setUserLessons(response.data || []);
+        // Role-based API calls
+        if (user.role === "STUDENT") {
+          // Student: get their purchased lessons
+          response = await axios.get(
+            `${apiConfig.baseURL}${API_ENDPOINTS.STUDENTS.MY_LESSONS}`,
+            {
+              withCredentials: true,
+            }
+          );
+        } else if (user.role === "INSTRUCTOR" || user.role === "ASSISTANT") {
+          // Instructor/Assistant: get courses they teach/assist in
+          const coursesResponse = await axios.get(
+            `${apiConfig.baseURL}/instructors/${user.id}/courses`,
+            {
+              withCredentials: true,
+            }
+          );
+          
+          // Transform courses data to match lesson format if needed
+          // Assuming the endpoint returns courses with lessons
+          response = { data: coursesResponse.data };
+        } else if (user.role === "ADMIN") {
+          // Admin: set empty array and show admin message
+          setUserLessons([]);
+          setIsLoadingLessons(false);
+          return;
+        }
+
+        setUserLessons(response?.data || []);
       } catch (error) {
+        console.error("Error fetching lessons:", error);
         setLessonsError("فشل في تحميل الحصص");
         setUserLessons([]);
       } finally {
@@ -133,7 +158,7 @@ const Profile = () => {
       INSTRUCTOR: {
         text: "مدرس",
         color: "bg-green-100 text-green-800",
-        icon: FaUser,
+        icon: FaChalkboardTeacher,
         description: "يمكنك إنشاء وإدارة الكورسات",
       },
       ASSISTANT: {
@@ -145,8 +170,8 @@ const Profile = () => {
       ADMIN: {
         text: "مدير",
         color: "bg-red-100 text-red-800",
-        icon: FaUser,
-        description: "لديك صلاحيات كاملة على النظام",
+        icon: FaUserShield,
+        description: "لوحة تحكم المدير",
       },
     };
 
@@ -157,9 +182,9 @@ const Profile = () => {
   const getCourseSectionTitle = (role) => {
     const titles = {
       STUDENT: "الحصص المشتراة",
-      INSTRUCTOR: "الحصص التي أدرسها",
+      INSTRUCTOR: "الحصص التي تدرسها",
       ASSISTANT: "الحصص التي تساعد فيها",
-      ADMIN: "جميع الحصص",
+      ADMIN: "لوحة تحكم المدير",
     };
 
     return titles[role] || titles.STUDENT;
@@ -173,16 +198,16 @@ const Profile = () => {
         description: "لم تقم بشراء أي حصص بعد - ابدأ رحلتك التعليمية الآن",
       },
       INSTRUCTOR: {
-        title: "لا توجد حصص تدرسها",
-        description: "لم تقم بإنشاء أي حصص بعد - ابدأ بإنشاء أول كورس لك",
+        title: "لا توجد حصص",
+        description: "لم تقم بإنشاء أي حصص بعد",
       },
       ASSISTANT: {
-        title: "لا توجد حصص مساعدة",
+        title: "لا توجد حصص",
         description: "لم يتم تعيينك كمساعد في أي حصص بعد",
       },
       ADMIN: {
-        title: "لا توجد حصص في النظام",
-        description: "لا توجد حصص مسجلة في المنصة حالياً",
+        title: "مرحباً بك في لوحة التحكم",
+        description: "استخدم لوحة تحكم المدير لإدارة المنصة",
       },
     };
 
@@ -204,6 +229,7 @@ const Profile = () => {
 
   if (!user) {
     router.push("/login");
+    return null;
   }
 
   return (
@@ -296,32 +322,34 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="flex-1 w-full md:w-auto lg:mr-8">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-2xl text-center">
-                  <div className="text-2xl font-bold">{userLessons.length}</div>
-                  <div className="text-sm opacity-90">إجمالي الحصص</div>
-                </div>
-                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-2xl text-center">
-                  <div className="text-2xl font-bold">
-                    {
-                      userLessons.filter((lesson) => lesson.expired === false)
-                        .length
-                    }
+            {/* Quick Stats - Only show for non-admin users */}
+            {user?.role !== "ADMIN" && (
+              <div className="flex-1 w-full md:w-auto lg:mr-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-2xl text-center">
+                    <div className="text-2xl font-bold">{userLessons.length}</div>
+                    <div className="text-sm opacity-90">إجمالي الحصص</div>
                   </div>
-                  <div className="text-sm opacity-90">حصص نشطة</div>
-                </div>
-                <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-4 rounded-2xl text-center">
-                  <div className="text-2xl font-bold">
-                    {isLoadingLessons
-                      ? "..."
-                      : userLessons.filter((lesson) => lesson.expired).length}
+                  <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-2xl text-center">
+                    <div className="text-2xl font-bold">
+                      {
+                        userLessons.filter((lesson) => lesson.expired === false)
+                          .length
+                      }
+                    </div>
+                    <div className="text-sm opacity-90">حصص نشطة</div>
                   </div>
-                  <div className="text-sm opacity-90">حصص منتهية</div>
+                  <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-4 rounded-2xl text-center">
+                    <div className="text-2xl font-bold">
+                      {isLoadingLessons
+                        ? "..."
+                        : userLessons.filter((lesson) => lesson.expired).length}
+                    </div>
+                    <div className="text-sm opacity-90">حصص منتهية</div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -407,164 +435,194 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* الحصص والكورسات */}
-          <div className="lg:col-span-2 ">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flexBetween mb-6">
-                <h2 className="bold-20 text-gray-900">
-                  {getCourseSectionTitle(user?.role)}
-                </h2>
-                <div className="flex flex-col md:flex-row gap-2 items-center space-x-2 space-x-reverse">
-                  <FaBook className="w-5 h-5 text-accent" />
-                  <span className="regular-14 text-gray-600">
-                    {isLoadingLessons
-                      ? "جاري التحميل..."
-                      : `${userLessons.length} حصة`}
-                  </span>
+          {/* الحصص والكورسات - Admin View */}
+          {user?.role === "ADMIN" ? (
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <FaUserShield className="w-8 h-8 text-red-500" />
+                  <h2 className="bold-24 text-gray-900">لوحة تحكم المدير</h2>
+                </div>
+                
+                <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
+                  <FaExclamationTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                  <h3 className="bold-20 text-red-700 mb-3">
+                    مرحباً بك في لوحة تحكم المدير
+                  </h3>
+                  <p className="regular-16 text-red-600 mb-6 max-w-lg mx-auto">
+                    لعرض وإدارة جميع بيانات المنصة، يرجى التوجه إلى لوحة تحكم المدير المخصصة
+                  </p>
+                  <Link
+                    href="/admin/dashboard"
+                    className="inline-block bg-red-600 text-white px-8 py-3 rounded-lg bold-16 hover:bg-red-700 transition-colors"
+                  >
+                    الانتقال إلى لوحة التحكم
+                  </Link>
                 </div>
               </div>
+            </div>
+          ) : (
+            /* Non-admin users view lessons */
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <div className="flexBetween mb-6">
+                  <h2 className="bold-20 text-gray-900">
+                    {getCourseSectionTitle(user?.role)}
+                  </h2>
+                  <div className="flex flex-col md:flex-row gap-2 items-center space-x-2 space-x-reverse">
+                    <FaBook className="w-5 h-5 text-accent" />
+                    <span className="regular-14 text-gray-600">
+                      {isLoadingLessons
+                        ? "جاري التحميل..."
+                        : `${userLessons.length} حصة`}
+                    </span>
+                  </div>
+                </div>
 
-              {isLoadingLessons ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
-                  <p className="regular-16 text-gray-600">
-                    جاري تحميل الحصص...
-                  </p>
-                </div>
-              ) : lessonsError ? (
-                <div className="text-center py-12">
-                  <FaUserGraduate className="w-16 h-16 text-red-300 mx-auto mb-4" />
-                  <h3 className="bold-18 text-red-600 mb-2">خطأ في التحميل</h3>
-                  <p className="regular-14 text-red-500">{lessonsError}</p>
-                </div>
-              ) : userLessons.length === 0 ? (
-                <div className="text-center py-12">
-                  <FaUserGraduate className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="bold-18 text-gray-600 mb-2">
-                    {getEmptyCoursesMessage(user?.role).title}
-                  </h3>
-                  <p className="regular-14 text-gray-500">
-                    {getEmptyCoursesMessage(user?.role).description}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {displayedLessons.map((lesson) => {
-                    const statusBadge = getLessonStatusBadge(lesson);
-                    return (
-                      <div
-                        key={lesson.id}
-                        className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow overflow-hidden"
-                      >
-                        <div className="flex flex-col md:flex-row gap-4 p-4">
-                          {/* Lesson Image - Full width on mobile, fixed width on desktop */}
-                          <div className="w-full md:w-[200px] h-[150px] md:h-[200px] rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 relative">
-                            {lesson.photoUrl ? (
-                              <Image
-                                src={lesson.photoUrl}
-                                width={200}
-                                height={200}
-                                alt={lesson.name}
-                                priority
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.target.style.display = "none";
-                                  e.target.nextSibling.style.display = "flex";
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                <FaImage className="w-10 h-10" />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Lesson Content - Flex column layout */}
-                          <div className="flex-1 flex flex-col">
-                            {/* Header with title and status badge */}
-                            <div className="flex flex-row sm:items-center justify-between gap-2 mb-3">
-                              <h3 className="bold-16 text-gray-900 truncate">
-                                {lesson.name}
-                              </h3>
-                              <span
-                                className={`px-2 py-1 rounded-sm text-xs font-medium ${statusBadge.color} self-start sm:self-center`}
-                              >
-                                {statusBadge.text}
-                              </span>
+                {isLoadingLessons ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+                    <p className="regular-16 text-gray-600">
+                      جاري تحميل الحصص...
+                    </p>
+                  </div>
+                ) : lessonsError ? (
+                  <div className="text-center py-12">
+                    <FaUserGraduate className="w-16 h-16 text-red-300 mx-auto mb-4" />
+                    <h3 className="bold-18 text-red-600 mb-2">خطأ في التحميل</h3>
+                    <p className="regular-14 text-red-500">{lessonsError}</p>
+                  </div>
+                ) : userLessons.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FaUserGraduate className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="bold-18 text-gray-600 mb-2">
+                      {getEmptyCoursesMessage(user?.role).title}
+                    </h3>
+                    <p className="regular-14 text-gray-500">
+                      {getEmptyCoursesMessage(user?.role).description}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {displayedLessons.map((lesson) => {
+                      const statusBadge = getLessonStatusBadge(lesson);
+                      return (
+                        <div
+                          key={lesson.id}
+                          className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow overflow-hidden"
+                        >
+                          <div className="flex flex-col md:flex-row gap-4 p-4">
+                            {/* Lesson Image */}
+                            <div className="w-full md:w-[200px] h-[150px] md:h-[200px] rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 relative">
+                              {lesson.photoUrl ? (
+                                <Image
+                                  src={lesson.photoUrl}
+                                  width={200}
+                                  height={200}
+                                  alt={lesson.name}
+                                  priority
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.target.style.display = "none";
+                                    e.target.nextSibling.style.display = "flex";
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                  <FaImage className="w-10 h-10" />
+                                </div>
+                              )}
                             </div>
 
-                            {/* Description with line clamp for better mobile display */}
-                            <p className="regular-14 text-gray-600 mb-3 line-clamp-2">
-                              {lesson.description}
-                            </p>
-
-                            {/* Instructor info */}
-                            <p className="regular-14 text-gray-600 mb-3">
-                              المعلم:{" "}
-                              <span className="bold-14">
-                                {lesson.instructorName}
-                              </span>
-                            </p>
-
-                            <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 ">
-                              <div className="flex items-center gap-1 text-gray-600">
-                                <FaClock className="w-4 h-4" />
-                                <span className="regular-12">
-                                  ينتهي: {formatDate(lesson.accessExpiryDate)}
+                            {/* Lesson Content */}
+                            <div className="flex-1 flex flex-col">
+                              {/* Header with title and status badge */}
+                              <div className="flex flex-row sm:items-center justify-between gap-2 mb-3">
+                                <h3 className="bold-16 text-gray-900 truncate">
+                                  {lesson.name}
+                                </h3>
+                                <span
+                                  className={`px-2 py-1 rounded-sm text-xs font-medium ${statusBadge.color} self-start sm:self-center`}
+                                >
+                                  {statusBadge.text}
                                 </span>
                               </div>
 
-                              <div className="flex md:justify-end">
-                                <Link
-                                  href={`/instructors/${lesson.instructorId}/courses/${lesson.courseId}/lessons/${lesson.id}`}
-                                  className={`px-4 py-2 flex-1 cursor-pointer justify-center md:justify-start rounded-md regular-12 transition-colors flex items-center gap-2 ${
-                                    lesson.expired
-                                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                      : "bg-accent text-white hover:bg-opacity-90 cursor-pointer"
-                                  }`}
-                                  disabled={lesson.expired}
-                                >
-                                  <FaPlay className="w-3 h-3" />
-                                  {lesson.expired
-                                    ? "منتهية الصلاحية"
-                                    : "بدء الحصة"}
-                                </Link>
+                              {/* Description */}
+                              <p className="regular-14 text-gray-600 mb-3 line-clamp-2">
+                                {lesson.description}
+                              </p>
+
+                              {/* Instructor info */}
+                              <p className="regular-14 text-gray-600 mb-3">
+                                {user?.role === "STUDENT" ? "المعلم: " : ""}
+                                <span className="bold-14">
+                                  {lesson.instructorName}
+                                </span>
+                              </p>
+
+                              <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+                                <div className="flex items-center gap-1 text-gray-600">
+                                  <FaClock className="w-4 h-4" />
+                                  <span className="regular-12">
+                                    {user?.role === "STUDENT" ? "ينتهي: " : ""}
+                                    {formatDate(lesson.accessExpiryDate)}
+                                  </span>
+                                </div>
+
+                                <div className="flex md:justify-end">
+                                  <Link
+                                    href={`/instructors/${lesson.instructorId}/courses/${lesson.courseId}/lessons/${lesson.id}`}
+                                    className={`px-4 py-2 flex-1 cursor-pointer justify-center md:justify-start rounded-md regular-12 transition-colors flex items-center gap-2 ${
+                                      lesson.expired
+                                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                        : "bg-accent text-white hover:bg-opacity-90 cursor-pointer"
+                                    }`}
+                                  >
+                                    <FaPlay className="w-3 h-3" />
+                                    {lesson.expired
+                                      ? "منتهية الصلاحية"
+                                      : user?.role === "STUDENT"
+                                        ? "بدء الحصة"
+                                        : "عرض الحصة"}
+                                  </Link>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
 
-                  {/* زر عرض المزيد/عرض أقل */}
-                  {userLessons.length > 3 && (
-                    <div className="text-center mt-6 relative z-10">
-                      {!showAllLessons ? (
-                        <button
-                          type="button"
-                          onClick={handleShowMore}
-                          className="bg-secondary text-white px-6 py-3 rounded-lg hover:bg-[#87ceeb]/90 transition-colors regular-14 cursor-pointer"
-                          style={{ pointerEvents: "auto" }}
-                        >
-                          عرض المزيد ({userLessons.length - 3} حصة إضافية)
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleShowLess}
-                          className="border border-secondary text-secondary px-6 py-3 rounded-lg hover:bg-[#87ceeb] hover:text-white transition-colors regular-14 cursor-pointer"
-                          style={{ pointerEvents: "auto" }}
-                        >
-                          عرض أقل
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+                    {/* Show More/Less buttons */}
+                    {userLessons.length > 3 && (
+                      <div className="text-center mt-6 relative z-10">
+                        {!showAllLessons ? (
+                          <button
+                            type="button"
+                            onClick={handleShowMore}
+                            className="bg-secondary text-white px-6 py-3 rounded-lg hover:bg-[#87ceeb]/90 transition-colors regular-14 cursor-pointer"
+                            style={{ pointerEvents: "auto" }}
+                          >
+                            عرض المزيد ({userLessons.length - 3} حصة إضافية)
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleShowLess}
+                            className="border border-secondary text-secondary px-6 py-3 rounded-lg hover:bg-[#87ceeb] hover:text-white transition-colors regular-14 cursor-pointer"
+                            style={{ pointerEvents: "auto" }}
+                          >
+                            عرض أقل
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

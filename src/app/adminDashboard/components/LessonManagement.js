@@ -144,7 +144,7 @@ const LessonManagement = () => {
         await adminAPI.lessons.createWithVideo(
           lessonData.courseId,
           formData,
-          (progress) => setUploadProgress(progress)
+          (progress) => setUploadProgress(progress),
         );
       } else {
         // For regular JSON payload
@@ -175,37 +175,70 @@ const LessonManagement = () => {
     }
   };
 
-const handleUpdateLesson = async (e) => {
-  e.preventDefault();
-  try {
-    setIsLoading(true);
+  const handleUpdateLesson = async (e) => {
+    e.preventDefault();
+    try {
+      setIsLoading(true);
 
-    if (editVideoFile) {
-      // إذا تم اختيار ملف فيديو جديد، استخدم endpoint رفع الفيديو
-      const formData = new FormData();
-      formData.append("file", editVideoFile);
-      formData.append("name", editForm.name);
-      formData.append("description", editForm.description);
-      formData.append("price", editForm.price);
-      formData.append("free", "false"); // أو حسب الحالة
-      if (editForm.photoUrl) formData.append("photoUrl", editForm.photoUrl);
+      if (editVideoFile) {
+        // إذا تم اختيار ملف فيديو جديد، استخدم endpoint رفع الفيديو
+        const formData = new FormData();
+        formData.append("file", editVideoFile);
+        formData.append("name", editForm.name);
+        formData.append("description", editForm.description);
+        formData.append("price", editForm.price);
+        formData.append("free", "false"); // أو حسب الحالة
+        if (editForm.photoUrl) formData.append("photoUrl", editForm.photoUrl);
 
-      await adminAPI.lessons.updateWithVideo(selectedLesson.id, formData, (progress) => setUploadProgress(progress));
-    } else {
-      // تحديث بدون فيديو
-      await adminAPI.lessons.update(selectedLesson.id, editForm);
+        await adminAPI.lessons.updateWithVideo(
+          selectedLesson.id,
+          formData,
+          (progress) => setUploadProgress(progress),
+        );
+      } else {
+        // تحديث بدون فيديو
+        await adminAPI.lessons.update(selectedLesson.id, editForm);
+      }
+
+      // تحديث البيانات في allLessons
+      const updatedAllLessons = allLessons.map((lesson) =>
+        lesson.id === selectedLesson.id
+          ? {
+              ...lesson,
+              ...editForm,
+              // Keep the course information from the original lesson
+              courseName: lesson.courseName,
+              courseId: lesson.courseId,
+            }
+          : lesson,
+      );
+      setAllLessons(updatedAllLessons);
+
+      // تحديث البيانات في lessons (المعروضة حالياً)
+      const updatedDisplayedLessons = lessons.map((lesson) =>
+        lesson.id === selectedLesson.id
+          ? {
+              ...lesson,
+              ...editForm,
+              // Keep the course information from the original lesson
+              courseName: lesson.courseName,
+              courseId: lesson.courseId,
+            }
+          : lesson,
+      );
+      setLessons(updatedDisplayedLessons);
+
+      toast.success("تم تحديث الدرس بنجاح");
+      setShowEditModal(false);
+      setSelectedLesson(null);
+      setEditVideoFile(null); // Clear the video file state
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
+    } finally {
+      setIsLoading(false);
+      setUploadProgress(0);
     }
-
-    toast.success("تم تحديث الدرس بنجاح");
-    setShowEditModal(false);
-    fetchAllLessons(); // إعادة تحميل الدروس
-  } catch (error) {
-    toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
-  } finally {
-    setIsLoading(false);
-    setUploadProgress(0);
-  }
-};
+  };
 
   const handleDeleteLesson = async () => {
     if (!lessonToDelete) return;
@@ -293,14 +326,14 @@ const handleUpdateLesson = async (e) => {
           (lesson) =>
             lesson.name.toLowerCase().includes(searchLower) ||
             lesson.description?.toLowerCase().includes(searchLower) ||
-            lesson.courseName?.toLowerCase().includes(searchLower)
+            lesson.courseName?.toLowerCase().includes(searchLower),
         );
       }
 
       // Apply dropdown filter if it exists
       if (selectedLessonFilter) {
         filteredLessons = filteredLessons.filter(
-          (lesson) => lesson.id === selectedLessonFilter
+          (lesson) => lesson.id === selectedLessonFilter,
         );
       }
 
@@ -388,7 +421,7 @@ const handleUpdateLesson = async (e) => {
                 // Only filter by dropdown selection immediately
                 if (e.target.value) {
                   const selected = allLessons.find(
-                    (l) => l.id === e.target.value
+                    (l) => l.id === e.target.value,
                   );
                   setLessons(selected ? [selected] : []);
                 } else {
@@ -401,7 +434,7 @@ const handleUpdateLesson = async (e) => {
               {courses.map((course) => {
                 // Filter lessons that belong to this course
                 const courseLessons = allLessons.filter(
-                  (lesson) => lesson.courseId === course.id
+                  (lesson) => lesson.courseId === course.id,
                 );
 
                 // Only render optgroup if course has lessons

@@ -404,7 +404,7 @@ const ExamManagement = () => {
                     <FiEdit className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">تعديل</span>
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => {
                       setCopyExamData({ examId: exam.id, targetLessonId: '' });
                       setShowCopyModal(true);
@@ -413,7 +413,7 @@ const ExamManagement = () => {
                   >
                     <FiCopy className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">نسخ</span>
-                  </button>
+                  </button> */}
                   <button
                     onClick={() => openDeleteModal(exam)}
                     className="bg-red-50 flex-1 text-red-600 border border-red-600 py-3 px-2 sm:px-4 rounded-lg hover:bg-red-100 transition-colors cursor-pointer flexCenter"
@@ -568,7 +568,7 @@ const ExamManagement = () => {
       )}
 
       {/* Copy Exam Modal */}
-      {showCopyModal && (
+      {/* {showCopyModal && (
         <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <h2 className="bold-24 mb-4">نسخ الامتحان</h2>
@@ -588,7 +588,7 @@ const ExamManagement = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

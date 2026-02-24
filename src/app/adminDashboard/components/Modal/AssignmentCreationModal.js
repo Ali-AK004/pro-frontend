@@ -4,7 +4,7 @@ import {
   FiX,
   FiSave,
   FiFileText,
-  FiCalendar,
+  FiClock,
   FiAward,
   FiAlignLeft,
 } from "react-icons/fi";
@@ -19,7 +19,7 @@ const AssignmentCreationModal = ({
   isEdit = false,
 }) => {
   const [assignmentData, setAssignmentData] = useState(
-    assignmentAPI.validation.createDefaultAssignment()
+    assignmentAPI.validation.createDefaultAssignment(),
   );
   const [errors, setErrors] = useState({});
 
@@ -35,9 +35,9 @@ const AssignmentCreationModal = ({
         title: initialData.title || "",
         description: initialData.description || "",
         maxPoints: initialData.maxPoints || defaultAssignment.maxPoints,
-        dueDate: initialData.dueDate
-          ? new Date(initialData.dueDate).toISOString().slice(0, 16)
-          : "",
+        durationDays: initialData.durationDays || 7, // Default to 7 days if not specified
+        durationHours: initialData.durationHours || 0, // Default to 0 hours
+        durationMinutes: initialData.durationMinutes || 0, // Default to 0 minutes
       });
     } else {
       setAssignmentData(assignmentAPI.validation.createDefaultAssignment());
@@ -60,27 +60,51 @@ const AssignmentCreationModal = ({
     }
   };
 
+  const handleDurationChange = (unit, value) => {
+    // Ensure value is a number and not negative
+    const numValue = Math.max(0, parseInt(value) || 0);
+
+    setAssignmentData((prev) => ({
+      ...prev,
+      [unit]: numValue,
+    }));
+
+    // Clear duration error if exists
+    if (errors.duration) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.duration;
+        return newErrors;
+      });
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Convert date string back to Date object for validation
-    const dataToValidate = {
-      ...assignmentData,
-      dueDate: assignmentData.dueDate ? new Date(assignmentData.dueDate) : null,
-    };
-
-    const validation =
-      assignmentAPI.validation.validateAssignmentData(dataToValidate);
-
-    if (!validation.isValid) {
-      setErrors(validation.errors);
+    // Validate that at least one duration field has a value > 0
+    if (
+      assignmentData.durationDays === 0 &&
+      assignmentData.durationHours === 0 &&
+      assignmentData.durationMinutes === 0
+    ) {
+      setErrors({
+        ...errors,
+        duration: "يجب تحديد مدة زمنية للواجب",
+      });
       return;
     }
 
-    // Submit with proper date format
+    // Convert duration to total minutes or any format your backend expects
+    const totalDurationInMinutes =
+      assignmentData.durationDays * 24 * 60 +
+      assignmentData.durationHours * 60 +
+      assignmentData.durationMinutes;
+
+    // You can either send the individual duration fields or calculate total minutes
     onSubmit({
       ...assignmentData,
-      dueDate: assignmentData.dueDate ? new Date(assignmentData.dueDate) : null,
+      totalDurationMinutes: totalDurationInMinutes,
     });
   };
 
@@ -130,7 +154,7 @@ const AssignmentCreationModal = ({
                         ...new Set(lessons.map((lesson) => lesson.courseName)),
                       ].map((courseName) => {
                         const courseLessons = lessons.filter(
-                          (lesson) => lesson.courseName === courseName
+                          (lesson) => lesson.courseName === courseName,
                         );
                         return (
                           <optgroup
@@ -191,31 +215,11 @@ const AssignmentCreationModal = ({
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
                 rows="4"
-                placeholder="أدخل وصف الواجب (اختياري)"
+                placeholder="أدخل وصف الواجب"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Due Date */}
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  <FiCalendar className="inline w-4 h-4 ml-1" />
-                  تاريخ التسليم
-                </label>
-                <input
-                  type="datetime-local"
-                  value={assignmentData.dueDate}
-                  onChange={(e) => handleInputChange("dueDate", e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.dueDate ? "border-red-300" : "border-gray-300"
-                  }`}
-                  min={new Date().toISOString().slice(0, 16)}
-                />
-                {errors.dueDate && (
-                  <p className="mt-1 text-sm text-red-600">{errors.dueDate}</p>
-                )}
-              </div>
-
+            <div className="grid grid-cols-1 gap-6">
               {/* Max Points */}
               <div>
                 <label className="block bold-14 text-gray-700 mb-2">
@@ -231,7 +235,7 @@ const AssignmentCreationModal = ({
                     const value = e.target.value;
                     handleInputChange(
                       "maxPoints",
-                      value === "" ? "" : parseFloat(value) || 0.01
+                      value === "" ? "" : parseFloat(value) || 0.01,
                     );
                   }}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
@@ -252,7 +256,6 @@ const AssignmentCreationModal = ({
               <h4 className="bold-14 text-blue-900 mb-2">تعليمات:</h4>
               <ul className="regular-12 text-blue-800 space-y-1">
                 <li>• تأكد من وضوح عنوان الواجب ووصفه</li>
-                <li>• حدد تاريخ التسليم بدقة</li>
                 <li>• النقاط القصوى ستستخدم في حساب الدرجات</li>
                 <li>• يمكن للطلاب رؤية الواجب فور إنشائه</li>
               </ul>

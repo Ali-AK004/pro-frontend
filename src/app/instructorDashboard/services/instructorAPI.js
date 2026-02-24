@@ -223,6 +223,7 @@ export const instructorAPI = {
     },
 
     // Get course lessons with caching and deduplication
+    // In instructorAPI.js - courses.getLessons method
     getLessons: (courseId, skipCache = false) => {
       if (!courseId) {
         throw new Error("Course ID is required");
@@ -321,12 +322,17 @@ export const instructorAPI = {
     },
 
     // Delete lesson
+    // In instructorAPI.js - lessons.delete method
     delete: (instructorId, lessonId) => {
-      // Clear lesson cache
+      // Clear all caches for this lesson before delete
       clearCache(`lesson_${lessonId}`);
-      return apiClient.delete(`${instructorId}/lessons/${lessonId}`);
+      clearCache(`lessons`); // Clear any lessons list caches
+      clearCache(`dashboard_stats_${instructorId}`);
+      clearCache(`exams_lesson_${lessonId}`);
+      clearCache(`assignments_lesson_${lessonId}`);
+      clearCache(`accessCodes_lesson_${lessonId}`);
+      return apiClient.delete(`/${instructorId}/lessons/${lessonId}`);
     },
-
     // Generate access codes for lesson
     // generateAccessCodes: (lessonId, count) => {
     //   // Clear access codes cache for this lesson

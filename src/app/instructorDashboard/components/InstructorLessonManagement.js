@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { instructorAPI, handleAPIError } from "../services/instructorAPI";
+import { instructorAPI, handleAPIError, clearCache } from "../services/instructorAPI";
 import { useUserData } from "../../../../models/UserContext";
 import { Slide } from "react-toastify";
 import { ToastContainer, toast } from "react-toastify";
@@ -95,7 +95,7 @@ const InstructorLessonManagement = () => {
     }
   };
 
-  const fetchLessons = async () => {
+  const fetchLessons = async (skipCache = false) => {
     if (!selectedCourse) {
       setLessons([]);
       setOriginalLessons([]);
@@ -104,11 +104,15 @@ const InstructorLessonManagement = () => {
 
     try {
       setIsLoading(true);
-      const response = await instructorAPI.courses.getLessons(selectedCourse);
+      // Pass skipCache parameter to the API
+      const response = await instructorAPI.courses.getLessons(
+        selectedCourse,
+        skipCache,
+      );
 
       // Validate and filter the response data
       const lessonsData = (response.data || [])
-        .filter((lesson) => lesson && lesson.id) // Ensure lesson exists and has an id
+        .filter((lesson) => lesson && lesson.id)
         .map((lesson) => ({
           id: lesson.id,
           name: lesson.name || "Untitled Lesson",
@@ -118,7 +122,7 @@ const InstructorLessonManagement = () => {
           videoUrl: lesson.videoUrl || "",
           videoId: lesson.videoId || "",
           courseName: lesson.courseName || "No Course",
-          // Add any other required fields with defaults
+          courseId: selectedCourse, // Add courseId for reference
         }));
 
       setLessons(lessonsData);
@@ -131,7 +135,6 @@ const InstructorLessonManagement = () => {
       setIsLoading(false);
     }
   };
-
   const handleCreateLesson = async (e) => {
     e.preventDefault();
 
@@ -160,12 +163,12 @@ const InstructorLessonManagement = () => {
           formData,
           (progress) => {
             setUploadProgress(progress);
-          }
+          },
         );
       } else {
         res = await instructorAPI.lessons.create(
           lessonForm.courseId,
-          lessonForm
+          lessonForm,
         );
       }
 
@@ -213,7 +216,7 @@ const InstructorLessonManagement = () => {
       const response = await instructorAPI.lessons.update(
         instructorId,
         selectedLesson.id,
-        formData
+        formData,
       );
 
       // ✅ the backend wraps lesson inside `lesson`
@@ -229,10 +232,10 @@ const InstructorLessonManagement = () => {
       };
 
       setLessons((prev) =>
-        prev.map((l) => (l.id === selectedLesson.id ? updatedLesson : l))
+        prev.map((l) => (l.id === selectedLesson.id ? updatedLesson : l)),
       );
       setOriginalLessons((prev) =>
-        prev.map((l) => (l.id === selectedLesson.id ? updatedLesson : l))
+        prev.map((l) => (l.id === selectedLesson.id ? updatedLesson : l)),
       );
       setSelectedLesson(updatedLesson);
 
@@ -259,7 +262,7 @@ const InstructorLessonManagement = () => {
     const filteredLessons = originalLessons.filter(
       (lesson) =>
         lesson.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lesson.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        lesson.description?.toLowerCase().includes(searchTerm.toLowerCase()),
     );
     setLessons(filteredLessons);
   }, [searchTerm, originalLessons]);
@@ -323,7 +326,7 @@ const InstructorLessonManagement = () => {
     setShowEditModal(true);
   };
 
-  const handleDeleteLesson = (lesson) => {
+  const handleDeleteLesson = async (lesson) => {
     setLessonToDelete(lesson);
     setShowDeleteModal(true);
   };
@@ -339,28 +342,72 @@ const InstructorLessonManagement = () => {
     try {
       setIsLoading(true);
 
-      // Optimistically remove the lesson from state
-      setLessons((prevLessons) =>
-        prevLessons.filter((lesson) => lesson.id !== lessonToDelete.id)
-      );
-      setOriginalLessons((prevLessons) =>
-        prevLessons.filter((lesson) => lesson.id !== lessonToDelete.id)
+      // Store the lesson ID and name before deletion for optimistic update
+      const deletedLessonId = lessonToDelete.id;
+      const deletedLessonName = lessonToDelete.name;
+      const deletedCourseId = lessonToDelete.courseId;
+
+      // Call the API to delete
+      await instructorAPI.lessons.delete(instructorId, deletedLessonId);
+
+      // IMPORTANT: Force clear all caches for this lesson and related data
+      clearCache(`lessons_${deletedCourseId}`); // Clear lessons cache for this course
+      clearCache(`lesson_${deletedLessonId}`); // Clear specific lesson cache
+      clearCache(`dashboard_stats_${instructorId}`); // Clear dashboard stats
+      clearCache(`exams_lesson_${deletedLessonId}`); // Clear exams for this lesson
+      clearCache(`assignments_lesson_${deletedLessonId}`); // Clear assignments for this lesson
+
+      // Also clear any access codes caches
+      clearCache(`accessCodes_lesson_${deletedLessonId}`);
+
+      // Update local state immediately - remove the deleted lesson
+      setLessons((prevLessons) => {
+        const filtered = prevLessons.filter(
+          (lesson) => lesson.id !== deletedLessonId,
+        );
+        return filtered;
+      });
+
+      setOriginalLessons((prevLessons) => {
+        const filtered = prevLessons.filter(
+          (lesson) => lesson.id !== deletedLessonId,
+        );
+        return filtered;
+      });
+
+      toast.success(`تم حذف الدرس "${deletedLessonName}" بنجاح`);
+
+      // Dispatch event for other components
+      window.dispatchEvent(
+        new CustomEvent("lessonDeleted", {
+          detail: {
+            lessonId: deletedLessonId,
+            courseId: deletedCourseId,
+            timestamp: Date.now(),
+          },
+        }),
       );
 
-      await instructorAPI.lessons.delete(instructorId, lessonToDelete.id);
-
-      toast.success("تم حذف الدرس بنجاح");
       setShowDeleteModal(false);
       setLessonToDelete(null);
+
+      // Double-check with a fresh fetch to ensure consistency
+      // But do it after a small delay to let the backend cache clear
+      setTimeout(() => {
+        if (selectedCourse) {
+          fetchLessons(); // This already has skipCache logic
+        }
+      }, 500);
     } catch (error) {
-      // If error occurs, revert the optimistic update
-      fetchLessons(); // Fall back to refetching
       toast.error(handleAPIError(error, "فشل في حذف الدرس"));
+      // If delete fails, refresh the list to ensure consistency
+      if (selectedCourse) {
+        fetchLessons();
+      }
     } finally {
       setIsLoading(false);
     }
   };
-
   const cancelDeleteLesson = () => {
     setShowDeleteModal(false);
     setLessonToDelete(null);
@@ -451,15 +498,7 @@ const InstructorLessonManagement = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-          <div className="md:col-span-3 flex">
-            <SecureSearchInput
-              placeholder="البحث في الدروس..."
-              onSearch={(term) => setSearchTerm(term)}
-              className="border border-gray-300 focus:ring-secondary"
-              maxLength={100}
-            />
-          </div>
+        <div className="grid grid-cols-1 gap-4">
           <select
             value={selectedCourse}
             onChange={(e) => setSelectedCourse(e.target.value)}
@@ -1069,4 +1108,3 @@ const InstructorLessonManagement = () => {
 };
 
 export default InstructorLessonManagement;
-

@@ -39,8 +39,6 @@ const CourseDetails = () => {
           await studentAPI.profile.getInstructorFullProfile(instructorId);
         const instructorData = response.data;
 
-        console.log(instructorData)
-
         setInstructorData(instructorData);
 
         if (instructorData && instructorData.courses) {

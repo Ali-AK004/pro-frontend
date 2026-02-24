@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { instructorAPI, handleAPIError, clearCache } from "../services/instructorAPI";
+import {
+  instructorAPI,
+  handleAPIError,
+  clearCache,
+} from "../services/instructorAPI";
 import { useUserData } from "../../../../models/UserContext";
 import { MdDeleteForever } from "react-icons/md";
 import { Slide } from "react-toastify";
@@ -53,31 +57,36 @@ const InstructorCourseManagement = () => {
   });
 
   // Use useCallback to memoize fetchCourses
-  const fetchCourses = useCallback(async (skipCache = false, showLoading = true) => {
-    if (!instructorId) return;
-    
-    try {
-      if (showLoading) {
-        setIsLoading(true);
-      } else {
-        setIsRefreshing(true);
+  const fetchCourses = useCallback(
+    async (skipCache = false, showLoading = true) => {
+      if (!instructorId) return;
+
+      try {
+        if (showLoading) {
+          setIsLoading(true);
+        } else {
+          setIsRefreshing(true);
+        }
+
+        const response = await instructorAPI.courses.getByInstructor(
+          instructorId,
+          skipCache,
+        );
+
+        // Ensure we're setting an array
+        const coursesData = response.data || [];
+        setCourses(coursesData);
+
+        return coursesData;
+      } catch (error) {
+        toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
       }
-      
-      const response = await instructorAPI.courses.getByInstructor(instructorId, skipCache);
-      
-      // Ensure we're setting an array
-      const coursesData = response.data || [];
-      setCourses(coursesData);
-  
-      
-      return coursesData;
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [instructorId]);
+    },
+    [instructorId],
+  );
 
   useEffect(() => {
     if (instructorId) {
@@ -108,31 +117,34 @@ const InstructorCourseManagement = () => {
 
     try {
       setIsLoading(true);
-      const response = await instructorAPI.courses.create(instructorId, courseForm);
-      
+      const response = await instructorAPI.courses.create(
+        instructorId,
+        courseForm,
+      );
+
       // Get the new course data
       const newCourse = response.data;
-      
+
       if (newCourse) {
         // Add lessonCount if not present
         const courseWithDefaults = {
           ...newCourse,
           lessonCount: newCourse.lessonCount || 0,
         };
-        
+
         // Update local state immediately
-        setCourses(prevCourses => {
+        setCourses((prevCourses) => {
           // Check if course already exists (prevent duplicates)
-          if (prevCourses.some(c => c.id === courseWithDefaults.id)) {
+          if (prevCourses.some((c) => c.id === courseWithDefaults.id)) {
             return prevCourses;
           }
           return [courseWithDefaults, ...prevCourses];
         });
-        
+
         toast.success("تم إنشاء الكورس بنجاح");
         setShowCreateModal(false);
         setCourseForm({ name: "", description: "", photoUrl: "" });
-        
+
         // Refresh data in background to ensure consistency
         setTimeout(() => {
           fetchCourses(true, false);
@@ -175,28 +187,28 @@ const InstructorCourseManagement = () => {
       const response = await instructorAPI.courses.update(
         instructorId,
         selectedCourse.id,
-        editForm
+        editForm,
       );
-      
+
       const updatedCourse = response.data;
-      
+
       if (updatedCourse) {
         // Update local state immediately
-        setCourses(prev =>
+        setCourses((prev) =>
           prev.map((course) =>
             course.id === selectedCourse.id
-              ? { 
-                  ...course, 
-                  ...updatedCourse, 
-                  lessonCount: course.lessonCount // Preserve lesson count if not in response
+              ? {
+                  ...course,
+                  ...updatedCourse,
+                  lessonCount: course.lessonCount, // Preserve lesson count if not in response
                 }
-              : course
-          )
+              : course,
+          ),
         );
-        
+
         toast.success("تم تحديث الكورس بنجاح");
         setShowEditModal(false);
-        
+
         // Refresh data in background to ensure consistency
         setTimeout(() => {
           fetchCourses(true, false);
@@ -221,34 +233,35 @@ const InstructorCourseManagement = () => {
 
     try {
       setIsLoading(true);
-      
+
       // Store the course ID and name before deletion for optimistic update
       const deletedCourseId = courseToDelete.id;
       const deletedCourseName = courseToDelete.name;
-      
+
       // Call the API to delete
       await instructorAPI.courses.delete(instructorId, deletedCourseId);
-      
+
       // IMPORTANT: Force clear all caches for this instructor
       clearCache(`courses_${instructorId}`);
       clearCache(`course_${deletedCourseId}`);
-      
+
       // Update local state immediately - remove the deleted course
-      setCourses(prevCourses => {
-        const filtered = prevCourses.filter((course) => course.id !== deletedCourseId);
+      setCourses((prevCourses) => {
+        const filtered = prevCourses.filter(
+          (course) => course.id !== deletedCourseId,
+        );
         return filtered;
       });
-      
+
       toast.success(`تم حذف الكورس "${deletedCourseName}" بنجاح`);
       setShowDeleteModal(false);
       setCourseToDelete(null);
-      
+
       // Double-check with a fresh fetch to ensure consistency
       // But do it after a small delay to let the backend cache clear
       setTimeout(() => {
         fetchCourses(true, false); // Pass true to skip cache, false to not show loading
       }, 500);
-      
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف الكورس"));
       // If delete fails, refresh the list to ensure consistency
@@ -273,10 +286,10 @@ const InstructorCourseManagement = () => {
     const filteredCourses = courses.filter(
       (course) =>
         course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        course.description?.toLowerCase().includes(searchTerm.toLowerCase()),
     );
     setCourses(filteredCourses);
-    
+
     // If no local results, try searching on backend
     if (filteredCourses.length === 0) {
       try {
@@ -348,7 +361,7 @@ const InstructorCourseManagement = () => {
         transition={Slide}
         className="z-50"
       />
-      
+
       {/* Header with Refresh Button */}
       <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
         <div>
@@ -441,7 +454,8 @@ const InstructorCourseManagement = () => {
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = "https://via.placeholder.com/400x200?text=No+Image";
+                      e.target.src =
+                        "https://via.placeholder.com/400x200?text=No+Image";
                     }}
                   />
                 ) : (
@@ -508,6 +522,7 @@ const InstructorCourseManagement = () => {
       </div>
 
       {/* Create Course Modal */}
+      {/* Create Course Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl overflow-y-auto max-h-[90vh]">
@@ -540,9 +555,22 @@ const InstructorCourseManagement = () => {
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  وصف الكورس
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block bold-14 text-gray-900">
+                    وصف الكورس
+                  </label>
+                  <span
+                    className={`text-sm ${
+                      courseForm.description.length > 1900
+                        ? "text-amber-600 font-bold"
+                        : courseForm.description.length > 1800
+                          ? "text-amber-500"
+                          : "text-gray-500"
+                    }`}
+                  >
+                    {courseForm.description.length}/2000 حرف
+                  </span>
+                </div>
                 <textarea
                   rows={4}
                   value={courseForm.description}
@@ -552,10 +580,22 @@ const InstructorCourseManagement = () => {
                       description: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent ${
+                    courseForm.description.length >= 2000
+                      ? "border-red-500 bg-red-50"
+                      : courseForm.description.length > 1900
+                        ? "border-amber-500"
+                        : "border-gray-300"
+                  }`}
+                  maxLength={2000}
                   placeholder="أدخل وصف الكورس"
-                  maxLength={500}
                 />
+
+                {courseForm.description.length >= 2000 && (
+                  <p className="text-red-500 text-sm mt-1">
+                    لقد وصلت للحد الأقصى المسموح به من الحروف
+                  </p>
+                )}
               </div>
 
               <div>
@@ -581,13 +621,14 @@ const InstructorCourseManagement = () => {
               {courseForm.photoUrl && (
                 <div className="mt-2">
                   <p className="text-sm text-gray-600 mb-2">معاينة الصورة:</p>
-                  <img 
-                    src={courseForm.photoUrl} 
-                    alt="Preview" 
+                  <img
+                    src={courseForm.photoUrl}
+                    alt="Preview"
                     className="w-32 h-32 object-cover rounded-lg border border-gray-200"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = "https://via.placeholder.com/128?text=Invalid+URL";
+                      e.target.src =
+                        "https://via.placeholder.com/128?text=Invalid+URL";
                     }}
                   />
                 </div>
@@ -596,8 +637,12 @@ const InstructorCourseManagement = () => {
               <div className="flex gap-4 pt-4">
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="cursor-pointer flex-1 bg-secondary hover:bg-[#6cb3ff] text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                  disabled={isLoading || courseForm.description.length > 2000}
+                  className={`cursor-pointer flex-1 text-white py-3 rounded-lg bold-16 transition-all duration-300 disabled:opacity-50 ${
+                    courseForm.description.length > 2000
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-secondary hover:bg-[#6cb3ff]"
+                  }`}
                 >
                   {isLoading ? "جاري الإنشاء..." : "إنشاء الكورس"}
                 </button>
@@ -619,7 +664,9 @@ const InstructorCourseManagement = () => {
         <div className="fixed inset-0 bg-black/20 flexCenter z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-24 text-gray-900">تعديل الكورس: {selectedCourse.name}</h2>
+              <h2 className="bold-24 text-gray-900">
+                تعديل الكورس: {selectedCourse.name}
+              </h2>
               <button
                 onClick={closeEditModal}
                 className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -646,18 +693,43 @@ const InstructorCourseManagement = () => {
               </div>
 
               <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  وصف الكورس
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block bold-14 text-gray-900">
+                    وصف الكورس
+                  </label>
+                  <span
+                    className={`text-sm ${
+                      editForm.description.length > 1900
+                        ? "text-amber-600 font-bold"
+                        : editForm.description.length > 1800
+                          ? "text-amber-500"
+                          : "text-gray-500"
+                    }`}
+                  >
+                    {editForm.description.length}/2000 حرف
+                  </span>
+                </div>
                 <textarea
                   rows={4}
                   value={editForm.description}
                   onChange={(e) =>
                     setEditForm({ ...editForm, description: e.target.value })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                  maxLength={500}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent ${
+                    editForm.description.length >= 2000
+                      ? "border-red-500 bg-red-50"
+                      : editForm.description.length > 1900
+                        ? "border-amber-500"
+                        : "border-gray-300"
+                  }`}
+                  maxLength={2000}
                 />
+
+                {editForm.description.length >= 2000 && (
+                  <p className="text-red-500 text-sm mt-1">
+                    لقد وصلت للحد الأقصى المسموح به من الحروف
+                  </p>
+                )}
               </div>
 
               <div>
@@ -683,13 +755,14 @@ const InstructorCourseManagement = () => {
               {editForm.photoUrl && (
                 <div className="mt-2">
                   <p className="text-sm text-gray-600 mb-2">معاينة الصورة:</p>
-                  <img 
-                    src={editForm.photoUrl} 
-                    alt="Preview" 
+                  <img
+                    src={editForm.photoUrl}
+                    alt="Preview"
                     className="w-32 h-32 object-cover rounded-lg border border-gray-200"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = "https://via.placeholder.com/128?text=Invalid+URL";
+                      e.target.src =
+                        "https://via.placeholder.com/128?text=Invalid+URL";
                     }}
                   />
                 </div>
@@ -743,7 +816,8 @@ const InstructorCourseManagement = () => {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = "https://via.placeholder.com/400x200?text=No+Image";
+                          e.target.src =
+                            "https://via.placeholder.com/400x200?text=No+Image";
                         }}
                       />
                     ) : (
@@ -793,15 +867,13 @@ const InstructorCourseManagement = () => {
                       <span className="bold-14 text-gray-900">
                         {selectedCourse.createdAt
                           ? new Date(
-                              selectedCourse.createdAt
+                              selectedCourse.createdAt,
                             ).toLocaleDateString("ar-EG")
                           : "غير محدد"}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="regular-14 text-gray-600">
-                        المدرس:
-                      </span>
+                      <span className="regular-14 text-gray-600">المدرس:</span>
                       <span className="bold-14 text-gray-900">
                         {selectedCourse.instructorName || "غير محدد"}
                       </span>
@@ -842,8 +914,8 @@ const InstructorCourseManagement = () => {
                 هل أنت متأكد من حذف كورس "{courseToDelete.name}"؟
               </p>
               <p className="regular-14 text-red-600 mb-6">
-                سيتم حذف جميع الدروس والمحتوى المرتبط بهذا الكورس نهائياً ولا يمكن
-                التراجع عن هذا الإجراء.
+                سيتم حذف جميع الدروس والمحتوى المرتبط بهذا الكورس نهائياً ولا
+                يمكن التراجع عن هذا الإجراء.
               </p>
 
               {/* Action Buttons */}

@@ -39,7 +39,18 @@ const InstructorExamManagement = () => {
   useEffect(() => {
     if (instructorId) {
       fetchCourses();
-      fetchAllLessons(); // Fetch all lessons for modal
+      fetchAllLessons();
+
+      // Add event listener for lesson deletions
+      const handleLessonDeleted = () => {
+        fetchAllLessons(); // Refresh lessons when a lesson is deleted
+      };
+
+      window.addEventListener("lessonDeleted", handleLessonDeleted);
+
+      return () => {
+        window.removeEventListener("lessonDeleted", handleLessonDeleted);
+      };
     }
   }, [instructorId]);
 
@@ -88,13 +99,16 @@ const InstructorExamManagement = () => {
   // Fetch all lessons for the modal (same pattern as AssignmentManagement)
   const fetchAllLessons = async () => {
     try {
-      const response = await instructorAPI.courses.getByInstructor(instructorId);
+      const response =
+        await instructorAPI.courses.getByInstructor(instructorId);
       const coursesData = response.data || [];
 
       let allLessonsData = [];
       for (const course of coursesData) {
         try {
-          const lessonsResponse = await instructorAPI.courses.getLessons(course.id);
+          const lessonsResponse = await instructorAPI.courses.getLessons(
+            course.id,
+          );
           const courseLessons = lessonsResponse.data || [];
           // Add course information to each lesson for optgroups
           const lessonsWithCourse = courseLessons.map((lesson) => ({
@@ -104,8 +118,10 @@ const InstructorExamManagement = () => {
           }));
           allLessonsData = [...allLessonsData, ...lessonsWithCourse];
         } catch (error) {
-          console.error(`Error fetching lessons for course ${course.id}:`, error);
-          // Don't show toast for each error, just log it
+          console.error(
+            `Error fetching lessons for course ${course.id}:`,
+            error,
+          );
         }
       }
 
@@ -136,7 +152,7 @@ const InstructorExamManagement = () => {
       await instructorAPI.exams.create(examData.lessonId, examData);
       toast.success("تم إنشاء الامتحان بنجاح");
       setShowCreateModal(false);
-      
+
       // If the created exam belongs to the currently selected lesson, refresh the list
       if (selectedLesson === examData.lessonId) {
         fetchExams();
@@ -175,7 +191,7 @@ const InstructorExamManagement = () => {
       toast.success("تم تحديث الامتحان بنجاح");
       setShowEditModal(false);
       setSelectedExam(null);
-      
+
       // If the updated exam belongs to the currently selected lesson, refresh the list
       if (selectedLesson === examData.lessonId) {
         fetchExams();
@@ -219,7 +235,7 @@ const InstructorExamManagement = () => {
       toast.success("تم حذف الامتحان بنجاح");
       setShowDeleteModal(false);
       setExamToDelete(null);
-      
+
       // If the deleted exam belongs to the currently selected lesson, refresh the list
       if (selectedLesson === examToDelete.lessonId) {
         fetchExams();
@@ -254,21 +270,21 @@ const InstructorExamManagement = () => {
   const getGroupedLessons = () => {
     // Group all lessons by their course
     const grouped = {};
-    
-    allLessons.forEach(lesson => {
+
+    allLessons.forEach((lesson) => {
       const courseId = lesson.courseId;
       if (!grouped[courseId]) {
         grouped[courseId] = {
           courseId: courseId,
           courseName: lesson.courseName || "غير معروف",
-          lessons: []
+          lessons: [],
         };
       }
       grouped[courseId].lessons.push(lesson);
     });
 
     // Convert to array and filter out groups with no lessons
-    return Object.values(grouped).filter(group => group.lessons.length > 0);
+    return Object.values(grouped).filter((group) => group.lessons.length > 0);
   };
 
   return (
