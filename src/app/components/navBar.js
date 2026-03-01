@@ -74,12 +74,10 @@ const NavBar = () => {
             href="/"
             className="flex items-center gap-3 hover:opacity-80 transition-all duration-300 group"
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-              <Image src={"/logo.png"} width={225} height={206} alt="logo" />
+            <div className="rounded-xl h-11 flex items-center justify-center hover:scale-105 transition-transform">
+              <Image src={"/logo.png"} width={150} height={140} alt="logo" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              أكاديميتنا
-            </span>
+            
           </Link>
 
           {/* Desktop Navigation */}

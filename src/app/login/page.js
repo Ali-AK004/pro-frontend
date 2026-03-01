@@ -77,29 +77,26 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-linear-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-linear-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative w-full max-w-2xl">
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
           {/* Header with gradient */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12 text-center">
-            <div className="inline-block mb-4 bg-white/20 rounded-md px-5 py-2 backdrop-blur-sm">
-              <Link href="/" className="flexCenter gap-2">
+          <div className="bg-linear-to-r from-blue-600 to-purple-600 px-8 py-12 text-center">
+            <div className="inline-block mb-4 bg-white shadow-xl rounded-md py-5 backdrop-blur-sm">
+              <Link href="/" className="flexCenter h-15 gap-2">
                 <Image
                   src={"/logo.png"}
-                  width={225}
+                  width={220}
                   height={206}
                   alt="logo"
-                  className="w-15 h-15 object-contain"
+                  className="object-contain"
                 />
-                <span className="text-2xl font-bold text-white">
-                  أكاديميتنا
-                </span>
               </Link>
             </div>
             <h2 className="text-3xl font-bold text-white mb-2">

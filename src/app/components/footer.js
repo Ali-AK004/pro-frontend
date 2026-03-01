@@ -16,7 +16,7 @@ const Footer = ({ id }) => {
   return (
     <footer
       id={id}
-      className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-20 relative overflow-hidden"
+      className="bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-20 relative overflow-hidden"
     >
       {/* Background decoration */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
@@ -27,13 +27,10 @@ const Footer = ({ id }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Company Info */}
           <div className="lg:col-span-2">
-            <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
-              <div className="w-12 h-12 flex items-center justify-center">
-                <Image src={"/logo.png"} width={225} height={206} alt="logo" />
+            <div className="flex bg-white shadow-xl rounded-md  w-fit py-5 items-center justify-center md:justify-start mb-6">
+              <div className=" flex h-15 items-center justify-center  relative">
+                <Image src={"/logo.png"} width={225} height={206} alt="logo" className="object-contain z-2" />
               </div>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                أكادميتنا
-              </h3>
             </div>
             <p className="text-gray-300 mb-8 text-center md:text-right leading-relaxed max-w-md">
               منصة التعليم الذكي الرائدة في المنطقة العربية. نقدم تعليماً عالي
@@ -58,7 +55,7 @@ const Footer = ({ id }) => {
               </a>
               <a
                 href="https://www.instagram.com/academitna/"
-                className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                className="w-12 h-12 bg-linear-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 target="_blank"
                 rel="noopener noreferrer"
               >
