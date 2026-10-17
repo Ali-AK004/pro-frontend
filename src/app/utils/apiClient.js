@@ -1,5 +1,6 @@
 import axios from "axios";
 import { apiConfig } from "../../config/api";
+import { attachAuthRefresh } from "./authRefresh";
 
 // Base configuration for all API clients
 const BASE_CONFIG = {
@@ -17,6 +18,7 @@ const createOptimizedClient = (baseURL = BASE_CONFIG.baseURL) => {
     ...BASE_CONFIG,
     baseURL,
   });
+attachAuthRefresh(client);
 
   // Request interceptor for performance optimization
   client.interceptors.request.use(
@@ -27,10 +29,6 @@ const createOptimizedClient = (baseURL = BASE_CONFIG.baseURL) => {
       // Note: Accept-Encoding is handled automatically by browsers
       // Removing unsafe header that browsers control
 
-      // Add cache control for GET requests
-      if (config.method === "get") {
-        config.headers["Cache-Control"] = "max-age=300"; // 5 minutes cache
-      }
 
       return config;
     },

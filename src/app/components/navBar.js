@@ -7,6 +7,7 @@ import {
   FaTimes,
   FaUser,
   FaSignOutAlt,
+  FaWallet,
 } from "react-icons/fa";
 import axios from "axios";
 import { useUserData } from "../../../models/UserContext";
@@ -186,6 +187,19 @@ const NavBar = () => {
                       <span className="font-medium">الملف الشخصي</span>
                     </Link>
 
+                    {user.role === "STUDENT" ? (
+                      <Link
+                        href="/wallet"
+                        className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
+                        onClick={closeMenus}
+                      >
+                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                          <FaWallet className="w-4 h-4 text-green-600" />
+                        </div>
+                        <span className="font-medium">المحفظة</span>
+                      </Link>
+                    ) : null}
+
                     <div className="border-t border-gray-100 mt-2 pt-2">
                       <button
                         onClick={handleLogout}
@@ -294,6 +308,17 @@ const NavBar = () => {
                     <FaUser className="w-4 h-4" />
                     <span className="regular-14">الملف الشخصي</span>
                   </Link>
+
+                  {user.role === "STUDENT" ? (
+                    <Link
+                      href="/wallet"
+                      className="flex items-center gap-3 py-2 text-gray-700"
+                      onClick={closeMenus}
+                    >
+                      <FaWallet className="w-4 h-4" />
+                      <span className="regular-14">المحفظة</span>
+                    </Link>
+                  ) : null}
 
                   <button
                     onClick={handleLogout}

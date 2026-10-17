@@ -1,5 +1,6 @@
 import axios from "axios";
 import { apiConfig } from "../../../../../../config/api";
+import { attachAuthRefresh } from "@/app/utils/authRefresh";
 
 const BASE_URL = apiConfig.baseURL;
 
@@ -12,6 +13,7 @@ const apiClient = axios.create({
     Accept: "application/json",
   },
 });
+attachAuthRefresh(apiClient);
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
@@ -34,9 +36,15 @@ export const lessonAPI = {
         accessCode,
       }),
 
-    // Pay with Fawry
-    payWithFawry: (lessonId) =>
-      apiClient.post(`/students/lessons/${lessonId}/pay/fawry`),
+    // Pay from the prepaid wallet
+    payWithWallet: (lessonId) =>
+      apiClient.post("/payments/access-lesson", { lessonId, paymentMethod: "WALLET" }),
+
+    // Online payment (cards, mobile wallets, Fawry reference) via Paymob: returns paymentUrl
+    payOnline: (lessonId) =>
+      apiClient.post("/payments/access-lesson", { lessonId, paymentMethod: "PAYMOB" }),
+
+    getOrder: (orderId) => apiClient.get(`/payments/orders/${orderId}`),
 
     // Check lesson access
     checkAccess: (lessonId) =>
@@ -46,9 +54,6 @@ export const lessonAPI = {
     getAccessExpiry: (lessonId) =>
       apiClient.get(`/payments/access-expiry/${lessonId}`),
 
-    // Get payment status
-    getPaymentStatus: (lessonId) =>
-      apiClient.get(`/payments/payment-status/${lessonId}`),
   },
 
   // Lesson Details and Progress

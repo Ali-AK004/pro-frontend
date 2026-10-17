@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import NavBar from "../components/navBar";
+import ParentReportShare from "../components/ParentReportShare";
 import apiConfig, { API_ENDPOINTS } from "@/config/api";
 
 const Profile = () => {
@@ -324,6 +325,8 @@ const Profile = () => {
             </div>
           </div>
         </div>
+
+        {user?.role === "STUDENT" ? <ParentReportShare /> : null}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* معلومات المستخدم */}

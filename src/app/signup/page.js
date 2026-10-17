@@ -7,6 +7,39 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import Image from "next/image";
 
+// Same rules as the backend SignupRequest so students see the problem before submitting
+const EG_MOBILE = /^(\+2|002)?01[0125][0-9]{8}$/;
+const validateSignup = (f) => {
+  const e = {};
+  if (f.fullname.trim().length < 3 || f.fullname.trim().length > 100)
+    e.fullname = "الاسم الكامل يجب أن يكون بين 3 و 100 حرف";
+  if (!/^[A-Za-z0-9_.]{3,30}$/.test(f.username))
+    e.username = "اسم المستخدم يجب أن يكون 3-30 حرفًا إنجليزيًا أو أرقام";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim()))
+    e.email = "البريد الإلكتروني غير صحيح";
+  if (f.password.length < 8 || f.password.length > 72)
+    e.password = "كلمة المرور يجب أن تكون بين 8 و 72 حرفًا";
+  else if (!/[A-Za-z]/.test(f.password) || !/\d/.test(f.password))
+    e.password = "كلمة المرور يجب أن تحتوي على حروف وأرقام";
+  if (f.password !== f.confirmPassword) e.confirmPassword = "كلمة المرور غير متطابقة";
+  if (!/^[23][0-9]{13}$/.test(f.nationalId))
+    e.nationalId = "الرقم القومي يجب أن يتكون من 14 رقمًا";
+  if (!f.dateOfBirth || new Date(f.dateOfBirth) >= new Date())
+    e.dateOfBirth = "تاريخ الميلاد غير صحيح";
+  if (!EG_MOBILE.test(f.phoneNumber)) e.phoneNumber = "رقم الهاتف غير صحيح";
+  if (!EG_MOBILE.test(f.parentPhoneNumber))
+    e.parentPhoneNumber = "رقم هاتف ولي الأمر غير صحيح";
+  if (!e.phoneNumber && !e.parentPhoneNumber && f.phoneNumber === f.parentPhoneNumber) {
+    e.phoneNumber = "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب";
+    e.parentPhoneNumber = e.phoneNumber;
+  }
+  if (!f.government) e.government = "اسم المحافظة مطلوب";
+  return e;
+};
+
+const FieldError = ({ msg }) =>
+  msg ? <p className="mt-2 regular-14 text-red-600">{msg}</p> : null;
+
 const SignUp = () => {
   const [formData, setFormData] = useState({
     fullname: "",
@@ -165,16 +198,10 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      setErrors({ confirmPassword: "كلمة المرور غير متطابقة" });
-      return;
-    }
-
-    if (formData.phoneNumber === formData.parentPhoneNumber) {
-      setErrors({
-        phoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
-        parentPhoneNumber: "يجب أن يكون رقم ولي الأمر مختلف عن رقم الطالب",
-      });
+    const clientErrors = validateSignup(formData);
+    if (Object.keys(clientErrors).length > 0) {
+      setErrors(clientErrors);
+      document.getElementById(Object.keys(clientErrors)[0])?.focus();
       return;
     }
 
@@ -183,9 +210,9 @@ const SignUp = () => {
 
     try {
       const response = await authAPI.signup({
-        fullname: formData.fullname,
+        fullname: formData.fullname.trim(),
         username: formData.username,
-        email: formData.email,
+        email: formData.email.trim(),
         password: formData.password,
         nationalId: formData.nationalId,
         phoneNumber: formData.phoneNumber,
@@ -196,7 +223,12 @@ const SignUp = () => {
       router.push("/login");
       return response.data;
     } catch (error) {
-      setErrors({ general: error.message || "حدث خطأ أثناء إنشاء الحساب" });
+      const fieldErrors = error.originalError?.response?.data?.errors;
+      if (fieldErrors && typeof fieldErrors === "object" && Object.keys(fieldErrors).length) {
+        setErrors({ ...fieldErrors, general: "يرجى تصحيح الحقول المحددة" });
+      } else {
+        setErrors({ general: error.message || "حدث خطأ أثناء إنشاء الحساب" });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -264,6 +296,7 @@ const SignUp = () => {
                     value={formData.fullname}
                     onChange={handleChange}
                   />
+                  <FieldError msg={errors.fullname} />
                 </div>
 
                 {/* اسم المستخدم */}
@@ -356,6 +389,7 @@ const SignUp = () => {
                     value={formData.email}
                     onChange={handleChange}
                   />
+                  <FieldError msg={errors.email} />
                 </div>
 
                 {/* كلمة المرور */}
@@ -390,6 +424,11 @@ const SignUp = () => {
                       )}
                     </button>
                   </div>
+                  {errors.password ? (
+                    <FieldError msg={errors.password} />
+                  ) : (
+                    <p className="mt-2 regular-12 text-gray-500">8 أحرف على الأقل، حروف إنجليزية وأرقام</p>
+                  )}
                 </div>
 
                 {/* تأكيد كلمة المرور */}
@@ -468,6 +507,7 @@ const SignUp = () => {
                     value={formData.nationalId}
                     onChange={handleChange}
                   />
+                  <FieldError msg={errors.nationalId} />
                 </div>
 
                 {/* تاريخ الميلاد */}
@@ -487,6 +527,7 @@ const SignUp = () => {
                     value={formData.dateOfBirth}
                     onChange={handleChange}
                   />
+                  <FieldError msg={errors.dateOfBirth} />
                 </div>
 
                 <div>
@@ -572,6 +613,7 @@ const SignUp = () => {
                       </option>
                     ))}
                   </select>
+                  <FieldError msg={errors.government} />
                 </div>
               </div>
 

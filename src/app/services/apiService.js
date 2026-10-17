@@ -3,6 +3,7 @@
 
 import axios from 'axios';
 import { apiConfig, API_ENDPOINTS, debugLog } from '../../config/api';
+import { attachAuthRefresh } from "../utils/authRefresh";
 
 // Create axios instance with default configuration
 const apiClient = axios.create({
@@ -14,16 +15,13 @@ const apiClient = axios.create({
     'Accept': 'application/json',
   },
 });
+attachAuthRefresh(apiClient);
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
     // Add auth token if available
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem(apiConfig.jwtStorageKey);
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
     }
     
     // Debug logging
@@ -55,36 +53,11 @@ apiClient.interceptors.response.use(
       message: error.message,
     });
     
-    // Handle 401 Unauthorized - attempt token refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        const refreshToken = localStorage.getItem(apiConfig.refreshTokenKey);
-        if (refreshToken) {
-          const response = await axios.post(
-            `${apiConfig.baseURL}${API_ENDPOINTS.AUTH.REFRESH}`,
-            { refreshToken },
-            { withCredentials: true }
-          );
-          
-          const { token } = response.data;
-          localStorage.setItem(apiConfig.jwtStorageKey, token);
-          
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return apiClient(originalRequest);
-        }
-      } catch (refreshError) {
-        debugLog('Token refresh failed:', refreshError);
-        // Clear tokens and redirect to login
-        localStorage.removeItem(apiConfig.jwtStorageKey);
-        localStorage.removeItem(apiConfig.refreshTokenKey);
-        
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-      }
+    // 401 after a failed silent refresh (see utils/authRefresh): session is over
+    if (error.response?.status === 401 && typeof window !== 'undefined'
+        && !originalRequest?.url?.includes('/auth/me')
+        && !window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login';
     }
     
     // Handle network errors

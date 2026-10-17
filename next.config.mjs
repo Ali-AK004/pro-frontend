@@ -46,33 +46,45 @@ const nextConfig = {
     },
   }),
 
-  // Headers for caching
+  // Security headers for every page
   async headers() {
+    const apiOrigin = (() => {
+      try {
+        return process.env.NEXT_PUBLIC_API_BASE_URL ? new URL(process.env.NEXT_PUBLIC_API_BASE_URL).origin : "";
+      } catch {
+        return "";
+      }
+    })();
+    const isDev = process.env.NODE_ENV !== "production";
+    const csp = [
+      "default-src 'self'",
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' data: https://fonts.gstatic.com",
+      "img-src 'self' data: blob: https:",
+      "media-src 'self' blob: https:",
+      `connect-src 'self' ${apiOrigin} ${isDev ? "http://localhost:8080 ws:" : ""}`.trim(),
+      // Only the Bunny Stream player may be embedded
+      "frame-src https://iframe.mediadelivery.net",
+      "frame-ancestors 'none'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self' https://accept.paymob.com",
+    ].join("; ");
     return [
       {
         source: "/(.*)",
         headers: [
+          { key: "Content-Security-Policy", value: csp },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
+            key: "Permissions-Policy",
+            value:
+              'camera=(), microphone=(), geolocation=(), display-capture=(), encrypted-media=(self "https://iframe.mediadelivery.net"), fullscreen=(self)',
           },
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
-        ],
-      },
-      {
-        source: "/api/(.*)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=300, stale-while-revalidate=60",
-          },
+          ...(isDev ? [] : [{ key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" }]),
         ],
       },
     ];

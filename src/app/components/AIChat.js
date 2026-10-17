@@ -100,7 +100,7 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
       toast.error(errorMessage);
       const errorMsg = {
         sessionId,
-        message: "عذراً، حدث خطأ في إرسال رسالتك. يرجى المحاولة مرة أخرى.",
+        message: errorMessage || "عذراً، حدث خطأ في إرسال رسالتك. يرجى المحاولة مرة أخرى.",
         isUser: false,
         timestamp: new Date(),
         isError: true,

@@ -18,6 +18,7 @@ import {
   FiMenu,
   FiX,
   FiUserPlus,
+  FiCreditCard,
 } from "react-icons/fi";
 import apiConfig, { API_ENDPOINTS } from "@/config/api";
 import { handleAPIError } from "../services/adminAPI";
@@ -96,6 +97,12 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       label: "أكواد الوصول",
       icon: FiCode,
       description: "إنشاء وإدارة أكواد الوصول",
+    },
+    {
+      id: "wallet",
+      label: "المحفظة والكروت",
+      icon: FiCreditCard,
+      description: "كروت الشحن والمدفوعات",
     },
     {
       id: "student-lessons",

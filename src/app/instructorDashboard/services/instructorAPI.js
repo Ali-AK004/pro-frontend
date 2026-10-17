@@ -1,6 +1,7 @@
 import axios from "axios";
 import { validateSearchTerm } from "../../utils/security";
 import { apiConfig } from "../../../config/api";
+import { attachAuthRefresh } from "../../utils/authRefresh";
 
 const BASE_URL = `${apiConfig.baseURL}/instructors`;
 const API_BASE_URL = apiConfig.baseURL;
@@ -88,6 +89,7 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+attachAuthRefresh(apiClient);
 
 // Create axios instance for general API endpoints (exams, assignments)
 const generalApiClient = axios.create({
@@ -97,15 +99,12 @@ const generalApiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+attachAuthRefresh(generalApiClient);
 
 // Request interceptor for authentication (instructor client)
 apiClient.interceptors.request.use(
   (config) => {
     // Add any auth tokens if needed
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
 
     // Add a timestamp to bypass cache if needed
     if (config.skipCache) {
@@ -138,10 +137,6 @@ apiClient.interceptors.response.use(
 generalApiClient.interceptors.request.use(
   (config) => {
     // Add any auth tokens if needed
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
 
     // Add a timestamp to bypass cache if needed
     if (config.skipCache) {

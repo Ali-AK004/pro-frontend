@@ -19,6 +19,7 @@ import AIChat from "../components/AIChat";
 import PerformanceMonitor from "../components/PerformanceMonitor";
 import AdminStudentLessonsPage from "./components/AdminStudentLessonsPage";
 import AuditLogsPage from "./components/AuditLogsPage";
+import WalletManagement from "./components/WalletManagement";
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -81,6 +82,8 @@ const AdminDashboard = () => {
         );
       case "access-codes":
         return <AccessCodeManagement />;
+      case "wallet":
+        return <WalletManagement />;
       case "student-lessons":
         return <AdminStudentLessonsPage />;
       case "lesson-expiration":

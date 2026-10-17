@@ -1,5 +1,6 @@
 import axios from "axios";
 import { apiConfig } from "../../config/api";
+import { attachAuthRefresh } from "../utils/authRefresh";
 
 const BASE_URL = apiConfig.baseURL;
 
@@ -12,6 +13,7 @@ const apiClient = axios.create({
     Accept: "application/json",
   },
 });
+attachAuthRefresh(apiClient);
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
@@ -53,6 +55,9 @@ export const examAPI = {
 
     // Delete exam
     delete: (examId) => apiClient.delete(`/exams/${examId}`),
+
+    // Start (or resume) a timed attempt: returns questions and the server deadline
+    start: (examId) => apiClient.post(`/exams/${examId}/start`),
 
     // Submit exam (for students)
     submit: (examId, answers) =>
@@ -197,6 +202,7 @@ export const examAPI = {
       title: "",
       passingScore: 50,
       timeLimitMinutes: 60,
+      maxAttempts: 3,
       questions: [examAPI.validation.createDefaultQuestion()],
     }),
   },

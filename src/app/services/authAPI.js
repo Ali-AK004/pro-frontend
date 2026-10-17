@@ -2,7 +2,8 @@
 // =========================
 
 import apiService from './apiService';
-import { API_ENDPOINTS, apiConfig } from '../../config/api';
+import { API_ENDPOINTS } from '../../config/api';
+import { refreshSession, clearLegacyTokens } from '../utils/authRefresh';
 
 class AuthAPI {
   // Sign in
@@ -10,13 +11,8 @@ class AuthAPI {
     try {
       const response = await apiService.post(API_ENDPOINTS.AUTH.SIGNIN, credentials);
       
-      // Store tokens
-      if (response.token) {
-        apiService.setAuthToken(response.token);
-      }
-      if (response.refreshToken) {
-        localStorage.setItem(apiConfig.refreshTokenKey, response.refreshToken);
-      }
+      // Session cookies are set by the server (HttpOnly); nothing is stored in JS
+      clearLegacyTokens();
       
       return response;
     } catch (error) {
@@ -29,13 +25,6 @@ class AuthAPI {
     try {
       const response = await apiService.post(API_ENDPOINTS.AUTH.SIGNUP, userData);
       
-      // Store tokens if provided (auto-login after signup)
-      if (response.token) {
-        apiService.setAuthToken(response.token);
-      }
-      if (response.refreshToken) {
-        localStorage.setItem(apiConfig.refreshTokenKey, response.refreshToken);
-      }
       
       return response;
     } catch (error) {
@@ -56,29 +45,10 @@ class AuthAPI {
     }
   }
   
-  // Refresh token
+  // Refresh the session (rotates the HttpOnly refresh cookie)
   async refreshToken() {
-    try {
-      const refreshToken = localStorage.getItem(apiConfig.refreshTokenKey);
-      if (!refreshToken) {
-        throw new Error('No refresh token available');
-      }
-      
-      const response = await apiService.post(API_ENDPOINTS.AUTH.REFRESH, {
-        refreshToken
-      });
-      
-      // Update stored token
-      if (response.token) {
-        apiService.setAuthToken(response.token);
-      }
-      
-      return response;
-    } catch (error) {
-      // Clear tokens on refresh failure
-      apiService.clearAuthToken();
-      throw error;
-    }
+    const response = await refreshSession();
+    return response.data;
   }
   
   // Get current user profile
@@ -130,78 +100,8 @@ class AuthAPI {
     }
   }
   
-  // Check if user is authenticated
-  isAuthenticated() {
-    return apiService.isAuthenticated();
-  }
-  
-  // Get current auth token
-  getAuthToken() {
-    return apiService.getAuthToken();
-  }
-  
-  // Get user role from token (if stored in token)
-  getUserRole() {
-    const token = this.getAuthToken();
-    if (!token) return null;
-    
-    try {
-      // Decode JWT token to get user role
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.role || payload.authorities?.[0] || null;
-    } catch (error) {
-      console.warn('Failed to decode JWT token:');
-      return null;
-    }
-  }
-  
-  // Get user ID from token
-  getUserId() {
-    const token = this.getAuthToken();
-    if (!token) return null;
-    
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.sub || payload.userId || payload.id || null;
-    } catch (error) {
-      console.warn('Failed to decode JWT token:');
-      return null;
-    }
-  }
-  
-  // Check if token is expired
-  isTokenExpired() {
-    const token = this.getAuthToken();
-    if (!token) return true;
-    
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Date.now() / 1000;
-      return payload.exp < currentTime;
-    } catch (error) {
-      console.warn('Failed to decode JWT token:');
-      return true;
-    }
-  }
-  
-  // Auto-refresh token if needed
-  async ensureValidToken() {
-    if (!this.isAuthenticated()) {
-      throw new Error('User not authenticated');
-    }
-    
-    if (this.isTokenExpired()) {
-      try {
-        await this.refreshToken();
-      } catch (error) {
-        // Redirect to login if refresh fails
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login';
-        }
-        throw error;
-      }
-    }
-  }
+  // Tokens live in HttpOnly cookies and cannot be read by JavaScript.
+  // Use /auth/me (UserContext) to know who is signed in.
 }
 
 // Create and export singleton instance

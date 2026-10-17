@@ -41,6 +41,7 @@ const ExamCreationModal = ({
         passingScore: initialData.passingScore || defaultExam.passingScore,
         timeLimitMinutes:
           initialData.timeLimitMinutes || defaultExam.timeLimitMinutes,
+        maxAttempts: initialData.maxAttempts || defaultExam.maxAttempts,
         questions: initialData.questions || defaultExam.questions,
       });
     } else {
@@ -416,6 +417,29 @@ const ExamCreationModal = ({
                     {errors.timeLimitMinutes}
                   </p>
                 )}
+              </div>
+
+              <div>
+                <label className="block bold-14 text-gray-700 mb-2">
+                  عدد المحاولات المسموح بها
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={examData.maxAttempts ?? 3}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value, 10);
+                    handleInputChange(
+                      "maxAttempts",
+                      Number.isFinite(value) ? Math.min(20, Math.max(1, value)) : 1
+                    );
+                  }}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  لا تظهر الإجابات الصحيحة للطالب إلا بعد النجاح أو انتهاء المحاولات.
+                </p>
               </div>
 
               {/* Questions Section */}

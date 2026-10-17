@@ -109,7 +109,7 @@ const InstructorCourseManagement = () => {
     try {
       setIsLoading(true);
       const response = await instructorAPI.courses.create(instructorId, courseForm);
-      
+      console.log(response)
       // Get the new course data
       const newCourse = response.data;
       

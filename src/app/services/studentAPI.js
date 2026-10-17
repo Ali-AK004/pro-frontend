@@ -1,5 +1,6 @@
 import axios from "axios";
 import { apiConfig } from "../../config/api";
+import { attachAuthRefresh } from "../utils/authRefresh";
 
 const BASE_URL = apiConfig.baseURL;
 
@@ -11,6 +12,7 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+attachAuthRefresh(apiClient);
 
 
 // Request interceptor for authentication
@@ -94,15 +96,14 @@ export const studentAPI = {
         `/students/lessons/${lessonId}/video-url?expirationSeconds=${expirationSeconds}`
       ),
     recordVideoView: (lessonId) => apiClient.post(`/students/lessons/${lessonId}/record-view`),
+
+    // Start one viewing session: counts a view and returns a signed, expiring player URL
+    startPlayback: (lessonId) => apiClient.post(`/students/lessons/${lessonId}/playback`),
   },
 
 
   // Payment Management
   payments: {
-    // Pay for lesson with Fawry
-    payWithFawry: (lessonId) =>
-      apiClient.post(`/students/lessons/${lessonId}/pay/fawry`),
-
     // Grant lesson access (admin/instructor)
     grantAccess: (accessRequest) =>
       apiClient.post("/payments/access-lesson", accessRequest),
@@ -115,9 +116,21 @@ export const studentAPI = {
     getAccessExpiry: (lessonId) =>
       apiClient.get(`/payments/access-expiry/${lessonId}`),
 
-    // Get payment status
-    getPaymentStatus: (lessonId) =>
-      apiClient.get(`/payments/payment-status/${lessonId}`),
+    // Online payment order status (poll after returning from Paymob)
+    getOrder: (orderId) => apiClient.get(`/payments/orders/${orderId}`),
+    getMyOrders: (page = 0) => apiClient.get(`/payments/orders?page=${page}`),
+  },
+
+  // Read-only progress link for parents
+  parentReport: {
+    createLink: () => apiClient.post("/students/me/parent-report-link"),
+  },
+
+  // Prepaid wallet
+  wallet: {
+    get: (page = 0) => apiClient.get(`/wallet?page=${page}`),
+    redeem: (code) => apiClient.post("/wallet/redeem", { code }),
+    topup: (amount) => apiClient.post("/wallet/topup", { amount }),
   },
 
   // Lesson Progress Management

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { validateSearchTerm } from "../../utils/security";
 import { apiConfig } from "../../../config/api";
+import { attachAuthRefresh } from "../../utils/authRefresh";
 
 const BASE_URL = `${apiConfig.baseURL}/admin`;
 const API_BASE_URL = apiConfig.baseURL;
@@ -13,6 +14,7 @@ const apiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+attachAuthRefresh(apiClient);
 
 // Create axios instance for general API endpoints (exams, assignments)
 const generalApiClient = axios.create({
@@ -22,6 +24,7 @@ const generalApiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+attachAuthRefresh(generalApiClient);
 
 // Request interceptor for authentication (admin client)
 apiClient.interceptors.request.use(
@@ -70,6 +73,16 @@ generalApiClient.interceptors.response.use(
 );
 
 export const adminAPI = {
+  // ==================== WALLET (prepaid cards, payments) ====================
+  wallet: {
+    generateCards: (payload) => apiClient.post("/wallet/charge-codes", payload),
+    listCards: (batch = "", page = 0, size = 50) =>
+      apiClient.get("/wallet/charge-codes", { params: { batch: batch || undefined, page, size } }),
+    disableCard: (id) => apiClient.post(`/wallet/charge-codes/${id}/disable`),
+    adjust: (payload) => apiClient.post("/wallet/adjust", payload),
+    orders: (page = 0, size = 50) => apiClient.get("/wallet/orders", { params: { page, size } }),
+  },
+
   // ==================== DASHBOARD STATS ====================
   dashboard: {
     getStats: () => apiClient.get('/stats'),

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { apiConfig } from "../../config/api";
+import { attachAuthRefresh } from "../utils/authRefresh";
 
 const BASE_URL = apiConfig.baseURL;
 
@@ -12,6 +13,7 @@ const apiClient = axios.create({
     Accept: "application/json",
   },
 });
+attachAuthRefresh(apiClient);
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(

@@ -25,7 +25,7 @@ import NavBar from "@/app/components/navBar";
 import { studentAPI } from "@/app/services/studentAPI";
 import examAPI, { handleAPIError } from "@/app/services/examAPI";
 import assignmentAPI from "@/app/services/assignmentAPI";
-import LessonVideoPlayer from "../../../../../../components/LessonVideoPlayer";
+import SecureLessonPlayer from "@/app/components/SecureLessonPlayer";
 import { useUserData } from "../../../../../../../../models/UserContext";
 
 const LessonPage = () => {
@@ -35,7 +35,6 @@ const LessonPage = () => {
   const { user } = useUserData();
   const examTimerRef = useRef(null);
   const autoSubmitGuardRef = useRef(false);
-  const hasViewBeenRecordedInSessionRef = useRef(false);
 
   // State management
   const [lessonData, setLessonData] = useState(null);
@@ -53,6 +52,8 @@ const LessonPage = () => {
   const [examStarted, setExamStarted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [examSubmitted, setExamSubmitted] = useState(false);
+  // Questions arrive only with a started attempt (from POST /exams/{id}/start)
+  const [liveExam, setLiveExam] = useState(null);
 
   // Fetch lesson data
   useEffect(() => {
@@ -159,18 +160,6 @@ const LessonPage = () => {
     }
   };
 
-  const recordVideoView = async () => {
-    try {
-      const response = await studentAPI.lessons.recordVideoView(lessonId);
-      // Update remaining views from response
-      setLessonData(prev => ({ ...prev, remainingVideoViews: response.data.remainingVideoViews }));
-      return response;
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تسجيل المشاهدة"));
-      throw error;
-    }
-  };
-
   const setInitialTab = (data) => {
     if (!data.hasAccess) {
       setActiveTab("overview");
@@ -179,7 +168,7 @@ const LessonPage = () => {
 
     // Determine initial tab based on progress and access
     // Don't automatically open exam tab - let user start it manually
-    if (data.canAccessVideo && data.videoUrl) {
+    if (data.canAccessVideo && data.lesson?.hasVideo) {
       setActiveTab("video");
     } else if (data.canAccessAssignment && data.assignment) {
       setActiveTab("assignment");
@@ -202,9 +191,18 @@ const LessonPage = () => {
     return `${minutes}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Start exam timer with auto-submission
-  const startExamTimer = (timeLimitMinutes) => {
-    const totalSeconds = (timeLimitMinutes || 60) * 60;
+  // Start (or resume) the attempt on the server; the countdown uses the server deadline
+  const startExamTimer = async () => {
+    let totalSeconds;
+    try {
+      const { data } = await examAPI.exams.start(lessonData.exam.id);
+      setLiveExam(data.exam);
+      setExamAnswers({});
+      totalSeconds = Math.max(0, Number(data.remainingSeconds) || 0);
+    } catch (error) {
+      toast.error(handleAPIError(error, "تعذر بدء الامتحان"));
+      return;
+    }
     setTimeRemaining(totalSeconds);
     setExamStarted(true);
 
@@ -453,7 +451,7 @@ const LessonPage = () => {
 
   const {
     lesson,
-    exam,
+    exam: payloadExam,
     assignment,
     hasAccess,
     canAccessVideo,
@@ -461,8 +459,11 @@ const LessonPage = () => {
     canAccessAssignment,
     progressStatus,
     accessError,
-    videoUrl,
   } = lessonData;
+  const exam =
+    payloadExam && liveExam?.id === payloadExam.id
+      ? { ...payloadExam, questions: liveExam.questions }
+      : payloadExam;
 
   return (
     <div className="min-h-screen bg-main">
@@ -594,6 +595,7 @@ const LessonPage = () => {
                 formatTimeRemaining={formatTimeRemaining}
                 examSubmitted={examSubmitted}
                 onRetry={() => {
+                  setLiveExam(null);
                   setExamResult(null);
                   setExamSubmitted(false);
                   setExamAnswers({});
@@ -607,14 +609,12 @@ const LessonPage = () => {
             {activeTab === "video" && (
               <VideoTab
                 lesson={lesson}
-                videoUrl={videoUrl}
                 onVideoComplete={handleVideoComplete}
                 canAccess={canAccessVideo}
                 accessError={accessError}
                 progressStatus={lessonData?.progress?.progressStatus}
                 remainingVideoViews={lessonData?.remainingVideoViews}
-                onRecordView={recordVideoView}
-                hasViewBeenRecordedInSessionRef={hasViewBeenRecordedInSessionRef}
+                onViewsChanged={(n) => setLessonData((prev) => ({ ...prev, remainingVideoViews: n }))}
               />
             )}
 
@@ -1060,7 +1060,13 @@ const ExamTab = ({
           </div>
         </div>
 
-        {!examResult.passed && (
+        {!examResult.passed && examResult.detailsVisible === false && (
+          <p className="text-center text-gray-600 mb-4">
+            ستظهر تفاصيل الإجابات بعد النجاح أو بعد آخر محاولة.
+          </p>
+        )}
+
+        {!examResult.passed && (examResult.attemptsRemaining ?? 1) > 0 && (
           <div className="text-center">
             <button
               onClick={onRetry}
@@ -1138,7 +1144,7 @@ const ExamTab = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600 mb-2">
-                  {exam.questions?.length || 0}
+                  {exam.questionCount ?? exam.questions?.length ?? 0}
                 </div>
                 <p className="text-gray-600 font-medium">عدد الأسئلة</p>
               </div>
@@ -1172,13 +1178,18 @@ const ExamTab = ({
                     <li>• لا يمكن إيقاف المؤقت بعد البدء</li>
                     <li>• تأكد من اتصالك بالإنترنت</li>
                     <li>• يجب الإجابة على جميع الأسئلة</li>
+                    {exam.maxAttempts ? (
+                      <li>
+                        • المحاولات المتبقية: {Math.max(0, exam.maxAttempts - (exam.attemptsUsed || 0))} من {exam.maxAttempts}
+                      </li>
+                    ) : null}
                   </ul>
                 </div>
               </div>
             </div>
 
             <button
-              onClick={() => startExamTimer(exam.timeLimitMinutes || 60)}
+              onClick={() => startExamTimer()}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 px-8 rounded-2xl font-bold text-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
             >
               <FaPlay className="w-6 h-6 inline-block ml-3" />
@@ -1220,7 +1231,7 @@ const ExamTab = ({
           </div>
           <div className="bg-white/80 backdrop-blur-sm text-purple-700 px-6 py-3 rounded-2xl border border-purple-200 shadow-sm">
             <span className="font-bold">
-              عدد الأسئلة: {exam.questions?.length || 0}
+              عدد الأسئلة: {exam.questionCount ?? exam.questions?.length ?? 0}
             </span>
           </div>
         </div>
@@ -1339,7 +1350,7 @@ const ExamTab = ({
                 className={`font-semibold ${allQuestionsAnswered ? "text-green-700" : "text-gray-600"}`}
               >
                 تم الإجابة على {Object.keys(examAnswers).length} من{" "}
-                {exam.questions?.length || 0} أسئلة
+                {exam.questionCount ?? exam.questions?.length ?? 0} أسئلة
               </span>
             </div>
           </div>
@@ -1385,177 +1396,65 @@ const VideoTab = ({
   onVideoComplete,
   canAccess,
   accessError,
-  videoUrl,
   progressStatus,
   remainingVideoViews,
-  onRecordView,
-  hasViewBeenRecordedInSessionRef,
+  onViewsChanged,
 }) => {
-  const [viewRecordError, setViewRecordError] = useState(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const autoMarkTriggered = useRef(false);
-
-  // Record view on component mount if not already recorded in this session
-  // This allows refresh to count as a view but tab switching to be free
-  useEffect(() => {
-    const recordSessionView = async () => {
-      if (
-        canAccess &&
-        remainingVideoViews > 0 &&
-        !hasViewBeenRecordedInSessionRef.current &&
-        progressStatus !== 'VIDEO_WATCHED' &&
-        progressStatus !== 'ASSIGNMENT_DONE'
-      ) {
-        hasViewBeenRecordedInSessionRef.current = true;
-        try {
-          await onRecordView();
-        } catch (error) {
-          // Reset ref if recording fails so user can try again by refreshing
-          hasViewBeenRecordedInSessionRef.current = false;
-          setViewRecordError(error.message || "فشل في تسجيل المشاهدة");
-        }
-      }
-    };
-
-    recordSessionView();
-  }, [canAccess, remainingVideoViews, onRecordView, progressStatus, hasViewBeenRecordedInSessionRef]);
-
-
-  useEffect(() => {
-    if (canAccess && remainingVideoViews === 0 &&
-      progressStatus !== 'VIDEO_WATCHED' &&
-      progressStatus !== 'ASSIGNMENT_DONE' &&
-      !autoMarkTriggered.current) {
-      autoMarkTriggered.current = true;
-      onVideoComplete();
-    }
-  }, [canAccess, remainingVideoViews, progressStatus, onVideoComplete]);
+  const [isMarking, setIsMarking] = useState(false);
+  const watched = progressStatus === "VIDEO_WATCHED" || progressStatus === "ASSIGNMENT_DONE";
 
   const handleMarkAsWatched = async () => {
-    if (
-      isRecording ||
-      progressStatus === "VIDEO_WATCHED" ||
-      progressStatus === "ASSIGNMENT_DONE"
-    ) {
-      return;
-    }
-
-    setIsRecording(true);
+    if (isMarking || watched) return;
+    setIsMarking(true);
     try {
-      // 1. Record a view if any views are left
-      if (remainingVideoViews > 0) {
-        await onRecordView(); // this will decrement remainingViews in parent
-      }
-
-      // 2. Mark video as watched (this will update progressStatus)
       await onVideoComplete();
-
       toast.success("تم تسجيل المشاهدة");
-    } catch (error) {
-      // Error handled by props
     } finally {
-      setIsRecording(false);
+      setIsMarking(false);
     }
-  };
-
-  const handleVideoEnd = async () => {
-    if (progressStatus === "VIDEO_WATCHED" || progressStatus === "ASSIGNMENT_DONE") return;
-    await handleMarkAsWatched();
   };
 
   if (!canAccess) {
     return <AccessDenied message={accessError} />;
   }
 
-  if (viewRecordError) {
-    return <div className="text-red-500">{viewRecordError}</div>;
-  }
-
-  if (remainingVideoViews <= 0 && progressStatus !== 'VIDEO_WATCHED' && progressStatus !== 'ASSIGNMENT_DONE') {
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="text-center">
-          <FaLock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="bold-18 text-gray-600 mb-2">انتهت المشاهدات المتاحة</h3>
-          <p className="regular-14 text-gray-500">
-            لقد استنفدت عدد المشاهدات المسموح بها. يرجى الضغط على زر "تم المشاهدة" إذا لم يتم التحديث تلقائياً.
-          </p>
-          <button
-            onClick={handleMarkAsWatched}
-            disabled={progressStatus === "VIDEO_WATCHED" ||
-              progressStatus === "ASSIGNMENT_DONE" ||
-              isRecording}
-            className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors"
-          >
-            {isRecording ? "جاري التسجيل..." : "تم المشاهدة"}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (remainingVideoViews <= 0) {
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="text-center">
-          <FaLock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="bold-18 text-gray-600 mb-2">انتهت المشاهدات المتاحة</h3>
-          <p className="regular-14 text-gray-500">
-            لقد استنفدت عدد المشاهدات المسموح بها (4). لا يمكنك مشاهدة الفيديو مرة أخرى.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <><div>
-      <p className="text-sm text-gray-500 mb-2">المشاهدات المتبقية: {remainingVideoViews}</p>
-      <LessonVideoPlayer
-        lesson={{
-          id: lesson?.id,
-          name: lesson?.name,
-          onVideoEnd: handleMarkAsWatched,
-          description: lesson?.description,
-          videoUrl: videoUrl || lesson?.videoUrl,
-          videoThumbnailUrl: lesson?.videoThumbnailUrl,
-          videoDuration: lesson?.videoDuration,
-          videoStatus: lesson?.videoStatus,
-          hasVideo: !!(videoUrl || lesson?.videoUrl),
-        }}
-        onVideoEnd={handleMarkAsWatched}
-        autoplay={false}
-        showVideoInfo={true} />
-
-    </div><div className="bg-blue-50 border mt-5 border-blue-200 rounded-lg p-4">
+    <>
+      <div>
+        {remainingVideoViews >= 0 ? (
+          <p className="text-sm text-gray-500 mb-2">المشاهدات المتبقية: {remainingVideoViews}</p>
+        ) : null}
+        {remainingVideoViews === 0 ? (
+          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+            <FaLock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <h3 className="bold-18 text-gray-600 mb-2">انتهت المشاهدات المتاحة</h3>
+            <p className="regular-14 text-gray-500">لقد استنفدت عدد المشاهدات المسموح بها لهذا الدرس.</p>
+          </div>
+        ) : (
+          <SecureLessonPlayer
+            lessonId={lesson?.id}
+            remainingViews={remainingVideoViews}
+            onViewsChanged={onViewsChanged}
+          />
+        )}
+      </div>
+      <div className="bg-blue-50 border mt-5 border-blue-200 rounded-lg p-4">
         <div className="flex items-center flex-col md:flex-row gap-6 justify-between">
           <div className="flex items-center gap-3">
             <FaEye className="w-5 h-5 text-blue-500" />
             <div>
               <h4 className="bold-14 text-blue-800">تتبع المشاهدة</h4>
-              <p className="regular-12 text-blue-600">
-                اضغط على الزر بعد مشاهدة الفيديو لفتح الواجب
-              </p>
+              <p className="regular-12 text-blue-600">اضغط على الزر بعد مشاهدة الفيديو لفتح الواجب</p>
             </div>
           </div>
           <button
             onClick={handleMarkAsWatched}
-            disabled={
-              progressStatus === "VIDEO_WATCHED" ||
-              progressStatus === "ASSIGNMENT_DONE" ||
-              isRecording
-            }
-            className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-colors ${progressStatus === "VIDEO_WATCHED" ||
-              progressStatus === "ASSIGNMENT_DONE"
-              ? "bg-green-100 text-green-700 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-              }`}
+            disabled={watched || isMarking}
+            className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-colors ${
+              watched ? "bg-green-100 text-green-700 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
           >
-            {isRecording ? "جاري التسجيل..." :
-              progressStatus === "VIDEO_WATCHED" ||
-                progressStatus === "ASSIGNMENT_DONE"
-                ? "✓ تم المشاهدة"
-                : "تم المشاهدة"}
+            {isMarking ? "جاري التسجيل..." : watched ? "✓ تم المشاهدة" : "تم المشاهدة"}
           </button>
         </div>
       </div>
