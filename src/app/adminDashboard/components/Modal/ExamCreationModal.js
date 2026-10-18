@@ -42,6 +42,7 @@ const ExamCreationModal = ({
         timeLimitMinutes:
           initialData.timeLimitMinutes || defaultExam.timeLimitMinutes,
         maxAttempts: initialData.maxAttempts || defaultExam.maxAttempts,
+        shuffleQuestions: initialData.shuffleQuestions ?? true,
         questions: initialData.questions || defaultExam.questions,
       });
     } else {
@@ -441,6 +442,22 @@ const ExamCreationModal = ({
                   لا تظهر الإجابات الصحيحة للطالب إلا بعد النجاح أو انتهاء المحاولات.
                 </p>
               </div>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={examData.shuffleQuestions ?? true}
+                  onChange={(e) => handleInputChange("shuffleQuestions", e.target.checked)}
+                  className="mt-1 w-5 h-5 accent-[#088395]"
+                />
+                <span>
+                  <span className="block bold-14 text-gray-700">ترتيب عشوائي للأسئلة والاختيارات</span>
+                  <span className="block text-xs text-gray-500">
+                    كل طالب يرى الأسئلة والاختيارات بترتيب مختلف، فلا يستطيع الطلاب تبادل الإجابات بالأرقام (مثل &quot;السؤال 3 إجابته ب&quot;).
+                    أوقفه فقط إذا كانت الأسئلة تعتمد على ترتيبها. أسئلة صح وخطأ يبقى ترتيب اختياراتها كما هو.
+                  </span>
+                </span>
+              </label>
 
               {/* Questions Section */}
               <div>

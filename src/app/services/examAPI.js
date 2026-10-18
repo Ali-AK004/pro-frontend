@@ -203,6 +203,7 @@ export const examAPI = {
       passingScore: 50,
       timeLimitMinutes: 60,
       maxAttempts: 3,
+      shuffleQuestions: true,
       questions: [examAPI.validation.createDefaultQuestion()],
     }),
   },
