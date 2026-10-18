@@ -37,12 +37,12 @@ export const lessonAPI = {
       }),
 
     // Pay from the prepaid wallet
-    payWithWallet: (lessonId) =>
-      apiClient.post("/payments/access-lesson", { lessonId, paymentMethod: "WALLET" }),
+    payWithWallet: (lessonId, couponCode) =>
+      apiClient.post("/payments/access-lesson", { lessonId, paymentMethod: "WALLET", couponCode: couponCode || null }),
 
     // Online payment (cards, mobile wallets, Fawry reference) via Paymob: returns paymentUrl
-    payOnline: (lessonId) =>
-      apiClient.post("/payments/access-lesson", { lessonId, paymentMethod: "PAYMOB" }),
+    payOnline: (lessonId, couponCode) =>
+      apiClient.post("/payments/access-lesson", { lessonId, paymentMethod: "PAYMOB", couponCode: couponCode || null }),
 
     getOrder: (orderId) => apiClient.get(`/payments/orders/${orderId}`),
 

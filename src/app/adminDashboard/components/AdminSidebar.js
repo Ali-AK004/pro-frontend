@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useUserData } from "../../../../models/UserContext";
 import axios from "axios";
 import {
+  FiPackage,
   FiHome,
   FiUsers,
   FiBook,
@@ -103,6 +104,12 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       label: "المحفظة والكروت",
       icon: FiCreditCard,
       description: "كروت الشحن والمدفوعات",
+    },
+    {
+      id: "bundles",
+      label: "الباقات وأكواد الخصم",
+      icon: FiPackage,
+      description: "باقات الدروس وعروض الخصم",
     },
     {
       id: "student-lessons",

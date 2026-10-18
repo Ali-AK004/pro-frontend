@@ -54,7 +54,7 @@ function PaymentResult() {
         <>
           <p className="bold-20 text-green-600">تم الدفع بنجاح</p>
           <p className="regular-14 text-gray-600">
-            {order.purpose === "WALLET_TOPUP" ? "تم شحن محفظتك." : `تم فتح الدرس: ${order.lessonName || ""}`}
+            {order.purpose === "WALLET_TOPUP" ? "تم شحن محفظتك." : order.purpose === "BUNDLE" ? `تم فتح دروس الباقة: ${order.bundleTitle || ""}` : `تم فتح الدرس: ${order.lessonName || ""}`}
           </p>
         </>
       ) : null}

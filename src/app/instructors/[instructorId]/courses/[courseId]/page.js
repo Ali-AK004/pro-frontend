@@ -13,6 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 // Import components
 import LessonCard from "./components/LessonCard";
 import PaymentModal from "./components/PaymentModal";
+import BundlesSection from "./components/BundlesSection";
 import { studentAPI, handleAPIError } from "../../../../services/studentAPI";
 
 const CourseDetails = () => {
@@ -25,6 +26,7 @@ const CourseDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
+  const [selectedBundle, setSelectedBundle] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -75,6 +77,7 @@ const CourseDetails = () => {
       );
     } else {
       // Show payment modal for paid lessons
+      setSelectedBundle(null);
       setSelectedLesson(lesson);
       setShowPaymentModal(true);
     }
@@ -87,8 +90,20 @@ const CourseDetails = () => {
     );
   };
 
+  const handleBuyBundle = (bundle) => {
+    setSelectedLesson(null);
+    setSelectedBundle(bundle);
+    setShowPaymentModal(true);
+  };
+
   const handlePaymentSuccess = () => {
     setShowPaymentModal(false);
+    if (selectedBundle) {
+      toast.success("تم شراء الباقة بنجاح!");
+      setSelectedBundle(null);
+      setRefreshTrigger((n) => n + 1); // reload lessons so they show as opened
+      return;
+    }
     toast.success("تم شراء الدرس بنجاح!");
     // Redirect to the purchased lesson's overview tab
     if (selectedLesson) {
@@ -257,6 +272,9 @@ const CourseDetails = () => {
           </div>
         </div>
 
+        {/* Bundles that include lessons of this course */}
+        <BundlesSection courseId={courseId} refreshKey={refreshTrigger} onBuy={handleBuyBundle} />
+
         {/* Lessons List */}
         <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
           <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
@@ -289,6 +307,7 @@ const CourseDetails = () => {
         {/* Payment Modal */}
         <PaymentModal
           lesson={selectedLesson}
+          bundle={selectedBundle}
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
           onSuccess={handlePaymentSuccess}

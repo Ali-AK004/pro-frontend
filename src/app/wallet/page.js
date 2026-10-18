@@ -9,6 +9,7 @@ const TYPE_LABELS = {
   CHARGE_CODE: "شحن بكارت",
   ONLINE_TOPUP: "شحن إلكتروني",
   LESSON_PURCHASE: "شراء درس",
+  BUNDLE_PURCHASE: "شراء باقة",
   REFUND: "استرداد",
   ADMIN_ADJUSTMENT: "تعديل من الإدارة",
 };

@@ -20,6 +20,7 @@ import PerformanceMonitor from "../components/PerformanceMonitor";
 import AdminStudentLessonsPage from "./components/AdminStudentLessonsPage";
 import AuditLogsPage from "./components/AuditLogsPage";
 import WalletManagement from "./components/WalletManagement";
+import BundleCouponPage from "./components/BundleCouponPage";
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -84,6 +85,8 @@ const AdminDashboard = () => {
         return <AccessCodeManagement />;
       case "wallet":
         return <WalletManagement />;
+      case "bundles":
+        return <BundleCouponPage />;
       case "student-lessons":
         return <AdminStudentLessonsPage />;
       case "lesson-expiration":

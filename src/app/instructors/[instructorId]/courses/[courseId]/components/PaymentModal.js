@@ -8,23 +8,33 @@ import {
   FaCheckCircle,
   FaExclamationTriangle,
   FaSpinner,
+  FaTag,
 } from "react-icons/fa";
 import Link from "next/link";
 import { studentAPI, handleAPIError } from "../../../../../services/studentAPI";
+import { commerceAPI, apiMessage } from "../../../../../services/commerceAPI";
 import { toast } from "react-toastify";
 import { lessonAPI } from "../services/lessonAPI";
 
 /**
- * Lesson purchase: access code (card), prepaid wallet, or online payment through Paymob
- * (bank cards, Vodafone Cash and other mobile wallets, Fawry reference code).
+ * Purchase of a lesson or a bundle (pass `bundle` instead of `lesson`).
+ * Lessons: access code (card), prepaid wallet, or online payment through Paymob.
+ * Bundles: wallet or online payment. Both accept a discount coupon (not with access codes).
  * Online payments redirect to Paymob; access is granted only after Paymob confirms.
  */
-const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
+const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [accessCode, setAccessCode] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentResult, setPaymentResult] = useState(null);
   const [walletBalance, setWalletBalance] = useState(null);
+  const [couponInput, setCouponInput] = useState("");
+  const [quote, setQuote] = useState(null); // { couponCode, originalPrice, discount, finalPrice }
+  const [couponError, setCouponError] = useState("");
+  const [checkingCoupon, setCheckingCoupon] = useState(false);
+
+  const isBundle = Boolean(bundle);
+  const item = isBundle ? bundle : lesson;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -34,8 +44,37 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
       .catch(() => setWalletBalance(null));
   }, [isOpen]);
 
-  const price = Number(lesson?.price ?? 0);
-  const walletEnough = walletBalance !== null && walletBalance >= price;
+  if (!isOpen || !item) return null;
+
+  const price = Number(item.price ?? 0);
+  const toPay = quote ? Number(quote.finalPrice) : price;
+  const walletEnough = walletBalance !== null && walletBalance >= toPay;
+  const couponUsable = paymentMethod !== "CODE";
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) return;
+    setCheckingCoupon(true);
+    setCouponError("");
+    try {
+      const { data } = await commerceAPI.previewCoupon(
+        isBundle ? { code, bundleId: bundle.id } : { code, lessonId: lesson.id }
+      );
+      setQuote(data);
+      toast.success(`تم تطبيق الخصم: ${data.discount} جنيه`);
+    } catch (e) {
+      setQuote(null);
+      setCouponError(apiMessage(e, "كود الخصم غير صحيح"));
+    } finally {
+      setCheckingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setQuote(null);
+    setCouponInput("");
+    setCouponError("");
+  };
 
   const handlePayment = async () => {
     if (!paymentMethod) {
@@ -46,17 +85,23 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
       toast.error("يرجى إدخال كود الوصول");
       return;
     }
+    const coupon = quote && couponUsable ? quote.couponCode : null;
 
     setIsProcessing(true);
     setPaymentResult(null);
     try {
       let response;
-      if (paymentMethod === "CODE") {
+      if (isBundle) {
+        response = await commerceAPI.buyBundle(bundle.id, paymentMethod, coupon);
+      } else if (paymentMethod === "CODE") {
         response = await lessonAPI.payment.grantAccess(lesson.id, accessCode.trim());
       } else if (paymentMethod === "WALLET") {
-        response = await lessonAPI.payment.payWithWallet(lesson.id);
-      } else if (paymentMethod === "PAYMOB") {
-        response = await lessonAPI.payment.payOnline(lesson.id);
+        response = await lessonAPI.payment.payWithWallet(lesson.id, coupon);
+      } else {
+        response = await lessonAPI.payment.payOnline(lesson.id, coupon);
+      }
+
+      if (response.data?.status === "REDIRECT_TO_PAYMENT") {
         const url = response.data?.paymentUrl;
         if (url && url.startsWith("https://")) {
           window.location.assign(url);
@@ -65,13 +110,21 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
         throw new Error("تعذر فتح صفحة الدفع");
       }
 
-      setPaymentResult({ success: true, message: "تم شراء الدرس بنجاح!", data: response.data });
+      setPaymentResult({
+        success: true,
+        message: isBundle
+          ? `تم شراء الباقة وفتح ${response.data?.lessonsGranted ?? ""} درس!`
+          : "تم شراء الدرس بنجاح!",
+        data: response.data,
+      });
       setTimeout(() => {
-        onSuccess();
+        onSuccess(response.data);
         handleClose();
       }, 2000);
     } catch (error) {
-      const errorMessage = handleAPIError(error, "حدث خطأ أثناء عملية الدفع");
+      const errorMessage = error?.response
+        ? apiMessage(error, "حدث خطأ أثناء عملية الدفع")
+        : handleAPIError(error, "حدث خطأ أثناء عملية الدفع");
       setPaymentResult({ success: false, message: errorMessage, data: null });
       toast.error(errorMessage);
     } finally {
@@ -84,10 +137,9 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
     setAccessCode("");
     setPaymentResult(null);
     setIsProcessing(false);
+    removeCoupon();
     onClose();
   };
-
-  if (!isOpen) return null;
 
   const Option = ({ value, icon: Icon, title, subtitle, disabled }) => (
     <label
@@ -112,11 +164,13 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
     </label>
   );
 
+  const lessonsTotal = isBundle ? Number(bundle.lessonsTotal ?? 0) : 0;
+
   return (
     <div className="fixed inset-0 bg-black/20 bg-opacity-50 flexCenter z-50">
       <div className="bg-white rounded-xl p-6 w-full max-w-[650px] mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="bold-24 text-gray-900">شراء الدرس</h2>
+          <h2 className="bold-24 text-gray-900">{isBundle ? "شراء الباقة" : "شراء الدرس"}</h2>
           <button
             onClick={handleClose}
             className="p-1 border border-gray-900/50 hover:bg-gray-100 rounded-sm cursor-pointer transition-colors"
@@ -126,9 +180,32 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
         </div>
 
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h3 className="bold-18 text-gray-900 mb-2">{lesson.name}</h3>
-          <p className="regular-14 text-gray-600 mb-3">{lesson.description || "وصف الدرس غير متاح"}</p>
-          <span className="bold-16 text-accent">السعر: {lesson.price} جنيه</span>
+          <h3 className="bold-18 text-gray-900 mb-2">{isBundle ? bundle.title : lesson.name}</h3>
+          <p className="regular-14 text-gray-600 mb-3">
+            {item.description || (isBundle ? `${bundle.lessons?.length || 0} درس` : "وصف الدرس غير متاح")}
+          </p>
+          {isBundle && bundle.lessons?.length ? (
+            <ul className="regular-12 text-gray-600 mb-3 list-disc pr-5 space-y-1">
+              {bundle.lessons.map((l) => (
+                <li key={l.id}>{l.name}</li>
+              ))}
+            </ul>
+          ) : null}
+          <div className="flex flex-wrap items-baseline gap-3">
+            {quote ? (
+              <>
+                <span className="regular-14 text-gray-400 line-through">{price} جنيه</span>
+                <span className="bold-16 text-green-600">السعر بعد الخصم: {toPay} جنيه</span>
+              </>
+            ) : (
+              <span className="bold-16 text-accent">السعر: {price} جنيه</span>
+            )}
+            {isBundle && lessonsTotal > price ? (
+              <span className="regular-12 text-gray-500">
+                بدلًا من <span className="line-through">{lessonsTotal}</span> جنيه لو اشتريت الدروس منفصلة
+              </span>
+            ) : null}
+          </div>
         </div>
 
         {paymentResult && (
@@ -160,7 +237,9 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
             <div className="mb-6">
               <h3 className="bold-18 text-gray-900 mb-4">اختر طريقة الدفع</h3>
               <div className="space-y-3">
-                <Option value="CODE" icon={FaKey} title="كود الوصول" subtitle="استخدم كارت الدرس من المدرس أو السنتر" />
+                {!isBundle ? (
+                  <Option value="CODE" icon={FaKey} title="كود الوصول" subtitle="استخدم كارت الدرس من المدرس أو السنتر" />
+                ) : null}
                 <Option
                   value="WALLET"
                   icon={FaWallet}
@@ -186,6 +265,50 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
               ) : null}
             </div>
 
+            {couponUsable && (
+              <div className="mb-6">
+                <label className="flex items-center gap-2 bold-14 text-gray-900 mb-2">
+                  <FaTag className="w-4 h-4 text-gray-500" />
+                  كود خصم (اختياري)
+                </label>
+                {quote ? (
+                  <div className="flex items-center justify-between gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <span className="regular-14 text-green-700" dir="ltr">
+                      {quote.couponCode} — خصم {quote.discount} جنيه
+                    </span>
+                    <button onClick={removeCoupon} className="regular-12 text-red-600 underline cursor-pointer">
+                      إزالة
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponInput}
+                      onChange={(e) => {
+                        setCouponInput(e.target.value);
+                        setCouponError("");
+                      }}
+                      onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
+                      placeholder="مثال: RAMADAN25"
+                      autoComplete="off"
+                      dir="ltr"
+                      maxLength={32}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-[#088395] uppercase"
+                    />
+                    <button
+                      onClick={applyCoupon}
+                      disabled={checkingCoupon || !couponInput.trim()}
+                      className="px-4 py-2 bg-gray-800 text-white rounded-lg bold-14 disabled:opacity-50 cursor-pointer"
+                    >
+                      {checkingCoupon ? <FaSpinner className="w-4 h-4 animate-spin" /> : "تطبيق"}
+                    </button>
+                  </div>
+                )}
+                {couponError ? <p className="mt-2 regular-12 text-red-600">{couponError}</p> : null}
+              </div>
+            )}
+
             {paymentMethod === "CODE" && (
               <div className="mb-6">
                 <label className="block bold-14 text-gray-900 mb-2">كود الوصول</label>
@@ -201,9 +324,9 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
               </div>
             )}
 
-            {paymentMethod === "PAYMOB" && (
+            {paymentMethod === "PAYMOB" && toPay > 0 && (
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg regular-12 text-blue-700">
-                سيتم توجيهك لصفحة الدفع الآمنة. يتم فتح الدرس تلقائيًا بعد تأكيد الدفع.
+                سيتم توجيهك لصفحة الدفع الآمنة. يتم فتح {isBundle ? "دروس الباقة" : "الدرس"} تلقائيًا بعد تأكيد الدفع.
               </div>
             )}
 
@@ -227,7 +350,13 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
                 ) : (
                   <>
                     <FaShoppingCart className="w-4 h-4" />
-                    {paymentMethod === "PAYMOB" ? "المتابعة للدفع" : "شراء الدرس"}
+                    {quote && toPay === 0
+                      ? "احصل عليه مجانًا"
+                      : paymentMethod === "PAYMOB"
+                      ? "المتابعة للدفع"
+                      : isBundle
+                      ? "شراء الباقة"
+                      : "شراء الدرس"}
                   </>
                 )}
               </button>
@@ -237,15 +366,17 @@ const PaymentModal = ({ lesson, isOpen, onClose, onSuccess }) => {
 
         {paymentResult?.success && (
           <div className="text-center">
-            <p className="regular-14 text-gray-600 mb-4">سيتم إعادة توجيهك لعرض الدرس خلال ثوانٍ...</p>
+            <p className="regular-14 text-gray-600 mb-4">
+              {isBundle ? "يمكنك الآن فتح أي درس من دروس الباقة." : "سيتم إعادة توجيهك لعرض الدرس خلال ثوانٍ..."}
+            </p>
             <button
               onClick={() => {
-                onSuccess();
+                onSuccess(paymentResult.data);
                 handleClose();
               }}
               className="bg-accent text-white px-6 py-2 rounded-lg bold-14 hover:bg-opacity-90 transition-colors"
             >
-              عرض الدرس الآن
+              {isBundle ? "متابعة" : "عرض الدرس الآن"}
             </button>
           </div>
         )}

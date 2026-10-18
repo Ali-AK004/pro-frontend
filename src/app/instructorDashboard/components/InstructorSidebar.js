@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useUserData } from "../../../../models/UserContext";
 import axios from "axios";
 import {
+  FiPackage,
   FiHome,
   FiBook,
   FiFileText,
@@ -88,6 +89,12 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
       label: "أكواد الوصول",
       icon: FiCode,
       description: "إنشاء وإدارة أكواد الوصول",
+    },
+    {
+      id: "bundles",
+      label: "الباقات وأكواد الخصم",
+      icon: FiPackage,
+      description: "باقات الدروس وعروض الخصم",
     },
     {
       id: "ai-chat",
