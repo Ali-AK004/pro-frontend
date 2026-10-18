@@ -29,5 +29,8 @@
     "eslint-config-next": "^0.2.4",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.11"
+  },
+  "overrides": {
+    "postcss": "$postcss"
   }
 }

@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Self-contained server for the Docker image (node server.js)
+  output: "standalone",
+  poweredByHeader: false,
+
   // Performance optimizations
   experimental: {
     optimizeCss: true,
