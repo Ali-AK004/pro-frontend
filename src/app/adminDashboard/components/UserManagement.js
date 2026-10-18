@@ -18,9 +18,12 @@ import {
   FiChevronUp,
   FiToggleLeft,
   FiToggleRight,
+  FiMonitor,
 } from "react-icons/fi";
+import { useUserData } from "../../../../models/UserContext";
 import {
   PageHeader, Button, IconButton, Badge, Tabs, Toolbar, SearchBox, PagedTable,
+  Dialog, Field, textareaClass,
   usePaged, useDebounced, fmtDate,
 } from "../../components/ui";
 
@@ -30,7 +33,27 @@ const LIST_BY_TYPE = {
   assistants: (params) => adminAPI.users.assistants(params),
 };
 
+// Where each role lands when viewing as them
+const HOME_BY_ROLE = { STUDENT: "/", INSTRUCTOR: "/instructorDashboard", ASSISTANT: "/instructorDashboard" };
+
 const UserManagement = () => {
+  const { user: me } = useUserData();
+  const [viewAsUser, setViewAsUser] = useState(null);
+  const [viewAsReason, setViewAsReason] = useState("");
+  const [startingViewAs, setStartingViewAs] = useState(false);
+
+  const startViewAs = async (e) => {
+    e.preventDefault();
+    try {
+      setStartingViewAs(true);
+      const { data } = await adminAPI.viewAs.start(viewAsUser.id, viewAsReason.trim());
+      // Full reload so every cached screen and the current user are fetched again as the viewed user
+      window.location.href = HOME_BY_ROLE[data.role] || "/";
+    } catch (error) {
+      toast.error(handleAPIError(error, "تعذّر بدء العرض"));
+      setStartingViewAs(false);
+    }
+  };
   const [activeUserType, setActiveUserType] = useState("students");
   const [instructors, setInstructors] = useState([]);
   const [assistants, setAssistants] = useState([]);
@@ -402,6 +425,16 @@ const UserManagement = () => {
       className: "w-px",
       render: (u) => (
         <div className="flex items-center gap-0.5">
+          {me?.superAdmin && u.enabled && (
+            <IconButton
+              label="عرض المنصة كهذا المستخدم"
+              icon={FiMonitor}
+              onClick={() => {
+                setViewAsReason("");
+                setViewAsUser(u);
+              }}
+            />
+          )}
           <IconButton
             label={u.enabled ? "تعطيل" : "تفعيل"}
             icon={u.enabled ? FiToggleRight : FiToggleLeft}
@@ -453,6 +486,38 @@ const UserManagement = () => {
         empty={searchTerm ? "لا توجد نتائج مطابقة" : "لا يوجد مستخدمون بعد"}
         emptyHint={searchTerm ? "جرّب كلمة بحث أخرى" : undefined}
       />
+
+      <Dialog
+        open={!!viewAsUser}
+        title="عرض المنصة كمستخدم"
+        onClose={() => !startingViewAs && setViewAsUser(null)}
+        footer={
+          <>
+            <Button type="submit" form="view-as-form" loading={startingViewAs}>
+              <FiMonitor /> بدء العرض
+            </Button>
+            <Button variant="secondary" disabled={startingViewAs} onClick={() => setViewAsUser(null)}>إلغاء</Button>
+          </>
+        }
+      >
+        <form id="view-as-form" onSubmit={startViewAs} className="space-y-3">
+          <p className="text-xs text-slate-600 leading-relaxed">
+            سترى المنصة كما يراها <b className="text-slate-900">{viewAsUser?.fullname || viewAsUser?.username}</b> لمدة ساعة.
+            العرض للقراءة فقط: لا شراء ولا تعديل ولا تشغيل فيديو باسمه، ويُسجَّل في سجل الأحداث.
+          </p>
+          <Field label="سبب العرض" hint="مثال: شكوى رقم 42، الطالب لا يرى الدرس">
+            <textarea
+              required
+              minLength={5}
+              maxLength={300}
+              rows={2}
+              value={viewAsReason}
+              onChange={(e) => setViewAsReason(e.target.value)}
+              className={textareaClass}
+            />
+          </Field>
+        </form>
+      </Dialog>
 
       {/* Create User Modal */}
       {showCreateModal && (

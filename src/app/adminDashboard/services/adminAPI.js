@@ -341,6 +341,11 @@ updateWithVideo: (lessonId, formData, onUploadProgress) =>
     getAllWithFilters: (params) => generalApiClient.get('/assignments', { params }),
   },
 
+  // Super admin: see the site as a user (read only, 1 hour, audited)
+  viewAs: {
+    start: (userId, reason) => apiClient.post(`/view-as/${userId}`, { reason }),
+  },
+
   // Access Code Management
   accessCodes: {
     // Get all access codes

@@ -1,5 +1,6 @@
 import { UserProvider } from "../../models/UserContext";
 import FloatingChatButton from "./components/FloatingChatButton";
+import ViewAsBanner from "./components/ViewAsBanner";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
@@ -49,6 +50,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className="antialiased">
         <UserProvider>
+          <ViewAsBanner />
           {children}
           <FloatingChatButton />
           <ToastContainer
