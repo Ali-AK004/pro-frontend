@@ -4,6 +4,7 @@ import { useUserData } from "../../../../models/UserContext";
 import axios from "axios";
 import {
   FiPackage,
+  FiDollarSign,
   FiHome,
   FiBook,
   FiFileText,
@@ -97,6 +98,13 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
       description: "باقات الدروس وعروض الخصم",
     },
     {
+      id: "earnings",
+      label: "الأرباح",
+      icon: FiDollarSign,
+      description: "مبيعاتك ومستحقاتك",
+      instructorOnly: true,
+    },
+    {
       id: "ai-chat",
       label: "المساعد الذكي",
       icon: FiMessageCircle,
@@ -162,7 +170,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
         {/* Navigation Menu */}
         <nav className="p-4 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent min-h-0">
           <ul className="space-y-2">
-            {menuItems.map((item) => {
+            {menuItems.filter((item) => !item.instructorOnly || user?.role === "INSTRUCTOR").map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
 

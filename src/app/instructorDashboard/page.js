@@ -27,6 +27,7 @@ const InstructorAccessCodeManagement = lazy(
   () => import("./components/InstructorAccessCodeManagement")
 );
 const BundleCouponManager = lazy(() => import("../components/BundleCouponManager"));
+const InstructorEarnings = lazy(() => import("./components/InstructorEarnings"));
 const InstructorProfileManagement = lazy(
   () => import("./components/InstructorProfileManagement")
 );
@@ -122,6 +123,12 @@ const InstructorDashboard = () => {
         return (
           <Suspense fallback={<ComponentLoader />}>
             <BundleCouponManager role={user?.role} />
+          </Suspense>
+        );
+      case "earnings":
+        return (
+          <Suspense fallback={<ComponentLoader />}>
+            <InstructorEarnings />
           </Suspense>
         );
       case "profile":

@@ -21,6 +21,7 @@ import AdminStudentLessonsPage from "./components/AdminStudentLessonsPage";
 import AuditLogsPage from "./components/AuditLogsPage";
 import WalletManagement from "./components/WalletManagement";
 import BundleCouponPage from "./components/BundleCouponPage";
+import AdminEarningsPage from "./components/AdminEarningsPage";
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -87,6 +88,8 @@ const AdminDashboard = () => {
         return <WalletManagement />;
       case "bundles":
         return <BundleCouponPage />;
+      case "earnings":
+        return <AdminEarningsPage />;
       case "student-lessons":
         return <AdminStudentLessonsPage />;
       case "lesson-expiration":

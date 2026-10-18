@@ -4,6 +4,7 @@ import { useUserData } from "../../../../models/UserContext";
 import axios from "axios";
 import {
   FiPackage,
+  FiDollarSign,
   FiHome,
   FiUsers,
   FiBook,
@@ -110,6 +111,12 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       label: "الباقات وأكواد الخصم",
       icon: FiPackage,
       description: "باقات الدروس وعروض الخصم",
+    },
+    {
+      id: "earnings",
+      label: "أرباح المدرسين",
+      icon: FiDollarSign,
+      description: "المستحقات والدفعات والعمولات",
     },
     {
       id: "student-lessons",
