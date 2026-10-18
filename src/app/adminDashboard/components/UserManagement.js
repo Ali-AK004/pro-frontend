@@ -19,11 +19,13 @@ import {
   FiToggleLeft,
   FiToggleRight,
   FiMonitor,
+  FiLogOut,
 } from "react-icons/fi";
 import { useUserData } from "../../../../models/UserContext";
+import { securityAPI } from "../../services/securityAPI";
 import {
   PageHeader, Button, IconButton, Badge, Tabs, Toolbar, SearchBox, PagedTable,
-  Dialog, Field, textareaClass,
+  Dialog, ConfirmDialog, Field, textareaClass,
   usePaged, useDebounced, fmtDate,
 } from "../../components/ui";
 
@@ -41,6 +43,21 @@ const UserManagement = () => {
   const [viewAsUser, setViewAsUser] = useState(null);
   const [viewAsReason, setViewAsReason] = useState("");
   const [startingViewAs, setStartingViewAs] = useState(false);
+  const [signOutUser, setSignOutUser] = useState(null);
+  const [signingOut, setSigningOut] = useState(false);
+
+  const confirmSignOut = async () => {
+    try {
+      setSigningOut(true);
+      await securityAPI.signOutUser(signOutUser.id);
+      toast.success("تم تسجيل خروجه من كل الأجهزة");
+      setSignOutUser(null);
+    } catch (error) {
+      toast.error(handleAPIError(error, "تعذّر تسجيل الخروج"));
+    } finally {
+      setSigningOut(false);
+    }
+  };
 
   const startViewAs = async (e) => {
     e.preventDefault();
@@ -435,6 +452,9 @@ const UserManagement = () => {
               }}
             />
           )}
+          {me?.superAdmin && (
+            <IconButton label="تسجيل خروجه من كل الأجهزة" icon={FiLogOut} onClick={() => setSignOutUser(u)} />
+          )}
           <IconButton
             label={u.enabled ? "تعطيل" : "تفعيل"}
             icon={u.enabled ? FiToggleRight : FiToggleLeft}
@@ -518,6 +538,16 @@ const UserManagement = () => {
           </Field>
         </form>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!signOutUser}
+        title="تسجيل الخروج من كل الأجهزة"
+        message={`سيُطلب من ${signOutUser?.fullname || signOutUser?.username || ""} تسجيل الدخول من جديد على كل أجهزته. مفيد عند فقد هاتف أو الاشتباه في مشاركة الحساب.`}
+        confirmLabel="تسجيل الخروج"
+        busy={signingOut}
+        onConfirm={confirmSignOut}
+        onClose={() => !signingOut && setSignOutUser(null)}
+      />
 
       {/* Create User Modal */}
       {showCreateModal && (

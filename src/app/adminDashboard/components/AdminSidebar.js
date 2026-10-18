@@ -163,6 +163,12 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       icon: FiShield,
       description: "الأعضاء والصلاحيات",
     },
+    {
+      id: "settings-security",
+      label: "الإعدادات والأمان",
+      icon: FiSettings,
+      description: "قواعد المنصة وحالة الأمان",
+    },
   ];
 
   return (

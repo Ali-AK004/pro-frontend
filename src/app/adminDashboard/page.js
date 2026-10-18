@@ -35,6 +35,7 @@ const AdminEarningsPage = lazyTab(() => import("./components/AdminEarningsPage")
 const AnalyticsPage = lazyTab(() => import("./components/AnalyticsPage"));
 const PaymentsCenterPage = lazyTab(() => import("./components/PaymentsCenterPage"));
 const StaffPage = lazyTab(() => import("./components/StaffPage"));
+const SettingsSecurityPage = lazyTab(() => import("./components/SettingsSecurityPage"));
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -123,6 +124,8 @@ const AdminDashboard = () => {
         return <PaymentsCenterPage />;
       case "staff":
         return <StaffPage />;
+      case "settings-security":
+        return <SettingsSecurityPage />;
       default:
         return <DashboardOverview />;
     }

@@ -27,6 +27,7 @@ export const TAB_PERMISSION = {
   bundles: "CONTENT",
   "audit-logs": "AUDIT",
   staff: "SUPER",
+  "settings-security": "SUPER",
 };
 
 export function can(user, permission) {
