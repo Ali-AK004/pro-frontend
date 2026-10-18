@@ -168,7 +168,7 @@ const AdminStudentLessonsPage = () => {
                 <h1 className="text-2xl font-bold text-gray-900">إدارة تقدم الطلاب</h1>
                 <button
                     onClick={handleGrant}
-                    className="flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition"
+                    className="flex items-center gap-2 bg-brand-500 text-white px-4 py-2 rounded-lg transition"
                 >
                     <FiPlus /> منح وصول جديد
                 </button>
@@ -184,7 +184,7 @@ const AdminStudentLessonsPage = () => {
                         value={filters.studentId}
                         onChange={handleFilterChange}
                         placeholder="أدخل معرف الطالب"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500"
+                        className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:ring-4 focus:ring-brand-600/10 text-sm focus:outline-none"
                     />
                 </div>
                 <div>
@@ -195,7 +195,7 @@ const AdminStudentLessonsPage = () => {
                         value={filters.lessonId}
                         onChange={handleFilterChange}
                         placeholder="أدخل معرف الدرس"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500"
+                        className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:ring-4 focus:ring-brand-600/10 text-sm focus:outline-none"
                     />
                 </div>
                 <div>
@@ -204,7 +204,7 @@ const AdminStudentLessonsPage = () => {
                         name="status"
                         value={filters.status}
                         onChange={handleFilterChange}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500"
+                        className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:ring-4 focus:ring-brand-600/10 text-sm focus:outline-none"
                     >
                         <option value="">الكل</option>
                         <option value="PURCHASED">تم الشراء</option>
@@ -404,7 +404,7 @@ const EditModal = ({ record, onClose, onSave }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
             <div className="bg-white rounded-2xl max-w-md w-full p-6">
                 <h2 className="text-xl font-bold mb-4">تعديل سجل الطالب</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -414,7 +414,7 @@ const EditModal = ({ record, onClose, onSave }) => {
                             name="progressStatus"
                             value={formData.progressStatus}
                             onChange={handleChange}
-                            className="w-full border rounded-lg px-3 py-2"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
                         >
                             <option value="PURCHASED">تم الشراء</option>
                             <option value="EXAM_PASSED">اجتاز الامتحان</option>
@@ -431,7 +431,7 @@ const EditModal = ({ record, onClose, onSave }) => {
                             onChange={handleChange}
                             min="0"
                             max="4"
-                            className="w-full border rounded-lg px-3 py-2"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
                         />
                     </div>
                     <div>
@@ -441,7 +441,7 @@ const EditModal = ({ record, onClose, onSave }) => {
                             name="accessExpiryDate"
                             value={formData.accessExpiryDate}
                             onChange={handleChange}
-                            className="w-full border rounded-lg px-3 py-2"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
                         />
                     </div>
                     <div>
@@ -451,7 +451,7 @@ const EditModal = ({ record, onClose, onSave }) => {
                             name="examScore"
                             value={formData.examScore}
                             onChange={handleChange}
-                            className="w-full border rounded-lg px-3 py-2"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
                         />
                     </div>
                     <div className="flex items-center gap-2">
@@ -464,7 +464,7 @@ const EditModal = ({ record, onClose, onSave }) => {
                         />
                         <label htmlFor="completed" className="text-sm">مكتمل</label>
                     </div>
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex gap-2 pt-2">
                         <button
                             type="submit"
                             className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 flex-1"
@@ -492,8 +492,8 @@ const ConfirmModal = ({ title, message, onConfirm, onClose, confirmText = "تأ�
         info: "bg-brand-100 text-brand-800 border-brand-200",
     };
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className={`bg-white rounded-2xl max-w-md w-full p-6 border-r-4 ${colors[type]}`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
+            <div className={`bg-white rounded-2xl max-w-md w-full p-6 border-r-4   ${colors[type]}`}>
                 <h2 className="text-xl font-bold mb-2">{title}</h2>
                 <p className="text-gray-700 mb-6">{message}</p>
                 <div className="flex gap-3">
@@ -517,7 +517,7 @@ const ConfirmModal = ({ title, message, onConfirm, onClose, confirmText = "تأ�
 
 const ExtendModal = ({ record, days, setDays, onConfirm, onClose }) => {
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
             <div className="bg-white rounded-2xl max-w-md w-full p-6">
                 <h2 className="text-xl font-bold mb-4">تمديد وصول الطالب</h2>
                 <p className="text-gray-700 mb-4">
@@ -531,7 +531,7 @@ const ExtendModal = ({ record, days, setDays, onConfirm, onClose }) => {
                         value={days}
                         onChange={(e) => setDays(Number(e.target.value))}
                         min="1"
-                        className="w-full border rounded-lg px-3 py-2"
+                        className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
                     />
                 </div>
                 <div className="flex gap-3">
@@ -575,7 +575,7 @@ const GrantModal = ({ onConfirm, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
             <div className="bg-white rounded-2xl max-w-md w-full p-6">
                 <h2 className="text-xl font-bold mb-4">منح وصول جديد</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -587,7 +587,7 @@ const GrantModal = ({ onConfirm, onClose }) => {
                             value={formData.studentId}
                             onChange={handleChange}
                             required
-                            className="w-full border rounded-lg px-3 py-2"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
                         />
                     </div>
                     <div>
@@ -598,7 +598,7 @@ const GrantModal = ({ onConfirm, onClose }) => {
                             value={formData.lessonId}
                             onChange={handleChange}
                             required
-                            className="w-full border rounded-lg px-3 py-2"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
                         />
                     </div>
                     <div>
@@ -608,7 +608,7 @@ const GrantModal = ({ onConfirm, onClose }) => {
                             name="accessExpiryDate"
                             value={formData.accessExpiryDate}
                             onChange={handleChange}
-                            className="w-full border rounded-lg px-3 py-2"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
                         />
                     </div>
                     <div>
@@ -618,10 +618,10 @@ const GrantModal = ({ onConfirm, onClose }) => {
                             name="paymentReference"
                             value={formData.paymentReference}
                             onChange={handleChange}
-                            className="w-full border rounded-lg px-3 py-2"
+                            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none"
                         />
                     </div>
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex gap-2 pt-2">
                         <button
                             type="submit"
                             className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 flex-1"

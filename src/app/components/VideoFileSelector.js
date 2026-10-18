@@ -112,7 +112,7 @@ const VideoFileSelector = ({
   };
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-4   ${className}`}>
       {/* Selected File Display */}
       {selectedFile && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
@@ -148,11 +148,11 @@ const VideoFileSelector = ({
       {/* File Upload Area */}
       {!selectedFile && (
         <div
-          className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
-            dragActive
-              ? "border-accent bg-accent/5"
-              : "border-gray-300 hover:border-gray-400"
-          }`}
+          className={`relative border-2 border-dashed rounded-lg p-6 transition-colors   ${
+ dragActive
+ ? "border-accent bg-accent/5"
+ : "border-gray-300 hover:border-gray-400"
+ }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}

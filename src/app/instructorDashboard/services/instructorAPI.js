@@ -2,6 +2,7 @@ import axios from "axios";
 import { validateSearchTerm } from "../../utils/security";
 import { apiConfig } from "../../../config/api";
 import { attachAuthRefresh } from "../../utils/authRefresh";
+import { asList, listParams, rowsOf } from "../../utils/pageList";
 
 const BASE_URL = `${apiConfig.baseURL}/instructors`;
 const API_BASE_URL = apiConfig.baseURL;
@@ -201,8 +202,8 @@ export const instructorAPI = {
         () =>
           apiClient.get(`/${instructorId}/courses`, {
             skipCache: skipCache,
-            params: skipCache ? { _t: Date.now() } : {},
-          }),
+            params: listParams(skipCache ? { _t: Date.now() } : {}),
+          }).then(asList),
         skipCache,
       );
     },
@@ -234,8 +235,8 @@ export const instructorAPI = {
         () =>
           apiClient.get(`/courses/${courseId}/lessons`, {
             skipCache: skipCache,
-            params: skipCache ? { _t: Date.now() } : {},
-          }),
+            params: listParams(skipCache ? { _t: Date.now() } : {}),
+          }).then(asList),
         skipCache,
       );
     },
@@ -266,6 +267,9 @@ export const instructorAPI = {
 
   // Lesson Management
   lessons: {
+    // Paged: every lesson of the instructor; params = { courseId, q, page, size } (all optional)
+    list: (instructorId, params) => apiClient.get(`/${instructorId}/lessons`, { params }),
+
     // Create lesson for course
     create: (courseId, data) => {
       // Clear lessons cache for this course
@@ -353,6 +357,12 @@ export const instructorAPI = {
 
   // Access Codes Management
   accessCodes: {
+    // Paged list of the teacher's codes; params = { lessonId, used, q, page, size } (all optional)
+    list: (instructorId, params) => apiClient.get(`/${instructorId}/access-codes`, { params }),
+
+    // Totals: { total, used, unused }
+    stats: (instructorId) => apiClient.get(`/${instructorId}/access-codes/stats`),
+
     // Get all access codes for instructor with pagination
     getByInstructor: (
       instructorId,
@@ -601,10 +611,14 @@ export const instructorAPI = {
         () =>
           generalApiClient.get(`/exams/lessons/${lessonId}`, {
             skipCache: skipCache,
-          }),
+            params: listParams(),
+          }).then(asList),
         skipCache,
       );
     },
+
+    // Paged: params = { courseId, lessonId, q, page, size } (all optional)
+    list: (instructorId, params) => generalApiClient.get(`/exams/instructors/${instructorId}`, { params }),
 
     // Get all exams for instructor
     getByInstructor: (instructorId, skipCache = false) => {
@@ -619,7 +633,8 @@ export const instructorAPI = {
         () =>
           generalApiClient.get(`/exams/instructors/${instructorId}`, {
             skipCache: skipCache,
-          }),
+            params: listParams(),
+          }).then(asList),
         skipCache,
       );
     },
@@ -707,12 +722,16 @@ export const instructorAPI = {
         () =>
           generalApiClient.get(`/assignments/lessons/${lessonId}`, {
             skipCache: skipCache,
-          }),
+            params: listParams(),
+          }).then(asList),
         skipCache,
       );
     },
 
     // Get all assignments for instructor
+    // Paged: params = { courseId, lessonId, q, page, size } (all optional)
+    list: (instructorId, params) => generalApiClient.get(`/assignments/instructors/${instructorId}`, { params }),
+
     getByInstructor: (instructorId, skipCache = false) => {
       const cacheKey = `assignments_instructor_${instructorId}`;
 
@@ -725,7 +744,8 @@ export const instructorAPI = {
         () =>
           generalApiClient.get(`/assignments/instructors/${instructorId}`, {
             skipCache: skipCache,
-          }),
+            params: listParams(),
+          }).then(asList),
         skipCache,
       );
     },
@@ -796,7 +816,7 @@ export const instructorAPI = {
             const [coursesResponse, studentCountResponse] = await Promise.all([
               apiClient.get(`/${instructorId}/courses`, {
                 skipCache: skipCache,
-                params: skipCache ? { _t: Date.now() } : {},
+                params: listParams(skipCache ? { _t: Date.now() } : {}),
               }),
               apiClient.get(`/${instructorId}/student-count`, {
                 skipCache: skipCache,
@@ -804,7 +824,8 @@ export const instructorAPI = {
               }),
             ]);
 
-            const courses = coursesResponse.data || [];
+            const courses = rowsOf(coursesResponse.data);
+            const courseTotal = coursesResponse.data?.totalElements ?? courses.length;
             const studentCount = studentCountResponse.data || 0;
 
             // Calculate total lessons
@@ -821,7 +842,7 @@ export const instructorAPI = {
 
             // Return the stats object directly, not wrapped in { data }
             return {
-              courses: courses.length,
+              courses: courseTotal,
               lessons: totalLessons,
               students: studentCount,
               revenue: totalRevenue,

@@ -420,11 +420,11 @@ const LessonPage = () => {
         <div className="flexCenter min-h-[80vh]">
           <div className="text-center">
             <FaExclamationTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="bold-24 text-gray-900 mb-2">خطأ في تحميل الدرس</h2>
+            <h2 className="text-base font-semibold text-slate-900 mb-2">خطأ في تحميل الدرس</h2>
             <p className="regular-16 text-gray-600 mb-4">{error}</p>
             <button
               onClick={() => router.back()}
-              className="bg-accent cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
+              className="bg-brand-600 cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors"
             >
               العودة
             </button>
@@ -476,7 +476,7 @@ const LessonPage = () => {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.back()}
-                className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
+                className="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <FaArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
@@ -512,7 +512,7 @@ const LessonPage = () => {
       </div>
 
       {/* Enhanced Navigation Tabs */}
-      <div className="bg-white/95 backdrop-blur-sm border-b border-gray-200/50 shadow-lg">
+      <div className="bg-white/95 backdrop-blur-sm border-b border-gray-200/50 shadow-sm">
         <div className="max-container padding-container">
           <div className="flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300">
             <TabButton
@@ -560,10 +560,10 @@ const LessonPage = () => {
 
       {/* Enhanced Content */}
       <div className="max-container padding-container py-8">
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/30 p-8 relative overflow-hidden">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-8 relative overflow-hidden">
           {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-50/30 to-brand-50/30"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-2xl"></div>
+          <div className="absolute inset-0 bg-brand-50/30"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-400/10 rounded-full blur-2xl"></div>
 
           <div className="relative">
             {activeTab === "overview" && (
@@ -651,29 +651,29 @@ const TabButton = ({
   return (
     <button
       onClick={() => canClick && setActiveTab(id)}
-      className={`group relative flex items-center gap-3 px-6 py-4 rounded-t-2xl transition-all duration-300 font-semibold cursor-pointer ${isActive
-        ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg"
-        : canClick
-          ? "bg-white/80 backdrop-blur-sm text-gray-700 hover:text-brand-600 hover:bg-brand-50 shadow-sm hover:shadow-md border border-gray-200 hover:border-brand-300"
-          : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-300"
-        }`}
+      className={`group relative flex items-center gap-3 px-4 py-2.5 rounded-t-2xl transition-all duration-150 font-semibold cursor-pointer ${isActive
+ ? "bg-brand-500 text-white shadow-sm"
+ : canClick
+ ? "bg-white/80 backdrop-blur-sm text-gray-700 hover:text-brand-600 hover:bg-brand-50 shadow-sm border border-gray-200 hover:border-brand-300"
+ : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-300"
+ }`}
       disabled={!canClick}
     >
       <div
-        className={`p-2 rounded-lg transition-all duration-300 ${isActive
-          ? "bg-white/20"
-          : canClick
-            ? "bg-gray-100 group-hover:bg-brand-100"
-            : "bg-gray-200"
-          }`}
+        className={`p-2 rounded-lg transition-all duration-150   ${isActive
+ ? "bg-white/20"
+ : canClick
+ ? "bg-gray-100 group-hover:bg-brand-100"
+ : "bg-gray-200"
+ }`}
       >
         <Icon
-          className={`w-5 h-5 transition-all duration-300 ${isActive
-            ? "text-white"
-            : canClick
-              ? "text-gray-600 group-hover:text-brand-600"
-              : "text-gray-400"
-            }`}
+          className={`w-5 h-5 transition-all duration-150 ${isActive
+ ? "text-white"
+ : canClick
+ ? "text-gray-600 group-hover:text-brand-600"
+ : "text-gray-400"
+ }`}
         />
       </div>
       <span className="text-sm">{label}</span>
@@ -685,7 +685,7 @@ const TabButton = ({
 
       {/* Active indicator */}
       {isActive && (
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-white rounded-t-full"></div>
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-white rounded-t-full"></div>
       )}
     </button>
   );
@@ -734,16 +734,16 @@ const OverviewTab = ({
       <div className="lg:col-span-2 space-y-6">
         {/* Enhanced Lesson Image */}
         {lesson.photoUrl && (
-          <div className="group bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200/50 hover:shadow-xl transition-all duration-300">
+          <div className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200/50 transition-all duration-150">
             <div className="relative overflow-hidden">
               <img
                 src={lesson.photoUrl}
                 alt={lesson.name}
-                className="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-80 object-cover transition-transform duration-150"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-150"></div>
               <div className="absolute bottom-4 left-4 right-4">
-                <h3 className="text-white font-bold text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
+                <h3 className="text-white font-bold text-xl opacity-0 group-hover:opacity-100 transition-opacity duration-150 translate-y-2">
                   {lesson.name}
                 </h3>
               </div>
@@ -752,11 +752,11 @@ const OverviewTab = ({
         )}
 
         {/* Enhanced Lesson Description */}
-        <div className="bg-gradient-to-r from-brand-50 to-brand-50 rounded-2xl shadow-lg border border-brand-200/50 p-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-xl"></div>
+        <div className="bg-brand-50 rounded-2xl shadow-sm border border-brand-200/50 p-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-brand-400/20 rounded-full blur-xl"></div>
           <div className="relative">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-gradient-to-r from-brand-500 to-brand-600 rounded-xl">
+              <div className="p-3 bg-brand-500 rounded-xl">
                 <FaBook className="w-6 h-6 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900">وصف الدرس</h2>
@@ -891,10 +891,10 @@ const ExamTab = ({
   console.log(examResult)
   if (!canAccess) {
     return (
-      <div className="bg-gradient-to-r from-brand-50 to-amber-50 rounded-3xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/20 to-amber-400/20 rounded-full blur-2xl"></div>
+      <div className="bg-brand-50 rounded-2xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-400/20 rounded-full blur-2xl"></div>
         <div className="relative text-center">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-brand-500 to-amber-600 rounded-full mb-6 shadow-lg">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-brand-500 rounded-full mb-6 shadow-sm">
             <FaLock className="w-12 h-12 text-white" />
           </div>
           <h3 className="text-3xl font-bold text-gray-900 mb-4">
@@ -931,13 +931,13 @@ const ExamTab = ({
         0
       ) || 0;
     return (
-      <div className="bg-white rounded-lg shadow-lg p-8">
+      <div className="bg-white rounded-lg shadow-sm p-8">
         <div className="text-center mb-8">
           <div
-            className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-6 ${examResult.passed
-              ? "bg-emerald-100 text-emerald-600"
-              : "bg-red-100 text-red-600"
-              }`}
+            className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-6   ${examResult.passed
+ ? "bg-emerald-100 text-emerald-600"
+ : "bg-red-100 text-red-600"
+ }`}
           >
             {examResult.passed ? (
               <FaCheckCircle className="w-12 h-12" />
@@ -1002,7 +1002,7 @@ const ExamTab = ({
                 <p className="text-sm text-gray-500">درجتك</p>
                 <p
                   className={`text-2xl font-bold ${examResult.passed ? "text-emerald-600" : "text-red-600"
-                    }`}
+ }`}
                 >
                   {studentTotalPoints} / {totalPossiblePoints}
                 </p>
@@ -1025,10 +1025,10 @@ const ExamTab = ({
               return (
                 <div
                   key={questionId}
-                  className={`p-4 border rounded-lg ${result.correct
-                    ? "bg-emerald-50 border-emerald-200"
-                    : "bg-red-50 border-red-200"
-                    }`}
+                  className={`p-4 border rounded-lg   ${result.correct
+ ? "bg-emerald-50 border-emerald-200"
+ : "bg-red-50 border-red-200"
+ }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -1047,9 +1047,9 @@ const ExamTab = ({
                     </div>
                     <span
                       className={`p-3 rounded-full flexCenter text-sm ${result.correct
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "bg-red-100 text-red-800"
-                        }`}
+ ? "bg-emerald-100 text-emerald-800"
+ : "bg-red-100 text-red-800"
+ }`}
                     >
                       {result.correct ? "صحيح" : "خطأ"}
                     </span>
@@ -1070,7 +1070,7 @@ const ExamTab = ({
           <div className="text-center">
             <button
               onClick={onRetry}
-              className="bg-brand-600 text-white px-6 py-3 cursor-pointer rounded-lg hover:bg-brand-700 transition-colors"
+              className="bg-brand-600 text-white px-4 py-2 cursor-pointer rounded-lg hover:bg-brand-700 transition-colors"
             >
               إعادة المحاولة
             </button>
@@ -1124,11 +1124,11 @@ const ExamTab = ({
   // Show exam start confirmation if exam hasn't started yet
   if (!examStarted) {
     return (
-      <div className="bg-gradient-to-br from-brand-50 to-brand-50 rounded-3xl shadow-2xl border border-brand-200/50 p-12 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-2xl"></div>
+      <div className="bg-brand-50 rounded-2xl shadow-2xl border border-brand-200/50 p-12 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-400/20 rounded-full blur-2xl"></div>
 
         <div className="relative text-center">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-brand-500 to-brand-600 rounded-2xl mb-8 shadow-lg">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-brand-500 rounded-2xl mb-8 shadow-sm">
             <FaQuestionCircle className="w-12 h-12 text-white" />
           </div>
 
@@ -1136,7 +1136,7 @@ const ExamTab = ({
             {exam.title}
           </h2>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-white/50 shadow-lg max-w-2xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-white/50 shadow-sm max-w-2xl mx-auto">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
               معلومات الامتحان
             </h3>
@@ -1190,7 +1190,7 @@ const ExamTab = ({
 
             <button
               onClick={() => startExamTimer()}
-              className="w-full bg-gradient-to-r from-brand-500 to-brand-600 text-white py-4 px-8 rounded-2xl font-bold text-xl hover:from-brand-600 hover:to-brand-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
+              className="w-full bg-brand-500 text-white py-2.5 px-5 rounded-2xl font-bold text-xl hover:bg-brand-600 transition-all duration-150 cursor-pointer"
             >
               <FaPlay className="w-6 h-6 inline-block ml-3" />
               بدء الامتحان
@@ -1202,12 +1202,12 @@ const ExamTab = ({
   }
 
   return (
-    <div className="bg-gradient-to-br from-brand-50 to-brand-50 rounded-3xl shadow-2xl border border-brand-200/50 p-8 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-2xl"></div>
+    <div className="bg-brand-50 rounded-2xl shadow-2xl border border-brand-200/50 p-8 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-brand-400/20 rounded-full blur-2xl"></div>
 
       {/* Enhanced Exam Header with Timer */}
       <div className="relative text-center mb-8 pb-6 border-b border-brand-200/50">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-brand-500 to-brand-600 rounded-2xl mb-6 shadow-lg">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-brand-500 rounded-2xl mb-6 shadow-sm">
           <FaQuestionCircle className="w-10 h-10 text-white" />
         </div>
         <h2 className="text-4xl font-bold text-gray-900 mb-4">{exam.title}</h2>
@@ -1215,10 +1215,10 @@ const ExamTab = ({
         {/* Timer Display */}
         <div className="mb-6">
           <div
-            className={`inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-2xl shadow-lg ${timeRemaining <= 300
-              ? "bg-red-500 text-white animate-pulse"
-              : "bg-white/80 text-gray-800"
-              }`}
+            className={`inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-2xl shadow-sm   ${timeRemaining <= 300
+ ? "bg-red-500 text-white animate-pulse"
+ : "bg-white/80 text-gray-800"
+ }`}
           >
             <FaClock className="w-6 h-6" />
             <span>الوقت المتبقي: {formatTimeRemaining(timeRemaining)}</span>
@@ -1241,14 +1241,14 @@ const ExamTab = ({
         {exam.questions?.map((question, index) => (
           <div
             key={question.id}
-            className="group bg-white/90 backdrop-blur-sm border border-white/50 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+            className="group bg-white/90 backdrop-blur-sm border border-white/50 rounded-2xl p-8 shadow-sm transition-all duration-150 relative overflow-hidden"
           >
             {/* Question background decoration */}
-            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-brand-500 to-brand-600"></div>
+            <div className="absolute top-0 left-0 w-1 h-full bg-brand-500"></div>
 
             <div className="flex items-start gap-6 mb-6">
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-r from-brand-500 to-brand-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-brand-500 rounded-2xl flex items-center justify-center shadow-sm">
                   <span className="text-white font-bold text-lg">
                     {index + 1}
                   </span>
@@ -1279,16 +1279,16 @@ const ExamTab = ({
               {question.answers?.map((answer, answerIndex) => (
                 <label
                   key={answer.id}
-                  className={`group/answer flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md ${isAnswerSelected(question.id, answer.id)
-                    ? "border-brand-500 bg-gradient-to-r from-brand-50 to-brand-50 shadow-lg"
-                    : "border-gray-200 hover:border-brand-300 bg-white/50 hover:bg-brand-50/50"
-                    }`}
+                  className={`group/answer flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-150   ${isAnswerSelected(question.id, answer.id)
+ ? "border-brand-500 bg-brand-50 shadow-sm"
+ : "border-gray-200 hover:border-brand-300 bg-white/50 hover:bg-brand-50/50"
+ }`}
                 >
                   <div
-                    className={`relative flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300 ${isAnswerSelected(question.id, answer.id)
-                      ? "border-brand-500 bg-brand-500"
-                      : "border-gray-300 group-hover/answer:border-brand-400"
-                      }`}
+                    className={`relative flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-150   ${isAnswerSelected(question.id, answer.id)
+ ? "border-brand-500 bg-brand-500"
+ : "border-gray-300 group-hover/answer:border-brand-400"
+ }`}
                   >
                     <input
                       type={
@@ -1314,18 +1314,18 @@ const ExamTab = ({
 
                   <div className="flex items-center gap-3 flex-1">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${isAnswerSelected(question.id, answer.id)
-                        ? "bg-white/20 text-brand-700"
-                        : "bg-gray-100 text-gray-600 group-hover/answer:bg-brand-100 group-hover/answer:text-brand-600"
-                        }`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-150   ${isAnswerSelected(question.id, answer.id)
+ ? "bg-white/20 text-brand-700"
+ : "bg-gray-100 text-gray-600 group-hover/answer:bg-brand-100 group-hover/answer:text-brand-600"
+ }`}
                     >
                       {String.fromCharCode(65 + answerIndex)}
                     </div>
                     <span
-                      className={`text-lg font-medium transition-colors duration-300 ${isAnswerSelected(question.id, answer.id)
-                        ? "text-brand-900"
-                        : "text-gray-700 group-hover/answer:text-brand-700"
-                        }`}
+                      className={`text-lg font-medium transition-colors duration-150 ${isAnswerSelected(question.id, answer.id)
+ ? "text-brand-900"
+ : "text-gray-700 group-hover/answer:text-brand-700"
+ }`}
                     >
                       {answer.answerText}
                     </span>
@@ -1358,10 +1358,10 @@ const ExamTab = ({
           <button
             onClick={handleManualSubmit}
             disabled={!allQuestionsAnswered || isSubmitting}
-            className={`group relative inline-flex items-center gap-3 px-12 py-4 rounded-2xl font-bold text-lg transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${allQuestionsAnswered && !isSubmitting
-              ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white hover:from-brand-600 hover:to-brand-700"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
+            className={`group relative inline-flex items-center gap-3 px-12 py-2.5 rounded-2xl font-bold text-lg transition-all duration-150 cursor-pointer ${allQuestionsAnswered && !isSubmitting
+ ? "bg-brand-500 text-white hover:bg-brand-600"
+ : "bg-gray-300 text-gray-500 cursor-not-allowed"
+ }`}
           >
             {isSubmitting ? (
               <>
@@ -1451,8 +1451,8 @@ const VideoTab = ({
             onClick={handleMarkAsWatched}
             disabled={watched || isMarking}
             className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-colors ${
-              watched ? "bg-emerald-100 text-emerald-700 cursor-not-allowed" : "bg-brand-600 text-white hover:bg-brand-700"
-            }`}
+ watched ? "bg-emerald-100 text-emerald-700 cursor-not-allowed" : "bg-brand-600 text-white hover:bg-brand-700"
+ }`}
           >
             {isMarking ? "جاري التسجيل..." : watched ? "✓ تم المشاهدة" : "تم المشاهدة"}
           </button>
@@ -1535,7 +1535,7 @@ const AssignmentTab = ({
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-        <h2 className="bold-24 text-gray-900">{assignment.title}</h2>
+        <h2 className="text-base font-semibold text-slate-900">{assignment.title}</h2>
         <div className="flex items-center gap-3">
           <div className="bg-brand-50 text-brand-600 px-4 py-2 rounded-lg">
             <span className="bold-14">النقاط: {assignment.maxPoints}</span>
@@ -1620,7 +1620,7 @@ const AssignmentTab = ({
             value={submission}
             onChange={(e) => setSubmission(e.target.value)}
             placeholder="اكتب إجابتك هنا..."
-            className="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-accent focus:border-transparent"
+            className="w-full h-40 px-3 py-2 border border-slate-200 rounded-lg resize-none focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm focus:outline-none"
             disabled={isOverdue}
           />
 
@@ -1630,10 +1630,10 @@ const AssignmentTab = ({
             <button
               onClick={onSubmit}
               disabled={!submission.trim() || isSubmitting || isOverdue}
-              className={`px-6 py-2 rounded-lg cursor-pointer bold-14 transition-colors ${submission.trim() && !isSubmitting && !isOverdue
-                ? "bg-accent text-white hover:bg-opacity-90"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
+              className={`px-4 py-2 rounded-lg cursor-pointer bold-14 transition-colors ${submission.trim() && !isSubmitting && !isOverdue
+ ? "bg-accent text-white hover:bg-opacity-90"
+ : "bg-gray-300 text-gray-500 cursor-not-allowed"
+ }`}
             >
               {isSubmitting ? "جاري التسليم..." : "تسليم الواجب"}
             </button>
@@ -1653,10 +1653,10 @@ const AssignmentTab = ({
 // Access Denied Component
 const AccessDenied = ({ message }) => {
   return (
-    <div className="bg-gradient-to-r from-brand-50 to-amber-50 rounded-3xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/20 to-amber-400/20 rounded-full blur-2xl"></div>
+    <div className="bg-brand-50 rounded-2xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-brand-400/20 rounded-full blur-2xl"></div>
       <div className="relative text-center">
-        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-brand-500 to-amber-600 rounded-full mb-6 shadow-lg">
+        <div className="inline-flex items-center justify-center w-24 h-24 bg-brand-500 rounded-full mb-6 shadow-sm">
           <FaLock className="w-12 h-12 text-white" />
         </div>
         <h3 className="text-3xl font-bold text-gray-900 mb-4">الدخول مقيد</h3>

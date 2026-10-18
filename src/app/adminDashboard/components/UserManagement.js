@@ -19,14 +19,31 @@ import {
   FiToggleLeft,
   FiToggleRight,
 } from "react-icons/fi";
+import {
+  PageHeader, Button, IconButton, Badge, Tabs, Toolbar, SearchBox, PagedTable,
+  usePaged, useDebounced, fmtDate,
+} from "../../components/ui";
+
+const LIST_BY_TYPE = {
+  students: (params) => adminAPI.users.students(params),
+  instructors: (params) => adminAPI.users.instructors(params),
+  assistants: (params) => adminAPI.users.assistants(params),
+};
 
 const UserManagement = () => {
   const [activeUserType, setActiveUserType] = useState("students");
-  const [users, setUsers] = useState([]);
   const [instructors, setInstructors] = useState([]);
   const [assistants, setAssistants] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  // One page at a time, searched on the server (name, email, username or phone)
+  const q = useDebounced(searchTerm.trim());
+  const list = usePaged(
+    (page, size) => LIST_BY_TYPE[activeUserType]({ q: q || undefined, page, size }),
+    [activeUserType, q],
+    { onError: (e) => toast.error(handleAPIError(e, "فشل في تحميل المستخدمين")) }
+  );
+  const users = list.rows;
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -71,11 +88,10 @@ const UserManagement = () => {
     password: "",
   });
 
+  // Instructors are needed for the "new assistant" form
   useEffect(() => {
-    fetchUsers();
     fetchInstructors();
-    fetchAssistants();
-  }, [activeUserType]);
+  }, []);
 
   const handleToggleUserStatus = async (user) => {
     try {
@@ -90,11 +106,7 @@ const UserManagement = () => {
       toast.success(`تم ${!user.enabled ? 'تفعيل' : 'تعطيل'} المستخدم بنجاح`);
 
       // تحديث قائمة المستخدمين
-      setUsers(prevUsers =>
-        prevUsers.map(u =>
-          u.id === user.id ? { ...u, enabled: !u.enabled } : u
-        )
-      );
+      list.reload();
 
       // تحديث قوائم المدرسين والمساعدين إذا لزم الأمر
       if (user.role === 'INSTRUCTOR') {
@@ -114,29 +126,8 @@ const UserManagement = () => {
       setIsLoading(false);
     }
   };
-  const fetchUsers = async () => {
-    try {
-      setIsLoading(true);
-      if (activeUserType === "students") {
-        const response = await adminAPI.users.getAllStudents();
-        setUsers(response.data || []);
-      } else if (activeUserType === "instructors") {
-        const response = await adminAPI.users.getAllInstructors();
-        // Handle both paginated and non-paginated responses
-        setUsers(response.data?.content || response.data || []);
-      } else if (activeUserType === "assistants") {
-        const response = await adminAPI.users.getAllAssistants();
-        setUsers(response.data?.content || response.data || []);
-      }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      toast.error(handleAPIError(error, "فشل في تحميل المستخدمين"));
-      setUsers([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  console.log(users);
+  const fetchUsers = () => list.reload();
+
   const fetchInstructors = async () => {
     try {
       const response = await adminAPI.users.getAllInstructors();
@@ -161,64 +152,8 @@ const UserManagement = () => {
     }
   };
 
-  const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      // Reset to show all users of the current type
-      if (activeUserType === "students") {
-        fetchUsers(); // This will reload all students
-      } else if (activeUserType === "instructors") {
-        setUsers(instructors); // Use the already loaded instructors
-      } else if (activeUserType === "assistants") {
-        setUsers(assistants); // Use the already loaded assistants
-      }
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const searchLower = searchTerm.trim().toLowerCase();
-
-      // Determine which dataset to search based on user type
-      let dataToSearch = [];
-      if (activeUserType === "students") {
-        dataToSearch = users;
-      } else if (activeUserType === "instructors") {
-        dataToSearch = instructors;
-      } else if (activeUserType === "assistants") {
-        dataToSearch = assistants;
-      }
-
-      // Perform the search
-      const filteredUsers = dataToSearch.filter(
-        (user) =>
-          user.fullname?.toLowerCase().includes(searchLower) ||
-          user.username?.toLowerCase().includes(searchLower) ||
-          user.email?.toLowerCase().includes(searchLower)
-      );
-
-      setUsers(filteredUsers);
-    } catch (error) {
-      console.error("Search error:", error);
-      toast.error("خطأ في البحث");
-      setUsers([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSearchInput = (e) => {
-    const rawValue = e.target.value;
-    try {
-      // Simple sanitization that allows spaces
-      const sanitizedValue = rawValue.replace(
-        /[^a-zA-Z0-9\u0600-\u06FF\s]/g,
-        ""
-      );
-      setSearchTerm(sanitizedValue);
-    } catch (error) {
-      console.error("مصطلح البحث غير صالح");
-    }
-  };
+  // Letters, digits, spaces and the characters of an email or phone number only
+  const handleSearchInput = (value) => setSearchTerm(value.replace(/[^a-zA-Z0-9\u0600-\u06FF\s@._+-]/g, "").slice(0, 100));
 
   const handleCreateInstructor = async (e) => {
     e.preventDefault();
@@ -397,22 +332,9 @@ const UserManagement = () => {
   };
 
   const userTypes = [
-    {
-      id: "students",
-      label: "الطلاب",
-      count: activeUserType === "students" ? users.length : 0,
-    },
-    {
-      id: "instructors",
-      label: "المدرسين",
-      count:
-        activeUserType === "instructors" ? users.length : instructors.length,
-    },
-    {
-      id: "assistants",
-      label: "المساعدين",
-      count: activeUserType === "assistants" ? users.length : assistants.length,
-    },
+    { id: "students", label: "الطلاب" },
+    { id: "instructors", label: "المدرسين" },
+    { id: "assistants", label: "المساعدين" },
   ];
 
   const EGYPTIAN_GOVERNORATES = [
@@ -445,265 +367,99 @@ const UserManagement = () => {
     "جنوب سيناء",
   ];
 
+  const columns = [
+    {
+      key: "user",
+      label: "المستخدم",
+      render: (u) => (
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 shrink-0 rounded-full bg-brand-50 text-brand-700 overflow-hidden flex items-center justify-center">
+            {u.avatarUrl ? (
+              <img src={u.avatarUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <FiUser className="w-4 h-4" />
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="font-medium text-slate-900 truncate max-w-48">{u.fullname || "غير محدد"}</p>
+            <p className="text-[11px] text-slate-400 truncate max-w-48" dir="ltr">@{u.username}</p>
+          </div>
+        </div>
+      ),
+    },
+    { key: "email", label: "البريد", render: (u) => <span dir="ltr">{u.email}</span> },
+    { key: "phoneNumber", label: "الهاتف", render: (u) => <span dir="ltr">{u.phoneNumber || "—"}</span> },
+    { key: "government", label: "المحافظة", render: (u) => u.government || "—" },
+    { key: "createdAt", label: "التسجيل", render: (u) => fmtDate(u.createdAt) },
+    {
+      key: "enabled",
+      label: "الحالة",
+      render: (u) => (u.enabled ? <Badge tone="success">نشط</Badge> : <Badge tone="danger">معطل</Badge>),
+    },
+    {
+      key: "actions",
+      label: "",
+      className: "w-px",
+      render: (u) => (
+        <div className="flex items-center gap-0.5">
+          <IconButton
+            label={u.enabled ? "تعطيل" : "تفعيل"}
+            icon={u.enabled ? FiToggleRight : FiToggleLeft}
+            onClick={() => handleToggleUserStatus(u)}
+          />
+          <IconButton
+            label="عرض"
+            icon={FiEye}
+            onClick={() => {
+              setSelectedUser(u);
+              setShowViewModal(true);
+            }}
+          />
+          <IconButton label="تعديل" icon={FiEdit} onClick={() => handleEditUser(u)} />
+          <IconButton label="حذف" icon={FiTrash2} tone="danger" onClick={() => handleDeleteClick(u.id)} />
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div className="p-4 lg:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-col md:flex-row gap-4 mb-8">
-        <div className="">
-          <h1 className="bold-32 text-gray-900 mb-2">إدارة المستخدمين</h1>
-          <p className="regular-14 md:regular-16 text-gray-600">
-            إدارة المدرسين والمساعدين والطلاب
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
-        >
-          <FiPlus className="w-4 h-4 md:w-5 md:h-5" />
-          إضافة مستخدم
-        </button>
-      </div>
+    <div className="p-4 lg:p-6">
+      <PageHeader
+        title="إدارة المستخدمين"
+        subtitle="الطلاب والمدرسين والمساعدين"
+        actions={
+          <Button onClick={() => setShowCreateModal(true)}>
+            <FiPlus /> إضافة مستخدم
+          </Button>
+        }
+      />
 
-      {/* User Type Tabs */}
-      <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4 mb-6">
-        {userTypes.map((type) => (
-          <button
-            key={type.id}
-            onClick={() => setActiveUserType(type.id)}
-            className={`px-4 py-2 md:px-6 md:py-3 cursor-pointer rounded-lg bold-14 md:bold-16 transition-all duration-300 ${activeUserType === type.id
-              ? "bg-accent text-white shadow-lg"
-              : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-              }`}
-          >
-            {type.label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        tabs={userTypes}
+        value={activeUserType}
+        onChange={(id) => {
+          setActiveUserType(id);
+          setSearchTerm("");
+        }}
+      />
 
-      {/* Search Bar */}
-      <div className="bg-white p-3 md:p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="flex flex-col md:flex-row gap-3 md:gap-4">
-          <div className="flex-1 relative">
-            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5" />
-            <input
-              type="text"
-              placeholder="البحث بالاسم أو البريد الإلكتروني..."
-              value={searchTerm}
-              onChange={handleSearchInput}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="w-full pr-10 pl-3 py-2 md:pr-12 md:pl-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
-            />
-          </div>
-          <button
-            onClick={handleSearch}
-            className="bg-accent text-white cursor-pointer px-4 py-2 md:px-6 md:py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 bold-14 md:bold-16"
-          >
-            بحث
-          </button>
-        </div>
-      </div>
+      <Toolbar>
+        <SearchBox value={searchTerm} onChange={handleSearchInput} placeholder="ابحث بالاسم أو البريد أو الهاتف" />
+      </Toolbar>
 
-      {/* Users List */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        {isLoading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
-            <p className="mt-4 regular-16 text-gray-600">جاري التحميل...</p>
-          </div>
-        ) : users.length === 0 ? (
-          <div className="p-8 text-center">
-            <FiUser className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="regular-16 text-gray-600">لا توجد بيانات للعرض</p>
-          </div>
-        ) : (
-          <>
-            {/* Desktop Table - Simplified */}
-            <div className="block overflow-x-auto" style={{ width: '100%', overflowX: 'auto' }}>
-              <table className="w-full border-collapse" style={{ minWidth: '800px', tableLayout: 'fixed' }}>
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-3 py-3 text-right text-xs font-bold text-gray-900 w-[70px]">المعرف</th>
-                    <th className="px-3 py-3 text-right text-xs font-bold text-gray-900 w-[150px]">المستخدم</th>
-                    <th className="px-3 py-3 text-right text-xs font-bold text-gray-900 w-[180px]">البريد الإلكتروني</th>
-                    <th className="px-3 py-3 text-right text-xs font-bold text-gray-900 w-[100px]">المحافظة</th>
-                    <th className="px-3 py-3 text-center text-xs font-bold text-gray-900 w-[70px]">الحالة</th>
-                    <th className="px-3 py-3 text-center text-xs font-bold text-gray-900 w-[120px]">الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-3 py-3 text-xs text-gray-600 truncate" title={user.id}>
-                        {user.id.substring(0, 6)}...
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-accent rounded-full flexCenter overflow-hidden flex-shrink-0">
-                            {user.avatarUrl ? (
-                              <img src={user.avatarUrl} alt={user.fullname} className="w-full h-full object-cover" />
-                            ) : (
-                              <FiUser className="w-4 h-4 text-white" />
-                            )}
-                          </div>
-                          <div className="truncate">
-                            <div className="text-xs font-medium text-gray-900 truncate">{user.fullname || 'غير محدد'}</div>
-                            <div className="text-xs text-gray-500 truncate">@{user.username}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 text-xs text-gray-600 truncate" title={user.email}>
-                        {user.email}
-                      </td>
-                      <td className="px-3 py-3 text-xs text-gray-600 truncate" title={user.government}>
-                        {user.government || '-'}
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.enabled ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                          {user.enabled ? 'نشط' : 'معطل'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="flex items-center justify-center gap-1">
-                          <button onClick={() => handleToggleUserStatus(user)} className={`p-1 rounded hover:bg-gray-100 ${user.enabled ? 'text-amber-600' : 'text-emerald-600'}`} title={user.enabled ? 'تعطيل' : 'تفعيل'}>
-                            {user.enabled ? <FiToggleRight className="w-4 h-4 rotate-180" /> : <FiToggleLeft className="w-4 h-4" />}
-                          </button>
-                          <button onClick={() => { setSelectedUser(user); setShowViewModal(true); }} className="p-1 text-brand-600 hover:bg-brand-50 rounded" title="عرض">
-                            <FiEye className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleEditUser(user)} className="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="تعديل">
-                            <FiEdit className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleDeleteClick(user.id)} className="p-1 text-red-600 hover:bg-red-50 rounded" title="حذف">
-                            <FiTrash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Cards (visible only on mobile) */}
-            <div className="xl:hidden space-y-3 p-3">
-              {users.map((user) => (
-                <div
-                  key={user.id}
-                  className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
-                >
-                  <div
-                    className="p-4 flex items-center justify-between cursor-pointer"
-                    onClick={() => toggleUserExpand(user.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-accent rounded-full flexCenter">
-                        <FiUser className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="bold-14 text-gray-900">
-                          {user.fullname || user.username}
-                        </div>
-                        <div className="regular-12 text-gray-500">
-                          @{user.username}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-gray-500">
-                      {expandedUser === user.id ? (
-                        <FiChevronUp className="w-5 h-5" />
-                      ) : (
-                        <FiChevronDown className="w-5 h-5" />
-                      )}
-                    </div>
-                  </div>
-
-                  {expandedUser === user.id && (
-                    <div className="px-4 pb-4 space-y-3 border-t border-gray-100">
-                      <div className="flex items-center gap-3 pt-3">
-                        <FiHash className="w-4 h-4 text-gray-400" />
-                        <span className="regular-14 text-gray-600">
-                          ID: {user.id}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <FiMail className="w-4 h-4 text-gray-400" />
-                        <span className="regular-14 text-gray-600">
-                          {user.email}
-                        </span>
-                      </div>
-                      {user.phoneNumber && (
-                        <div className="flex items-center gap-3">
-                          <FiPhone className="w-4 h-4 text-gray-400" />
-                          <span className="regular-14 text-gray-600">
-                            {user.phoneNumber}
-                          </span>
-                        </div>
-                      )}
-                      {user.government && (
-                        <div className="flex items-center gap-3">
-                          <FiMapPin className="w-4 h-4 text-gray-400" />
-                          <span className="regular-14 text-gray-600">
-                            {user.government}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex items-center justify-end gap-2 pt-2">
-                        {/* زر تبديل الحالة */}
-                        <button
-                          onClick={() => handleToggleUserStatus(user)}
-                          className={`p-2 rounded-sm transition-colors ${user.enabled
-                            ? 'text-amber-600 border bg-amber-600/20 border-amber-600'
-                            : 'text-emerald-600 border bg-emerald-600/20 border-emerald-600'
-                            }`}
-                          title={user.enabled ? 'تعطيل المستخدم' : 'تفعيل المستخدم'}
-                        >
-                          {user.enabled ? (
-                            <FiToggleRight className="w-4 h-4 rotate-180" />
-                          ) : (
-                            <FiToggleLeft className="w-4 h-4" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setShowViewModal(true);
-                          }}
-                          className="p-2 text-brand-600 border bg-brand-600/20 border-brand-600 cursor-pointer hover:bg-brand-50 rounded-sm transition-colors"
-                          title="عرض التفاصيل"
-                        >
-                          <FiEye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleEditUser(user)}
-                          className="p-2 text-emerald-600 border bg-emerald-600/20 border-emerald-600 hover:bg-emerald-50 cursor-pointer rounded-sm transition-colors"
-                          title="تعديل البيانات"
-                        >
-                          <FiEdit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(user.id)}
-                          className="p-2 text-red-600 border bg-red-600/20 border-red-600 hover:bg-red-50 rounded-sm cursor-pointer transition-colors"
-                          title="حذف المستخدم"
-                        >
-                          <FiTrash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+      <PagedTable
+        list={list}
+        columns={columns}
+        empty={searchTerm ? "لا توجد نتائج مطابقة" : "لا يوجد مستخدمون بعد"}
+        emptyHint={searchTerm ? "جرّب كلمة بحث أخرى" : undefined}
+      />
 
       {/* Create User Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
           <div className="bg-white rounded-xl p-4 md:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="bold-20 md:bold-24 text-gray-900">
+              <h2 className="bold-20 md:text-base font-semibold text-slate-900">
                 إضافة مستخدم جديد
               </h2>
               <button
@@ -716,25 +472,25 @@ const UserManagement = () => {
 
             {/* User Type Selection */}
             <div className="mb-4 md:mb-6">
-              <label className="block bold-14 text-gray-900 mb-2 md:mb-3">
+              <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-3">
                 نوع المستخدم
               </label>
               <div className="flex gap-2 md:gap-4">
                 <button
                   onClick={() => setCreateUserType("instructor")}
                   className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer bold-14 transition-all ${createUserType === "instructor"
-                    ? "bg-accent text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+ ? "bg-accent text-white"
+ : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+ }`}
                 >
                   مدرس
                 </button>
                 <button
                   onClick={() => setCreateUserType("assistant")}
                   className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer bold-14 transition-all ${createUserType === "assistant"
-                    ? "bg-accent text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+ ? "bg-accent text-white"
+ : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+ }`}
                 >
                   مساعد
                 </button>
@@ -749,7 +505,7 @@ const UserManagement = () => {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       البريد الإلكتروني *
                     </label>
                     <input
@@ -762,11 +518,11 @@ const UserManagement = () => {
                           email: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       كلمة المرور *
                     </label>
                     <div className="relative">
@@ -781,14 +537,14 @@ const UserManagement = () => {
                             password: e.target.value,
                           })
                         }
-                        className="w-full px-3 py-2 md:px-4 md:py-3 pl-9 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                        className="w-full px-3 py-2 md:px-4 md:py-3 pl-9 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={() =>
                           setShowInstructorPassword(!showInstructorPassword)
                         }
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                       >
                         {showInstructorPassword ? (
                           <FiEyeOff className="w-4 h-4 md:w-5 md:h-5" />
@@ -799,7 +555,7 @@ const UserManagement = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       اسم المستخدم *
                     </label>
                     <input
@@ -812,11 +568,11 @@ const UserManagement = () => {
                           username: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       الاسم الكامل *
                     </label>
                     <input
@@ -829,11 +585,11 @@ const UserManagement = () => {
                           fullname: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       رقم الهاتف *
                     </label>
                     <input
@@ -847,11 +603,11 @@ const UserManagement = () => {
                           phoneNumber: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       الرقم القومي *
                     </label>
                     <input
@@ -865,11 +621,11 @@ const UserManagement = () => {
                           nationalId: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       المحافظة *
                     </label>
                     <select
@@ -881,7 +637,7 @@ const UserManagement = () => {
                           government: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     >
                       <option value="">اختر المحافظة</option>
                       {EGYPTIAN_GOVERNORATES.map((governorate) => (
@@ -892,7 +648,7 @@ const UserManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       رابط الصورة
                     </label>
                     <input
@@ -904,12 +660,12 @@ const UserManagement = () => {
                           photoUrl: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                  <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                     النبذة التعريفية *
                   </label>
                   <textarea
@@ -922,21 +678,21 @@ const UserManagement = () => {
                         bio: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                   />
                 </div>
                 <div className="flex gap-3 md:gap-4 pt-3 md:pt-4">
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 bg-accent cursor-pointer text-white py-2 md:py-3 rounded-lg bold-14 md:bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                    className="flex-1 bg-brand-600 cursor-pointer text-white py-2 md:py-2 rounded-lg bold-14 md:text-sm font-semibold hover:bg-brand-700 transition-all duration-150 disabled:opacity-50"
                   >
                     {isLoading ? "جاري الإنشاء..." : "إنشاء المدرس"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="flex-1 bg-gray-200 cursor-pointer text-gray-700 py-2 md:py-3 rounded-lg bold-14 md:bold-16 hover:bg-gray-300 transition-all duration-300"
+                    className="flex-1 bg-gray-200 cursor-pointer text-gray-700 py-2 md:py-2 rounded-lg bold-14 md:text-sm font-semibold hover:bg-slate-50 transition-all duration-150"
                   >
                     إلغاء
                   </button>
@@ -952,7 +708,7 @@ const UserManagement = () => {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       البريد الإلكتروني *
                     </label>
                     <input
@@ -965,11 +721,11 @@ const UserManagement = () => {
                           email: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       كلمة المرور *
                     </label>
                     <div className="relative">
@@ -984,14 +740,14 @@ const UserManagement = () => {
                             password: e.target.value,
                           })
                         }
-                        className="w-full px-3 py-2 md:px-4 md:py-3 pl-9 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                        className="w-full px-3 py-2 md:px-4 md:py-3 pl-9 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={() =>
                           setShowAssistantPassword(!showAssistantPassword)
                         }
-                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                       >
                         {showAssistantPassword ? (
                           <FiEyeOff className="w-4 h-4 md:w-5 md:h-5" />
@@ -1002,7 +758,7 @@ const UserManagement = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       اسم المستخدم *
                     </label>
                     <input
@@ -1015,11 +771,11 @@ const UserManagement = () => {
                           username: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       الاسم الكامل *
                     </label>
                     <input
@@ -1032,11 +788,11 @@ const UserManagement = () => {
                           fullname: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       رقم الهاتف *
                     </label>
                     <input
@@ -1050,11 +806,11 @@ const UserManagement = () => {
                           phoneNumber: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       الرقم القومي *
                     </label>
                     <input
@@ -1068,11 +824,11 @@ const UserManagement = () => {
                           nationalId: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       المحافظة *
                     </label>
                     <select
@@ -1084,7 +840,7 @@ const UserManagement = () => {
                           government: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     >
                       <option value="">اختر المحافظة</option>
                       {EGYPTIAN_GOVERNORATES.map((governorate) => (
@@ -1095,7 +851,7 @@ const UserManagement = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       المدرس المسؤول *
                     </label>
                     <select
@@ -1107,7 +863,7 @@ const UserManagement = () => {
                           instructorId: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     >
                       <option value="">اختر المدرس</option>
                       {instructors.map((instructor) => (
@@ -1122,14 +878,14 @@ const UserManagement = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 bg-accent cursor-pointer text-white py-2 md:py-3 rounded-lg bold-14 md:bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                    className="flex-1 bg-brand-600 cursor-pointer text-white py-2 md:py-2 rounded-lg bold-14 md:text-sm font-semibold hover:bg-brand-700 transition-all duration-150 disabled:opacity-50"
                   >
                     {isLoading ? "جاري الإنشاء..." : "إنشاء المساعد"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="flex-1 bg-gray-200 cursor-pointer text-gray-700 py-2 md:py-3 rounded-lg bold-14 md:bold-16 hover:bg-gray-300 transition-all duration-300"
+                    className="flex-1 bg-gray-200 cursor-pointer text-gray-700 py-2 md:py-2 rounded-lg bold-14 md:text-sm font-semibold hover:bg-slate-50 transition-all duration-150"
                   >
                     إلغاء
                   </button>
@@ -1142,10 +898,10 @@ const UserManagement = () => {
 
       {/* View User Modal */}
       {showViewModal && selectedUser && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
           <div className="bg-white rounded-xl p-4 md:p-6 w-full max-w-lg">
             <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="bold-20 md:bold-24 text-gray-900">
+              <h2 className="bold-20 md:text-base font-semibold text-slate-900">
                 تفاصيل المستخدم
               </h2>
               <button
@@ -1246,10 +1002,10 @@ const UserManagement = () => {
 
       {/* View Edit Modal */}
       {showEditModal && selectedUser && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
           <div className="bg-white rounded-xl p-4 md:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="bold-20 md:bold-24 text-gray-900">
+              <h2 className="bold-20 md:text-base font-semibold text-slate-900">
                 تعديل بيانات المستخدم
               </h2>
               <button
@@ -1269,7 +1025,7 @@ const UserManagement = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 {/* الحقول الأساسية لجميع المستخدمين */}
                 <div>
-                  <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                  <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                     اسم المستخدم *
                   </label>
                   <input
@@ -1279,12 +1035,12 @@ const UserManagement = () => {
                     onChange={(e) =>
                       setEditForm({ ...editForm, username: e.target.value })
                     }
-                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                  <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                     الاسم الكامل *
                   </label>
                   <input
@@ -1294,12 +1050,12 @@ const UserManagement = () => {
                     onChange={(e) =>
                       setEditForm({ ...editForm, fullname: e.target.value })
                     }
-                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                  <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                     رقم الهاتف *
                   </label>
                   <input
@@ -1309,12 +1065,12 @@ const UserManagement = () => {
                     onChange={(e) =>
                       setEditForm({ ...editForm, phoneNumber: e.target.value })
                     }
-                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                  <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                     الرقم القومي *
                   </label>
                   <input
@@ -1325,12 +1081,12 @@ const UserManagement = () => {
                     onChange={(e) =>
                       setEditForm({ ...editForm, nationalId: e.target.value })
                     }
-                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                  <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                     المحافظة *
                   </label>
                   <select
@@ -1339,7 +1095,7 @@ const UserManagement = () => {
                     onChange={(e) =>
                       setEditForm({ ...editForm, government: e.target.value })
                     }
-                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                   >
                     <option value="">اختر المحافظة</option>
                     {EGYPTIAN_GOVERNORATES.map((gov) => (
@@ -1351,7 +1107,7 @@ const UserManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                  <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                     كلمة المرور الجديدة (اختياري)
                   </label>
                   <input
@@ -1360,7 +1116,7 @@ const UserManagement = () => {
                     onChange={(e) =>
                       setEditForm({ ...editForm, password: e.target.value })
                     }
-                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                    className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                   />
                 </div>
 
@@ -1368,7 +1124,7 @@ const UserManagement = () => {
                 {createUserType === "instructor" && (
                   <>
                     <div className="md:col-span-2">
-                      <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                      <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                         النبذة التعريفية
                       </label>
                       <textarea
@@ -1377,12 +1133,12 @@ const UserManagement = () => {
                         onChange={(e) =>
                           setEditForm({ ...editForm, bio: e.target.value })
                         }
-                        className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                        className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                       />
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                      <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                         رابط الصورة
                       </label>
                       <input
@@ -1391,7 +1147,7 @@ const UserManagement = () => {
                         onChange={(e) =>
                           setEditForm({ ...editForm, photoUrl: e.target.value })
                         }
-                        className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                        className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                       />
                     </div>
                   </>
@@ -1400,7 +1156,7 @@ const UserManagement = () => {
                 {/* حقول إضافية للمساعدين */}
                 {createUserType === "assistant" && (
                   <div className="md:col-span-2">
-                    <label className="block bold-14 text-gray-900 mb-1 md:mb-2">
+                    <label className="block text-xs font-medium text-slate-600 mb-1 md:mb-1">
                       المدرس المسؤول *
                     </label>
                     <select
@@ -1412,7 +1168,7 @@ const UserManagement = () => {
                           instructorId: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm md:text-base"
+                      className="w-full px-3 py-2 md:px-4 md:py-3 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm md:text-base focus:outline-none"
                     >
                       <option value="">اختر المدرس</option>
                       {instructors.map((instructor) => (
@@ -1429,14 +1185,14 @@ const UserManagement = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-accent cursor-pointer text-white py-2 md:py-3 rounded-lg bold-14 md:bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                  className="flex-1 bg-brand-600 cursor-pointer text-white py-2 md:py-2 rounded-lg bold-14 md:text-sm font-semibold hover:bg-brand-700 transition-all duration-150 disabled:opacity-50"
                 >
                   {isLoading ? "جاري التحديث..." : "حفظ التعديلات"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1 bg-gray-200 cursor-pointer text-gray-700 py-2 md:py-3 rounded-lg bold-14 md:bold-16 hover:bg-gray-300 transition-all duration-300"
+                  className="flex-1 bg-gray-200 cursor-pointer text-gray-700 py-2 md:py-2 rounded-lg bold-14 md:text-sm font-semibold hover:bg-slate-50 transition-all duration-150"
                 >
                   إلغاء
                 </button>
@@ -1448,10 +1204,10 @@ const UserManagement = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
           <div className="bg-white rounded-xl p-4 md:p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="bold-20 md:bold-24 text-gray-900">تأكيد الحذف</h2>
+              <h2 className="bold-20 md:text-base font-semibold text-slate-900">تأكيد الحذف</h2>
               <button
                 onClick={() => {
                   setShowDeleteModal(false);
@@ -1483,14 +1239,14 @@ const UserManagement = () => {
                   setShowDeleteModal(false);
                   setUserToDelete(null);
                 }}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 md:py-3 rounded-lg bold-14 md:bold-16 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
+                className="flex-1 bg-white border border-slate-200 text-slate-700 py-2 md:py-2 rounded-lg bold-14 md:text-sm font-semibold hover:bg-slate-50 transition-all duration-150 cursor-pointer"
               >
                 إلغاء
               </button>
               <button
                 onClick={confirmDelete}
                 disabled={isLoading}
-                className="flex-1 bg-red-600 text-white py-2 md:py-3 rounded-lg bold-14 md:bold-16 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 flexCenter gap-2 cursor-pointer disabled:cursor-not-allowed"
+                className="flex-1 bg-red-600 text-white py-2 md:py-2 rounded-lg bold-14 md:text-sm font-semibold hover:bg-red-700 transition-all duration-150 disabled:opacity-50 flexCenter gap-2 cursor-pointer disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>

@@ -123,7 +123,7 @@ const BunnyVideoPlayer = ({
   // Loading state
   if (loading) {
     return (
-      <div className={`relative w-full aspect-video bg-gray-900 ${className}`}>
+      <div className={`relative w-full aspect-video bg-gray-900   ${className}`}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-white text-center">
             <FiLoader className="w-8 h-8 animate-spin mx-auto mb-2" />
@@ -137,7 +137,7 @@ const BunnyVideoPlayer = ({
   // Error state
   if (error || !embedUrl) {
     return (
-      <div className={`relative w-full aspect-video bg-gray-900 ${className}`}>
+      <div className={`relative w-full aspect-video bg-gray-900   ${className}`}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-white text-center">
             <p className="text-red-400 mb-2">Failed to load video</p>
@@ -153,7 +153,7 @@ const BunnyVideoPlayer = ({
   return (
     <div
       ref={playerContainerRef}
-      className={`relative w-full min-h-[400px] aspect-video md:pb-0 h-0 md:h-auto overflow-hidden ${className}`}
+      className={`relative w-full min-h-[400px] aspect-video md:pb-0 h-0 md:h-auto overflow-hidden   ${className}`}
     >
       <iframe
         src={embedUrl}

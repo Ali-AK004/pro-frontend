@@ -54,7 +54,7 @@ const InstructorSearchInput = ({ onSearch, loading = false, error = null }) => {
         </label>
         
         <div className="relative">
-          <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <FaSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             id="instructorSearch"
             type="text"
@@ -63,9 +63,9 @@ const InstructorSearchInput = ({ onSearch, loading = false, error = null }) => {
             value={searchTerm}
             onChange={handleChange}
             maxLength={20}
-            className={`w-full pr-12 pl-4 py-4 border-2 rounded-lg focus:border-brand-500 focus:outline-none transition-colors text-right ${
-              inputError || error ? 'border-red-500' : 'border-gray-300'
-            }`}
+            className={`w-full pr-12 pl-4 py-4 border-2 rounded-lg focus:border-brand-500 focus:outline-none transition-colors text-right text-sm ${
+ inputError || error ? 'border-red-500' : 'border-gray-300'
+ }`}
             autoComplete="off"
             spellCheck="false"
             aria-label="بحث عن مدرس"
@@ -81,9 +81,9 @@ const InstructorSearchInput = ({ onSearch, loading = false, error = null }) => {
         <button
           type="submit"
           disabled={loading || !searchTerm.trim()}
-          className={`mt-4 w-full bg-gradient-to-r from-brand-600 to-brand-600 text-white py-4 rounded-lg font-bold hover:opacity-90 disabled:opacity-50 transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg ${
-            loading ? 'cursor-wait' : 'cursor-pointer'
-          }`}
+          className={`mt-4 w-full bg-brand-600 text-white py-2.5 rounded-lg font-bold hover:opacity-90 disabled:opacity-50 transition-all duration-150 flex items-center justify-center gap-2 ${
+ loading ? 'cursor-wait' : 'cursor-pointer'
+ }`}
           aria-label="تنفيذ البحث عن المدرس"
         >
           {loading ? (

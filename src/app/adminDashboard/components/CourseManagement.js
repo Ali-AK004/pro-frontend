@@ -16,20 +16,31 @@ import {
   validateSearchTerm,
 } from "../../utils/security";
 import Image from "next/image";
+import {
+  PageHeader, Button, IconButton, Badge, Toolbar, SearchBox, Select, PagedGrid, MediaCard,
+  Dialog, ConfirmDialog, Field, inputClass, textareaClass,
+  usePaged, useDebounced, fmtNumber, fmtDate,
+} from "../../components/ui";
 
 const CourseManagement = () => {
-  const [courses, setCourses] = useState([]);
   const [instructors, setInstructors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCourseFilter, setSelectedCourseFilter] = useState("");
+  // Every course shows straight away (one page at a time); teacher and search narrow it on the server
+  const [instructorFilter, setInstructorFilter] = useState("");
+  const q = useDebounced(searchTerm.trim());
+  const list = usePaged(
+    (page, size) =>
+      adminAPI.courses.list({ instructorId: instructorFilter || undefined, q: q || undefined, page, size }),
+    [instructorFilter, q],
+    { size: 24, onError: (e) => toast.error(handleAPIError(e, "فشل في تحميل الكورسات")) }
+  );
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [courseToDelete, setCourseToDelete] = useState(null);
-  const [allCourses, setAllCourses] = useState([]); // Store original courses data
 
   // Form states
   const [courseForm, setCourseForm] = useState({
@@ -46,60 +57,10 @@ const CourseManagement = () => {
   });
 
   useEffect(() => {
-    fetchCourses();
     fetchInstructors();
   }, []);
 
-  const performSearch = (searchValue, filterValue) => {
-    try {
-      const sanitizedTerm = validateSearchTerm(searchValue);
-      let filteredCourses = [...allCourses];
-
-      // Filter by search term if it exists
-      if (sanitizedTerm.trim()) {
-        filteredCourses = filteredCourses.filter(
-          (course) =>
-            course.name.toLowerCase().includes(sanitizedTerm.toLowerCase()) ||
-            course.description
-              ?.toLowerCase()
-              .includes(sanitizedTerm.toLowerCase())
-        );
-      }
-
-      // Filter by selected course from dropdown if it exists
-      if (filterValue) {
-        filteredCourses = filteredCourses.filter(
-          (course) => course.id === filterValue
-        );
-      }
-
-      setCourses(filteredCourses);
-    } catch (error) {
-      toast.error("خطأ في البحث");
-      setCourses(allCourses); // Fallback to showing all courses
-    }
-  };
-
-  const handleSecureSearch = () => {
-    performSearch(searchTerm, selectedCourseFilter);
-  };
-
-  const fetchCourses = async () => {
-    try {
-      setIsLoading(true);
-      const response = await adminAPI.courses.getAll();
-      // Handle paginated response
-      const coursesData = response.data?.content || response.data || [];
-      setCourses(coursesData);
-      setAllCourses(coursesData); // Store original data for filtering
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
-      setCourses([]);
-      setAllCourses([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const fetchCourses = () => list.reload();
 
   const fetchInstructors = async () => {
     try {
@@ -170,18 +131,12 @@ const CourseManagement = () => {
     setShowDeleteModal(true);
   };
 
-  const handleSearchInput = (e) => {
+  const handleSearchInput = (value) => {
     try {
-      const sanitizedValue = sanitizeInput(e.target.value);
-      setSearchTerm(sanitizedValue);
+      setSearchTerm(sanitizeInput(value).slice(0, 100));
     } catch (error) {
       toast.error("مصطلح البحث غير صالح");
     }
-  };
-
-  const handleCourseFilterChange = (e) => {
-    setSelectedCourseFilter(e.target.value);
-    performSearch(searchTerm, e.target.value);
   };
 
   const openEditModal = (course) => {
@@ -195,496 +150,261 @@ const CourseManagement = () => {
   };
 
   return (
-    <div className="p-4 lg:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-col md:flex-row mb-8">
-        <div>
-          <h1 className="bold-32 text-gray-900 mb-2">إدارة الكورسات</h1>
-          <p className="regular-16 text-gray-600">
-            إنشاء وتعديل وإدارة الكورسات التعليمية
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
-        >
-          <FiPlus className="w-5 h-5" />
-          إنشاء كورس جديد
-        </button>
-      </div>
+    <div className="p-4 lg:p-6">
+      <PageHeader
+        title="إدارة الكورسات"
+        subtitle="كل الكورسات على المنصة، ابحث أو اختر مدرساً للتضييق"
+        actions={
+          <Button onClick={() => setShowCreateModal(true)}>
+            <FiPlus /> كورس جديد
+          </Button>
+        }
+      />
 
-      {/* Search Bar */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-4">
-          <div className="md:col-span-2 flex relative">
-            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+      <Toolbar
+        actions={
+          searchTerm || instructorFilter ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchTerm("");
+                setInstructorFilter("");
+              }}
+            >
+              <FiX /> مسح الفلاتر
+            </Button>
+          ) : null
+        }
+      >
+        <SearchBox value={searchTerm} onChange={handleSearchInput} placeholder="ابحث باسم الكورس أو المدرس" />
+        <Select
+          value={instructorFilter}
+          onChange={setInstructorFilter}
+          allLabel="كل المدرسين"
+          options={instructors.map((i) => ({ value: i.id, label: i.fullname || i.username }))}
+        />
+      </Toolbar>
+
+      <PagedGrid
+        list={list}
+        empty={searchTerm || instructorFilter ? "لا توجد كورسات مطابقة" : "لا توجد كورسات بعد"}
+        emptyHint={searchTerm || instructorFilter ? "جرّب تغيير الفلاتر" : "ابدأ بإنشاء أول كورس"}
+        renderItem={(course) => (
+          <MediaCard
+            key={course.id}
+            image={course.photoUrl}
+            fallbackIcon={FiBook}
+            title={course.name}
+            subtitle={course.description || "لا يوجد وصف"}
+            onClick={() => {
+              setSelectedCourse(course);
+              setShowViewModal(true);
+            }}
+            meta={
+              <>
+                <span className="inline-flex items-center gap-1"><FiUser className="w-3 h-3" />{course.instructorName || "غير محدد"}</span>
+                <Badge tone="brand">{fmtNumber(course.lessonCount)} درس</Badge>
+              </>
+            }
+            actions={
+              <>
+                <IconButton
+                  label="عرض"
+                  icon={FiEye}
+                  onClick={() => {
+                    setSelectedCourse(course);
+                    setShowViewModal(true);
+                  }}
+                />
+                <IconButton label="تعديل" icon={FiEdit} onClick={() => openEditModal(course)} />
+                <IconButton label="حذف" icon={FiTrash2} tone="danger" onClick={() => openDeleteModal(course)} />
+              </>
+            }
+          />
+        )}
+      />
+
+      {/* Create course */}
+      <Dialog
+        open={showCreateModal}
+        closeOnBackdrop={false}
+        title="كورس جديد"
+        onClose={() => setShowCreateModal(false)}
+        footer={
+          <>
+            <Button type="submit" form="create-course" loading={isLoading}>إنشاء الكورس</Button>
+            <Button variant="secondary" onClick={() => setShowCreateModal(false)}>إلغاء</Button>
+          </>
+        }
+      >
+        <form id="create-course" onSubmit={handleCreateCourse} className="space-y-3">
+          <Field label="اسم الكورس">
             <input
               type="text"
-              placeholder="البحث في الكورسات..."
-              value={searchTerm}
-              onChange={handleSearchInput}
-              onKeyDown={(e) => e.key === "Enter" && handleSecureSearch()}
-              className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+              required
+              value={courseForm.name}
+              onChange={(e) => setCourseForm({ ...courseForm, name: e.target.value })}
+              className={inputClass}
+              placeholder="مثال: الفيزياء - الصف الثالث الثانوي"
             />
-          </div>
-          <select
-            value={selectedCourseFilter}
-            onChange={handleCourseFilterChange}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-          >
-            <option value="">جميع الكورسات</option>
-            {instructors.map((instructor) => {
-              // Filter courses that belong to this instructor
-              const instructorCourses = allCourses.filter(
-                (course) =>
-                  course.instructorName === instructor.fullname ||
-                  course.instructorName === instructor.username
-              );
+          </Field>
+          <Field label="المدرس">
+            <select
+              required
+              value={courseForm.instructorId}
+              onChange={(e) => setCourseForm({ ...courseForm, instructorId: e.target.value })}
+              className={inputClass}
+            >
+              <option value="">اختر المدرس</option>
+              {instructors.map((instructor) => (
+                <option key={instructor.id} value={instructor.id}>{instructor.fullname || instructor.username}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="الوصف" hint="اختياري">
+            <textarea
+              rows={3}
+              value={courseForm.description}
+              onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
+              className={textareaClass}
+              placeholder="نبذة قصيرة عن محتوى الكورس"
+            />
+          </Field>
+          <Field label="رابط صورة الكورس" hint={"اختياري"}>
+            <input
+              type="url"
+              dir="ltr"
+              
+              value={courseForm.photoUrl}
+              onChange={(e) => setCourseForm({ ...courseForm, photoUrl: e.target.value })}
+              className={inputClass}
+              placeholder="https://..."
+            />
+          </Field>
+          {courseForm.photoUrl ? (
+            <div className="relative aspect-[16/9] w-40 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+              <img src={courseForm.photoUrl} alt="" className="absolute inset-0 w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = "none")} />
+            </div>
+          ) : null}
+        </form>
+      </Dialog>
 
-              // Only render optgroup if instructor has courses
-              if (instructorCourses.length === 0) return null;
+      {/* Edit course */}
+      <Dialog
+        open={showEditModal && !!selectedCourse}
+        closeOnBackdrop={false}
+        title="تعديل الكورس"
+        onClose={() => setShowEditModal(false)}
+        footer={
+          <>
+            <Button type="submit" form="edit-course" loading={isLoading}>حفظ التغييرات</Button>
+            <Button variant="secondary" onClick={() => setShowEditModal(false)}>إلغاء</Button>
+          </>
+        }
+      >
+        <form id="edit-course" onSubmit={handleUpdateCourse} className="space-y-3">
+          <Field label="اسم الكورس">
+            <input
+              type="text"
+              required
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="الوصف">
+            <textarea
+              rows={3}
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              className={textareaClass}
+            />
+          </Field>
+          <Field label="رابط صورة الكورس" hint={"اختياري"}>
+            <input
+              type="url"
+              dir="ltr"
+              
+              value={editForm.photoUrl}
+              onChange={(e) => setEditForm({ ...editForm, photoUrl: e.target.value })}
+              className={inputClass}
+            />
+          </Field>
+          {editForm.photoUrl ? (
+            <div className="relative aspect-[16/9] w-40 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+              <img src={editForm.photoUrl} alt="" className="absolute inset-0 w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = "none")} />
+            </div>
+          ) : null}
+        </form>
+      </Dialog>
 
-              return (
-                <optgroup
-                  key={instructor.id}
-                  label={`المدرس: ${instructor.fullname || instructor.username}`}
-                >
-                  {instructorCourses.map((course) => (
-                    <option key={course.id} value={course.id}>
-                      {course.name}
-                    </option>
-                  ))}
-                </optgroup>
-              );
-            })}
-            {/* Courses without assigned instructor */}
-            {allCourses.filter((course) => !course.instructorName).length >
-              0 && (
-              <optgroup label="كورسات غير مخصصة">
-                {allCourses
-                  .filter((course) => !course.instructorName)
-                  .map((course) => (
-                    <option key={course.id} value={course.id}>
-                      {course.name}
-                    </option>
-                  ))}
-              </optgroup>
+      {/* Course details */}
+      <Dialog
+        open={showViewModal && !!selectedCourse}
+        wide
+        title="تفاصيل الكورس"
+        onClose={() => setShowViewModal(false)}
+        footer={
+          <>
+            {(
+              <Button
+                onClick={() => {
+                  const course = selectedCourse;
+                  setShowViewModal(false);
+                  openEditModal(course);
+                }}
+              >
+                <FiEdit /> تعديل
+              </Button>
             )}
-          </select>
-          <button
-            onClick={handleSecureSearch}
-            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
-          >
-            بحث
-          </button>
-        </div>
-      </div>
-
-      {/* Courses Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {isLoading ? (
-          // Loading skeleton
-          Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
-            >
-              <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
-              <div className="bg-gray-200 h-6 rounded mb-2"></div>
-              <div className="bg-gray-200 h-4 rounded mb-4"></div>
-              <div className="flex gap-2">
-                <div className="bg-gray-200 h-8 rounded flex-1"></div>
-                <div className="bg-gray-200 h-8 rounded flex-1"></div>
-              </div>
+            <Button variant="secondary" onClick={() => setShowViewModal(false)}>إغلاق</Button>
+          </>
+        }
+      >
+        {selectedCourse && (
+          <div className="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-4">
+            <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-slate-100">
+              {selectedCourse.photoUrl ? (
+                <img src={selectedCourse.photoUrl} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+              ) : (
+                <FiBook className="absolute inset-0 m-auto w-8 h-8 text-slate-300" />
+              )}
             </div>
-          ))
-        ) : courses.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <FiBook className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="regular-16 text-gray-600">لا توجد كورسات للعرض</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="mt-4 bg-accent text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
-            >
-              إنشاء أول كورس
-            </button>
+            <div className="space-y-3 min-w-0">
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">{selectedCourse.name}</h3>
+                <p className="mt-1 text-xs text-slate-500 leading-relaxed whitespace-pre-line">
+                  {selectedCourse.description || "لا يوجد وصف"}
+                </p>
+              </div>
+              <dl className="grid grid-cols-3 gap-2 text-xs">
+                {[
+                  ["المدرس", selectedCourse.instructorName || "—"],
+                  ["الدروس", fmtNumber(selectedCourse.lessonCount)],
+                  ["الإنشاء", fmtDate(selectedCourse.createdAt)],
+                ].map(([k, v]) => (
+                  <div key={k} className="rounded-lg border border-slate-200 px-3 py-2">
+                    <dt className="text-slate-400">{k}</dt>
+                    <dd className="mt-0.5 font-medium text-slate-800 truncate">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
-        ) : (
-          courses.map((course) => (
-            <div
-              key={course.id}
-              className="bg-white rounded-lg flex flex-col shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
-            >
-              {/* Course Image */}
-              <div className="h-48 w-full bg-gradient-to-br from-accent to-secondary relative">
-                {course.photoUrl ? (
-                  <Image
-                    src={course.photoUrl}
-                    alt={course.name}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flexCenter">
-                    <FiBook className="w-16 h-16 text-white opacity-50" />
-                  </div>
-                )}
-              </div>
-
-              {/* Course Content */}
-              <div className="p-5 flex-1 flex flex-col">
-                <div className="flexBetween flex-col md:flex-row flex-1">
-                  <div className="flex flex-col">
-                    <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">
-                      {course.name}
-                    </h3>
-                    <p className="regular-14 text-gray-600 max-w-[250px] mb-4 line-clamp-3">
-                      {course.description || "لا يوجد وصف متاح"}
-                    </p>
-                  </div>
-                  {/* Course Stats */}
-                  <div className="text-sm min-w-[80px] flex items-center gap-3 md:flex-col text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <FiUser className="w-4 h-4" />
-                      <span>{course.instructorName || "غير محدد"}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FiBook className="w-4 h-4" />
-                      <span>{course.lessonCount || 0} درس</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions - Moved to bottom */}
-              <div className="p-4 pt-0 border-t border-gray-100">
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedCourse(course);
-                      setShowViewModal(true);
-                    }}
-                    className="cursor-pointer flex-1 bg-brand-50 text-brand-600 border border-brand-300 py-2 px-4 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-2"
-                  >
-                    <FiEye className="w-4 h-4" />
-                    عرض
-                  </button>
-                  <button
-                    onClick={() => openEditModal(course)}
-                    className="cursor-pointer flex-1 bg-emerald-50 text-emerald-600 border border-emerald-300 py-2 px-4 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-2"
-                  >
-                    <FiEdit className="w-4 h-4" />
-                    تعديل
-                  </button>
-                  <button
-                    onClick={() => openDeleteModal(course)}
-                    className="cursor-pointer flex-1 bg-red-50 text-red-400 py-2 border border-red-300 px-4 rounded-lg hover:bg-red-100 transition-colors flexCenter gap-2"
-                  >
-                    <FiTrash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
         )}
-      </div>
+      </Dialog>
 
-      {/* Create Course Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-24 text-gray-900">إنشاء كورس جديد</h2>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
-              >
-                <FiX className="w-6 h-6 text-gray-500" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateCourse} className="space-y-6">
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  اسم الكورس *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={courseForm.name}
-                  onChange={(e) =>
-                    setCourseForm({ ...courseForm, name: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  placeholder="أدخل اسم الكورس"
-                />
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  وصف الكورس
-                </label>
-                <textarea
-                  rows={4}
-                  value={courseForm.description}
-                  onChange={(e) =>
-                    setCourseForm({
-                      ...courseForm,
-                      description: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  placeholder="أدخل وصف الكورس"
-                />
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  رابط صورة الكورس
-                </label>
-                <input
-                  type="url"
-                  value={courseForm.photoUrl}
-                  onChange={(e) =>
-                    setCourseForm({ ...courseForm, photoUrl: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  المدرس المسؤول *
-                </label>
-                <select
-                  required
-                  value={courseForm.instructorId}
-                  onChange={(e) =>
-                    setCourseForm({
-                      ...courseForm,
-                      instructorId: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                >
-                  <option value="">اختر المدرس</option>
-                  {instructors.map((instructor) => (
-                    <option key={instructor.id} value={instructor.id}>
-                      {instructor.fullname || instructor.username}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                >
-                  {isLoading ? "جاري الإنشاء..." : "إنشاء الكورس"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Course Modal */}
-      {showEditModal && selectedCourse && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-24 text-gray-900">تعديل الكورس</h2>
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
-              >
-                <FiX className="w-6 h-6 text-gray-500" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdateCourse} className="space-y-6">
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  اسم الكورس *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editForm.name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, name: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  وصف الكورس
-                </label>
-                <textarea
-                  rows={4}
-                  value={editForm.description}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, description: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  رابط صورة الكورس
-                </label>
-                <input
-                  type="url"
-                  value={editForm.photoUrl}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, photoUrl: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                />
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
-                >
-                  {isLoading ? "جاري التحديث..." : "تحديث الكورس"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* View Course Modal */}
-      {showViewModal && selectedCourse && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-24 text-gray-900">تفاصيل الكورس</h2>
-              <button
-                onClick={() => setShowViewModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
-              >
-                <FiX className="w-6 h-6 text-gray-500" />
-              </button>
-            </div>
-
-            <div className="space-y-6">
-              {/* Course Image */}
-              <div className="h-48 bg-gradient-to-br from-accent to-secondary rounded-lg overflow-hidden">
-                {selectedCourse.photoUrl ? (
-                  <Image
-                    src={selectedCourse.photoUrl}
-                    width={192}
-                    height={192}
-                    alt={selectedCourse.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flexCenter">
-                    <FiBook className="w-16 h-16 text-white opacity-50" />
-                  </div>
-                )}
-              </div>
-
-              {/* Course Details */}
-              <div className="space-y-4">
-                <div>
-                  <h3 className="bold-18 text-gray-900 mb-2">
-                    {selectedCourse.name}
-                  </h3>
-                  <p className="regular-14 text-gray-600">
-                    {selectedCourse.description || "لا يوجد وصف متاح"}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="regular-12 text-gray-500 mb-1">المدرس</p>
-                    <p className="bold-14 text-gray-900">
-                      {selectedCourse.instructorName || "غير محدد"}
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="regular-12 text-gray-500 mb-1">عدد الدروس</p>
-                    <p className="bold-14 text-gray-900">
-                      {selectedCourse.lessonCount || 0}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && courseToDelete && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="text-center">
-              {/* Warning Icon */}
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <FiTrash2 className="h-6 w-6 text-red-600" />
-              </div>
-
-              {/* Title */}
-              <h3 className="bold-18 text-gray-900 mb-2">تأكيد حذف الكورس</h3>
-
-              {/* Message */}
-              <p className="regular-14 text-gray-600 mb-6">
-                هل أنت متأكد من حذف كورس "{courseToDelete.name}"؟
-                <br />
-                <span className="text-red-600 bold-14">
-                  سيتم حذف جميع الدروس المرتبطة به نهائياً.
-                </span>
-              </p>
-
-              {/* Actions */}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowDeleteModal(false);
-                    setCourseToDelete(null);
-                  }}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg bold-14 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
-                >
-                  إلغاء
-                </button>
-                <button
-                  onClick={handleDeleteCourse}
-                  disabled={isLoading}
-                  className="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg bold-14 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  {isLoading ? "جاري الحذف..." : "حذف نهائياً"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showDeleteModal && !!courseToDelete}
+        title="حذف الكورس"
+        message={`سيتم حذف "${courseToDelete?.name || ""}" نهائياً مع كل دروسه.`}
+        confirmLabel="حذف نهائياً"
+        danger
+        busy={isLoading}
+        onConfirm={handleDeleteCourse}
+        onClose={() => { setShowDeleteModal(false); setCourseToDelete(null); }}
+      />
     </div>
   );
 };

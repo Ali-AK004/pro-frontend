@@ -3,27 +3,27 @@ import { useState, useEffect } from "react";
 
 // Skeleton loader components for different content types
 export const SkeletonCard = ({ className = "" }) => (
-  <div className={`animate-pulse ${className}`}>
-    <div className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] animate-shimmer rounded-2xl h-48 mb-4"></div>
+  <div className={`animate-pulse   ${className}`}>
+    <div className="bg-gray-200 bg-[length:200%_100%] animate-shimmer rounded-2xl h-48 mb-4"></div>
     <div className="space-y-3">
-      <div className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] animate-shimmer h-4 rounded-lg w-3/4"></div>
-      <div className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] animate-shimmer h-4 rounded-lg w-1/2"></div>
-      <div className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] animate-shimmer h-3 rounded-lg w-2/3"></div>
+      <div className="bg-gray-200 bg-[length:200%_100%] animate-shimmer h-4 rounded-lg w-3/4"></div>
+      <div className="bg-gray-200 bg-[length:200%_100%] animate-shimmer h-4 rounded-lg w-1/2"></div>
+      <div className="bg-gray-200 bg-[length:200%_100%] animate-shimmer h-3 rounded-lg w-2/3"></div>
     </div>
   </div>
 );
 
 export const SkeletonList = ({ items = 3, className = "" }) => (
-  <div className={`space-y-4 ${className}`}>
+  <div className={`space-y-4   ${className}`}>
     {Array.from({ length: items }).map((_, index) => (
       <div
         key={index}
         className="animate-pulse flex space-x-4 p-4 bg-white/50 backdrop-blur-sm rounded-2xl border border-gray-100"
       >
-        <div className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] animate-shimmer rounded-full h-12 w-12"></div>
+        <div className="bg-gray-200 bg-[length:200%_100%] animate-shimmer rounded-full h-12 w-12"></div>
         <div className="flex-1 space-y-3 py-1">
-          <div className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] animate-shimmer h-4 rounded-lg w-3/4"></div>
-          <div className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] animate-shimmer h-3 rounded-lg w-1/2"></div>
+          <div className="bg-gray-200 bg-[length:200%_100%] animate-shimmer h-4 rounded-lg w-3/4"></div>
+          <div className="bg-gray-200 bg-[length:200%_100%] animate-shimmer h-3 rounded-lg w-1/2"></div>
         </div>
       </div>
     ))}
@@ -32,15 +32,15 @@ export const SkeletonList = ({ items = 3, className = "" }) => (
 
 export const SkeletonTable = ({ rows = 5, cols = 4, className = "" }) => (
   <div
-    className={`animate-pulse bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 overflow-hidden ${className}`}
+    className={`animate-pulse bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 overflow-hidden   ${className}`}
   >
     {/* Table Header */}
-    <div className="bg-gradient-to-r from-gray-100 to-gray-200 p-4 border-b border-gray-200">
+    <div className="bg-gray-100 p-4 border-b border-gray-200">
       <div className="flex space-x-4">
         {Array.from({ length: cols }).map((_, colIndex) => (
           <div
             key={colIndex}
-            className="bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300 bg-[length:200%_100%] animate-shimmer h-4 rounded-lg flex-1"
+            className="bg-gray-300 bg-[length:200%_100%] animate-shimmer h-4 rounded-lg flex-1"
           ></div>
         ))}
       </div>
@@ -56,7 +56,7 @@ export const SkeletonTable = ({ rows = 5, cols = 4, className = "" }) => (
           {Array.from({ length: cols }).map((_, colIndex) => (
             <div
               key={colIndex}
-              className="bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] animate-shimmer h-4 rounded-lg flex-1"
+              className="bg-gray-200 bg-[length:200%_100%] animate-shimmer h-4 rounded-lg flex-1"
             ></div>
           ))}
         </div>
@@ -99,7 +99,7 @@ export const ProgressiveLoader = ({
         {retryAction && (
           <button
             onClick={retryAction}
-            className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
+            className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors"
           >
             إعادة المحاولة
           </button>

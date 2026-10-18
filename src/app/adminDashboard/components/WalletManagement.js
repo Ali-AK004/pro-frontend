@@ -148,14 +148,14 @@ export default function WalletManagement() {
               <input maxLength={100} className={input} value={form.batchLabel}
                 onChange={(e) => setForm({ ...form, batchLabel: e.target.value })} />
             </label>
-            <button disabled={busy} className="bg-accent text-white py-2 rounded-lg bold-14 disabled:opacity-50 cursor-pointer">
+            <button disabled={busy} className="bg-brand-600 text-white py-2 rounded-lg bold-14 disabled:opacity-50 cursor-pointer">
               إنشاء وتحميل CSV
             </button>
           </form>
 
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex flex-wrap gap-3 items-center mb-4">
-              <input placeholder="فلترة باسم الدفعة" className={`${input} max-w-xs`} value={batch}
+              <input placeholder="فلترة باسم الدفعة" className={`  max-w-xs ${input}`} value={batch}
                 onChange={(e) => setBatch(e.target.value)} />
               <button onClick={loadCards} className="px-4 py-2 border rounded-lg cursor-pointer">بحث</button>
               <span className="regular-12 text-gray-500">الإجمالي: {cards.totalElements ?? cards.content.length}</span>
@@ -243,7 +243,7 @@ export default function WalletManagement() {
             <input maxLength={300} className={input} value={adjust.note} required
               onChange={(e) => setAdjust({ ...adjust, note: e.target.value })} />
           </label>
-          <button className="bg-accent text-white py-2 rounded-lg bold-14 cursor-pointer">تنفيذ</button>
+          <button className="bg-brand-600 text-white py-2 rounded-lg bold-14 cursor-pointer">تنفيذ</button>
         </form>
       )}
     </div>

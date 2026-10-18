@@ -80,14 +80,14 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-brand-400/20 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative w-full max-w-2xl">
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
           {/* Header with gradient */}
-          <div className="bg-gradient-to-r from-brand-600 to-brand-600 px-8 py-12 text-center">
+          <div className="bg-brand-600 px-8 py-12 text-center">
             <div className="inline-block mb-4 bg-white/20 rounded-md px-5 py-2 backdrop-blur-sm">
               <Link href="/" className="flexCenter gap-2">
                 <Image
@@ -111,7 +111,7 @@ const Login = () => {
           {/* Form Container */}
           <div className="px-8 py-8">
             {/* Form */}
-            <form className="space-y-6" onSubmit={handleSubmit}>
+            <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Email Field */}
               <div className="space-y-2">
                 <label
@@ -127,11 +127,11 @@ const Login = () => {
                     type="email"
                     autoComplete="email"
                     required
-                    className={`w-full pr-4 pl-9 py-4 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 text-right ${
-                      error
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-200 focus:ring-brand-500"
-                    }`}
+                    className={`w-full pr-4 pl-9 py-4 bg-gray-50 border rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-150 text-right text-sm ${
+ error
+ ? "border-red-300 focus:ring-red-500"
+ : "border-gray-200 focus:ring-brand-500"
+ }`}
                     placeholder="أدخل بريدك الإلكتروني"
                     value={formData.email}
                     onChange={handleChange}
@@ -169,11 +169,11 @@ const Login = () => {
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
-                    className={`w-full px-4 py-4 pl-9 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 text-right ${
-                      error
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-200 focus:ring-brand-500"
-                    }`}
+                    className={`w-full px-4 py-4 pl-9 bg-gray-50 border rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-150 text-right text-sm ${
+ error
+ ? "border-red-300 focus:ring-red-500"
+ : "border-gray-200 focus:ring-brand-500"
+ }`}
                     placeholder="أدخل كلمة المرور"
                     value={formData.password}
                     onChange={handleChange}
@@ -220,7 +220,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-brand-600 to-brand-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-brand-700 hover:to-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer"
+                className="w-full bg-brand-600 text-white py-2.5 px-4 rounded-xl font-semibold hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 cursor-pointer"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">

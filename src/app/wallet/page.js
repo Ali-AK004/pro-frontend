@@ -88,9 +88,9 @@ export default function WalletPage() {
               placeholder="اكتب كود الكارت"
               dir="ltr"
               autoComplete="off"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg tracking-widest uppercase"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg tracking-widest uppercase text-sm focus:outline-none"
             />
-            <button disabled={busy} className="w-full bg-accent text-white py-3 rounded-lg bold-16 disabled:opacity-50">
+            <button disabled={busy} className="w-full bg-brand-600 text-white py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
               شحن
             </button>
           </form>
@@ -103,10 +103,10 @@ export default function WalletPage() {
               max="10000"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"
             />
             <p className="regular-12 text-gray-500">فيزا / ميزة / فودافون كاش / كود فوري</p>
-            <button disabled={busy} className="w-full bg-accent text-white py-3 rounded-lg bold-16 disabled:opacity-50">
+            <button disabled={busy} className="w-full bg-brand-600 text-white py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
               المتابعة للدفع
             </button>
           </form>

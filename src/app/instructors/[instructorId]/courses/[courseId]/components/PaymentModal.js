@@ -143,9 +143,9 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
 
   const Option = ({ value, icon: Icon, title, subtitle, disabled }) => (
     <label
-      className={`flex items-center gap-3 p-4 border rounded-lg transition-colors ${
-        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-gray-50"
-      } ${paymentMethod === value ? "border-brand-600" : "border-gray-200"}`}
+      className={`flex items-center gap-3 p-4 border rounded-lg transition-colors     ${
+ disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-gray-50"
+ }${paymentMethod === value ? "border-brand-600" : "border-gray-200"}`}
     >
       <input
         type="radio"
@@ -167,10 +167,10 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
   const lessonsTotal = isBundle ? Number(bundle.lessonsTotal ?? 0) : 0;
 
   return (
-    <div className="fixed inset-0 bg-black/20 bg-opacity-50 flexCenter z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
       <div className="bg-white rounded-xl p-6 w-full max-w-[650px] mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="bold-24 text-gray-900">{isBundle ? "شراء الباقة" : "شراء الدرس"}</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-semibold text-slate-900">{isBundle ? "شراء الباقة" : "شراء الدرس"}</h2>
           <button
             onClick={handleClose}
             className="p-1 border border-gray-900/50 hover:bg-gray-100 rounded-sm cursor-pointer transition-colors"
@@ -210,9 +210,9 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
 
         {paymentResult && (
           <div
-            className={`mb-6 p-4 rounded-lg border ${
-              paymentResult.success ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"
-            }`}
+            className={`mb-6 p-4 rounded-lg border   ${
+ paymentResult.success ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"
+ }`}
           >
             <div className="flex items-center gap-3">
               {paymentResult.success ? (
@@ -294,7 +294,7 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
                       autoComplete="off"
                       dir="ltr"
                       maxLength={32}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-600 uppercase"
+                      className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:border-brand-600 uppercase text-sm focus:outline-none"
                     />
                     <button
                       onClick={applyCoupon}
@@ -311,7 +311,7 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
 
             {paymentMethod === "CODE" && (
               <div className="mb-6">
-                <label className="block bold-14 text-gray-900 mb-2">كود الوصول</label>
+                <label className="block text-xs font-medium text-slate-600 mb-1">كود الوصول</label>
                 <input
                   type="text"
                   value={accessCode}
@@ -319,7 +319,7 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
                   placeholder="أدخل كود الوصول"
                   autoComplete="off"
                   dir="ltr"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border focus:border-brand-600 tracking-widest uppercase"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:border focus:border-brand-600 tracking-widest uppercase text-sm focus:outline-none"
                 />
               </div>
             )}
@@ -333,14 +333,14 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
             <div className="flex gap-3">
               <button
                 onClick={handleClose}
-                className="flex-1 cursor-pointer bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-colors"
+                className="flex-1 cursor-pointer bg-white border border-slate-200 text-slate-700 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors"
               >
                 إلغاء
               </button>
               <button
                 onClick={handlePayment}
                 disabled={isProcessing || !paymentMethod}
-                className="flex-1 bg-accent cursor-pointer text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flexCenter gap-2"
+                className="flex-1 bg-brand-600 cursor-pointer text-white py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flexCenter gap-2"
               >
                 {isProcessing ? (
                   <>
@@ -374,7 +374,7 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
                 onSuccess(paymentResult.data);
                 handleClose();
               }}
-              className="bg-accent text-white px-6 py-2 rounded-lg bold-14 hover:bg-opacity-90 transition-colors"
+              className="bg-brand-600 text-white px-4 py-2 rounded-lg bold-14 hover:bg-brand-700 transition-colors"
             >
               {isBundle ? "متابعة" : "عرض الدرس الآن"}
             </button>

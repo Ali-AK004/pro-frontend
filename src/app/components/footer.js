@@ -16,7 +16,7 @@ const Footer = ({ id }) => {
   return (
     <footer
       id={id}
-      className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-20 relative overflow-hidden"
+      className="bg-gray-900 text-white py-20 relative overflow-hidden"
     >
       {/* Background decoration */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
@@ -42,7 +42,7 @@ const Footer = ({ id }) => {
             <div className="flex items-center justify-center md:justify-start gap-4">
               <a
                 href="https://www.facebook.com/profile.php?id=61579145144491"
-                className="w-12 h-12 bg-brand-600 hover:bg-brand-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                className="w-12 h-12 bg-brand-600 hover:bg-brand-700 rounded-xl flex items-center justify-center transition-all duration-150"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -50,7 +50,7 @@ const Footer = ({ id }) => {
               </a>
               <a
                 href="https://x.com/academitna"
-                className="w-12 h-12 bg-[#1da1f2] hover:bg-[#4d8ab0] rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                className="w-12 h-12 bg-[#1da1f2] hover:bg-[#4d8ab0] rounded-xl flex items-center justify-center transition-all duration-150"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -58,7 +58,7 @@ const Footer = ({ id }) => {
               </a>
               <a
                 href="https://www.instagram.com/academitna/"
-                className="w-12 h-12 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                className="w-12 h-12 bg-brand-500 hover:bg-brand-600 rounded-xl flex items-center justify-center transition-all duration-150"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -66,7 +66,7 @@ const Footer = ({ id }) => {
               </a>
               <a
                 href="https://www.youtube.com/channel/UCGfTiSzmEVpRLSiW7bfx71Q"
-                className="w-12 h-12 bg-red-700 hover:bg-red-800 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                className="w-12 h-12 bg-red-700 hover:bg-red-800 rounded-xl flex items-center justify-center transition-all duration-150"
                 target="_blank"
                 rel="noopener noreferrer"
               >

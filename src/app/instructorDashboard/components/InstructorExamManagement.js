@@ -14,16 +14,20 @@ import {
   FiBarChart,
 } from "react-icons/fi";
 import ExamCreationModal from "../../adminDashboard/components/Modal/ExamCreationModal";
+import { fetchAllPages } from "../../utils/pageList";
+import {
+  PageHeader, Button, IconButton, Badge, Toolbar, SearchBox, Select, PagedTable,
+  usePaged, useDebounced, fmtNumber,
+} from "../../components/ui";
 
 const InstructorExamManagement = () => {
   const { user } = useUserData();
-  const [exams, setExams] = useState([]);
-  const [lessons, setLessons] = useState([]);
   const [errors, setErrors] = useState({});
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedLesson, setSelectedLesson] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showResultsModal, setShowResultsModal] = useState(false);
@@ -36,97 +40,61 @@ const InstructorExamManagement = () => {
   // Get instructor ID from user object
   const instructorId = user?.instructorId || user?.id;
 
+  // All of the teacher's exams show straight away; course, lesson and search only narrow the list.
+  const q = useDebounced(searchTerm.trim());
+  const list = usePaged(
+    (page, size) =>
+      instructorId
+        ? instructorAPI.exams.list(instructorId, {
+            courseId: selectedCourse || undefined,
+            lessonId: selectedLesson || undefined,
+            q: q || undefined,
+            page,
+            size,
+          })
+        : Promise.resolve({ data: { content: [], totalElements: 0 } }),
+    [instructorId, selectedCourse, selectedLesson, q],
+    { onError: (e) => toast.error(handleAPIError(e, "فشل في تحميل الامتحانات")) }
+  );
+
   useEffect(() => {
     if (instructorId) {
       fetchCourses();
-      fetchAllLessons(); // Fetch all lessons for modal
+      fetchAllLessons();
     }
   }, [instructorId]);
 
-  useEffect(() => {
-    if (selectedCourse) {
-      fetchLessons();
-    } else {
-      setLessons([]);
-      setSelectedLesson("");
-      setExams([]); // Clear exams when no course is selected
-    }
-  }, [selectedCourse]);
-
-  useEffect(() => {
-    if (selectedLesson) {
-      fetchExams();
-    } else {
-      setExams([]); // Clear exams when no lesson is selected
-    }
-  }, [selectedLesson]);
-
   const fetchCourses = async () => {
     try {
-      const response =
-        await instructorAPI.courses.getByInstructor(instructorId);
+      const response = await instructorAPI.courses.getByInstructor(instructorId);
       setCourses(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
     }
   };
 
-  const fetchLessons = async () => {
-    if (!selectedCourse) {
-      setLessons([]);
-      return;
-    }
-
-    try {
-      const response = await instructorAPI.courses.getLessons(selectedCourse);
-      setLessons(response.data || []);
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
-    }
-  };
-
-  // Fetch all lessons for the modal (same pattern as AssignmentManagement)
+  // Every lesson of the teacher, for the lesson filter and the "pick a lesson" field
   const fetchAllLessons = async () => {
     try {
-      const response = await instructorAPI.courses.getByInstructor(instructorId);
-      const coursesData = response.data || [];
-
-      let allLessonsData = [];
-      for (const course of coursesData) {
-        try {
-          const lessonsResponse = await instructorAPI.courses.getLessons(course.id);
-          const courseLessons = lessonsResponse.data || [];
-          // Add course information to each lesson for optgroups
-          const lessonsWithCourse = courseLessons.map((lesson) => ({
-            ...lesson,
-            courseId: course.id,
-            courseName: course.name,
-          }));
-          allLessonsData = [...allLessonsData, ...lessonsWithCourse];
-        } catch (error) {
-          console.error(`Error fetching lessons for course ${course.id}:`, error);
-          // Don't show toast for each error, just log it
-        }
-      }
-
-      setAllLessons(allLessonsData);
+      setAllLessons(await fetchAllPages((params) => instructorAPI.lessons.list(instructorId, params)));
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل جميع الدروس"));
       setAllLessons([]);
     }
   };
 
-  const fetchExams = async () => {
-    if (!selectedLesson) return;
+  const lessons = allLessons.filter((l) => !selectedCourse || l.courseId === selectedCourse);
 
+  const fetchExams = () => list.reload();
+
+  // List rows are light (no questions), so load the full exam before editing
+  const openEdit = async (exam) => {
     try {
-      setIsLoading(true);
-      const response = await instructorAPI.exams.getByLesson(selectedLesson);
-      setExams(response.data || []);
+      const { data } = await instructorAPI.exams.getExam(exam.id, true);
+      setSelectedExam({ ...exam, ...data });
+      setShowEditModal(true);
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل الامتحانات"));
-    } finally {
-      setIsLoading(false);
+      toast.error(handleAPIError(error, "فشل في تحميل الامتحان"));
     }
   };
 
@@ -136,11 +104,7 @@ const InstructorExamManagement = () => {
       await instructorAPI.exams.create(examData.lessonId, examData);
       toast.success("تم إنشاء الامتحان بنجاح");
       setShowCreateModal(false);
-      
-      // If the created exam belongs to the currently selected lesson, refresh the list
-      if (selectedLesson === examData.lessonId) {
-        fetchExams();
-      }
+      fetchExams();
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "فشل في إنشاء الامتحان";
@@ -175,11 +139,7 @@ const InstructorExamManagement = () => {
       toast.success("تم تحديث الامتحان بنجاح");
       setShowEditModal(false);
       setSelectedExam(null);
-      
-      // If the updated exam belongs to the currently selected lesson, refresh the list
-      if (selectedLesson === examData.lessonId) {
-        fetchExams();
-      }
+      fetchExams();
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "فشل في تحديث الامتحان";
@@ -219,11 +179,7 @@ const InstructorExamManagement = () => {
       toast.success("تم حذف الامتحان بنجاح");
       setShowDeleteModal(false);
       setExamToDelete(null);
-      
-      // If the deleted exam belongs to the currently selected lesson, refresh the list
-      if (selectedLesson === examToDelete.lessonId) {
-        fetchExams();
-      }
+      fetchExams();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف الامتحان"));
     } finally {
@@ -271,170 +227,92 @@ const InstructorExamManagement = () => {
     return Object.values(grouped).filter(group => group.lessons.length > 0);
   };
 
+  const filtered = Boolean(searchTerm || selectedCourse || selectedLesson);
+
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
-        <div>
-          <h1 className="bold-32 text-gray-900 mb-2">إدارة الامتحانات</h1>
-          <p className="regular-16 text-gray-600">
-            إنشاء وتعديل وإدارة امتحانات دروسك
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
-        >
-          <FiPlus className="w-5 h-5" />
-          إنشاء امتحان جديد
-        </button>
-      </div>
+    <div className="p-4 lg:p-6">
+      <PageHeader
+        title="إدارة الامتحانات"
+        subtitle="كل امتحاناتك في مكان واحد، استخدم الفلاتر للتضييق"
+        actions={
+          <Button onClick={() => setShowCreateModal(true)}>
+            <FiPlus /> امتحان جديد
+          </Button>
+        }
+      />
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-          {/* Course Filter */}
-          <select
-            value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
-            className="w-full px-4 py-3 border md:col-span-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-          >
-            <option value="">اختر كورس</option>
-            {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Lesson Filter */}
-          <select
-            value={selectedLesson}
-            onChange={(e) => setSelectedLesson(e.target.value)}
-            className="w-full px-4 py-3 border md:col-span-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-          >
-            <option value="">اختر درس</option>
-            {lessons.map((lesson) => (
-              <option key={lesson.id} value={lesson.id}>
-                {lesson.name}
-              </option>
-            ))}
-          </select>
-
-          <button
-            onClick={() => {
-              setSelectedLesson("");
-              setSelectedCourse("");
-            }}
-            className="bg-accent flexCenter flex text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
-          >
-            إعادة تعيين
-          </button>
-        </div>
-      </div>
-
-      {/* Exams Grid */}
-      <div className="grid grid-cols-1 gap-6">
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
+      <Toolbar
+        actions={
+          filtered ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedCourse("");
+                setSelectedLesson("");
+              }}
             >
-              <div className="h-4 bg-gray-200 rounded mb-4"></div>
-              <div className="h-3 bg-gray-200 rounded mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded mb-4"></div>
-              <div className="flex gap-2">
-                <div className="h-8 bg-gray-200 rounded flex-1"></div>
-                <div className="h-8 bg-gray-200 rounded flex-1"></div>
-                <div className="h-8 bg-gray-200 rounded w-8"></div>
+              <FiX /> مسح الفلاتر
+            </Button>
+          ) : null
+        }
+      >
+        <SearchBox value={searchTerm} onChange={setSearchTerm} placeholder="ابحث بالعنوان أو الدرس" />
+        <Select
+          value={selectedCourse}
+          onChange={(v) => {
+            setSelectedCourse(v);
+            setSelectedLesson("");
+          }}
+          allLabel="كل الكورسات"
+          options={courses.map((c) => ({ value: c.id, label: c.name }))}
+        />
+        <Select
+          value={selectedLesson}
+          onChange={setSelectedLesson}
+          allLabel="كل الدروس"
+          options={lessons.map((l) => ({ value: l.id, label: l.name }))}
+        />
+      </Toolbar>
+
+      <PagedTable
+        list={list}
+        empty={filtered ? "لا توجد امتحانات مطابقة" : "لا توجد امتحانات بعد"}
+        emptyHint={filtered ? "جرّب تغيير الفلاتر" : "ابدأ بإنشاء أول امتحان"}
+        columns={[
+          {
+            key: "title",
+            label: "الامتحان",
+            render: (e) => (
+              <div className="min-w-0">
+                <p className="font-medium text-slate-900 truncate max-w-64">{e.title}</p>
+                <p className="text-[11px] text-slate-400 truncate max-w-64">{e.lessonName || "—"}</p>
               </div>
-            </div>
-          ))
-        ) : exams.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <FiBook className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="regular-16 text-gray-600">لا توجد امتحانات للعرض</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="mt-4 bg-secondary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
-            >
-              إنشاء أول امتحان
-            </button>
-          </div>
-        ) : (
-          exams.map((exam) => (
-            <div
-              key={exam.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
-            >
-              {/* Exam Header */}
-              <div className="p-6">
-                <h3 className="bold-18 text-gray-900 mb-2">{exam.title}</h3>
-                <p className="regular-14 text-gray-600 mb-4">
-                  {exam.lessonName || "درس غير محدد"}
-                </p>
-
-                {/* Exam Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  <div className="flex items-center gap-2">
-                    <FiClock className="w-4 h-4 text-brand-500" />
-                    <span className="regular-12 text-gray-600">
-                      {exam.timeLimitMinutes} دقيقة
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FiAward className="w-4 h-4 text-emerald-500" />
-                    <span className="regular-12 text-gray-600">
-                      {exam.passingScore}% للنجاح
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FiBook className="w-4 h-4 text-brand-500" />
-                    <span className="regular-12 text-gray-600">
-                      {exam.questions?.length || 0} سؤال
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FiUsers className="w-4 h-4 text-amber-500" />
-                    <span className="regular-12 text-gray-600">
-                      {exam.submissionCount || 0} محاولة
-                    </span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <button
-                    onClick={() => handleViewResults(exam)}
-                    className=" bg-brand-50 text-brand-600 py-2 px-4 border border-brand-600 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-2 cursor-pointer"
-                  >
-                    <FiBarChart className="w-4 h-4" />
-                    النتائج
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedExam(exam);
-                      setShowEditModal(true);
-                    }}
-                    className=" bg-emerald-50 text-emerald-600 py-2 px-4 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-2 cursor-pointer"
-                  >
-                    <FiEdit className="w-4 h-4" />
-                    تعديل
-                  </button>
-                  <button
-                    onClick={() => openDeleteModal(exam)}
-                    className="bg-red-50 text-red-600 flexCenter py-2 px-4 gap-2 rounded-lg border border-red-600 hover:bg-red-100 transition-colors cursor-pointer"
-                  >
-                    <FiTrash2 className="w-4 h-4" />
-                    حذف
-                  </button>
-                </div>
+            ),
+          },
+          { key: "courseName", label: "الكورس", render: (e) => e.courseName || "—" },
+          { key: "questions", label: "الأسئلة", render: (e) => fmtNumber(e.questionCount ?? e.questions?.length ?? 0) },
+          {
+            key: "time",
+            label: "المدة",
+            render: (e) => (e.timeLimitMinutes ? `${fmtNumber(e.timeLimitMinutes)} د` : <Badge>مفتوح</Badge>),
+          },
+          { key: "passingScore", label: "النجاح", render: (e) => <Badge tone="brand">{fmtNumber(e.passingScore)}%</Badge> },
+          {
+            key: "actions",
+            label: "",
+            className: "w-px",
+            render: (e) => (
+              <div className="flex items-center gap-0.5">
+                <IconButton label="النتائج" icon={FiBarChart} onClick={() => handleViewResults(e)} />
+                <IconButton label="تعديل" icon={FiEdit} onClick={() => openEdit(e)} />
+                <IconButton label="حذف" icon={FiTrash2} tone="danger" onClick={() => openDeleteModal(e)} />
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            ),
+          },
+        ]}
+      />
 
       {/* Create Exam Modal */}
       {showCreateModal && (
@@ -487,8 +365,8 @@ const InstructorExamManagement = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && examToDelete && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
+          <div className="bg-white rounded-xl shadow-xl p-5 w-full max-w-md">
             <div className="text-center">
               {/* Warning Icon */}
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
@@ -514,14 +392,14 @@ const InstructorExamManagement = () => {
                     setShowDeleteModal(false);
                     setExamToDelete(null);
                   }}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg bold-14 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
+                  className="flex-1 bg-white border border-slate-200 text-slate-700 py-2 px-4 rounded-lg bold-14 hover:bg-slate-50 transition-all duration-150 cursor-pointer"
                 >
                   إلغاء
                 </button>
                 <button
                   onClick={handleDeleteExam}
                   disabled={isLoading}
-                  className="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg bold-14 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg bold-14 hover:bg-red-700 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isLoading ? "جاري الحذف..." : "حذف نهائياً"}
                 </button>
@@ -539,18 +417,18 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/20 flexCenter z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
       <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="bold-24 text-gray-900">
+          <h2 className="text-base font-semibold text-slate-900">
             نتائج الامتحان: {exam.title}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"
           >
-            <FiX className="w-6 h-6 text-gray-500" />
+            <FiX className="w-4 h-4 text-slate-500" />
           </button>
         </div>
 
@@ -635,7 +513,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results }) => {
         <div className="flex items-center justify-end p-6 border-t border-gray-200">
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
           >
             إغلاق
           </button>

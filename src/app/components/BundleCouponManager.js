@@ -92,8 +92,8 @@ export default function BundleCouponManager({ role, instructors = [] }) {
             key={id}
             onClick={() => setTab(id)}
             className={`px-4 py-2 bold-14 cursor-pointer border-b-2 -mb-px ${
-              tab === id ? "border-brand-600 text-brand-600" : "border-transparent text-gray-500"
-            }`}
+ tab === id ? "border-brand-600 text-brand-600" : "border-transparent text-gray-500"
+ }`}
           >
             {text}
           </button>
@@ -281,9 +281,9 @@ function BundlesTab({ isAdmin, instructors, bundles, reload, busy, setBusy }) {
               <option value="until">حتى تاريخ محدد (نهاية الشهر / الترم)</option>
             </select>
             {form.accessMode === "days" ? (
-              <input className={`${input} mt-2`} type="number" min="1" max="730" value={form.accessDays} onChange={set("accessDays")} />
+              <input className={`  mt-2 ${input}`} type="number" min="1" max="730" value={form.accessDays} onChange={set("accessDays")} />
             ) : (
-              <input className={`${input} mt-2`} type="date" value={form.accessUntil} onChange={set("accessUntil")} />
+              <input className={`  mt-2 ${input}`} type="date" value={form.accessUntil} onChange={set("accessUntil")} />
             )}
           </div>
         </div>
@@ -318,10 +318,10 @@ function BundlesTab({ isAdmin, instructors, bundles, reload, busy, setBusy }) {
         </label>
 
         <div className="flex gap-3">
-          <button type="submit" disabled={busy} className={`${btn} bg-accent text-white`}>
+          <button type="submit" disabled={busy} className={`bg-brand-600 text-white ${btn}`}>
             {busy ? "جاري الحفظ..." : "حفظ"}
           </button>
-          <button type="button" onClick={() => setForm(null)} className={`${btn} bg-gray-200 text-gray-700`}>
+          <button type="button" onClick={() => setForm(null)} className={`bg-white border border-slate-200 text-slate-700 ${btn}`}>
             إلغاء
           </button>
         </div>
@@ -331,7 +331,7 @@ function BundlesTab({ isAdmin, instructors, bundles, reload, busy, setBusy }) {
 
   return (
     <div className="space-y-4">
-      <button onClick={() => setForm({ ...emptyBundle })} className={`${btn} bg-accent text-white`}>
+      <button onClick={() => setForm({ ...emptyBundle })} className={`bg-brand-600 text-white ${btn}`}>
         + باقة جديدة
       </button>
       {bundles.length === 0 ? (
@@ -475,7 +475,7 @@ function CouponsTab({ isAdmin, instructors, coupons, bundles, reload, busy, setB
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className={label}>الكود</label>
-            <input className={`${input} uppercase`} dir="ltr" value={form.code} onChange={set("code")} required
+            <input className={`  uppercase ${input}`} dir="ltr" value={form.code} onChange={set("code")} required
               pattern="[A-Za-z0-9_\-]{3,32}" title="3-32 حرف إنجليزي أو رقم أو - أو _" placeholder="RAMADAN25" />
           </div>
           <div>
@@ -551,10 +551,10 @@ function CouponsTab({ isAdmin, instructors, coupons, bundles, reload, busy, setB
           </div>
         </div>
         <div className="flex gap-3">
-          <button type="submit" disabled={busy} className={`${btn} bg-accent text-white`}>
+          <button type="submit" disabled={busy} className={`bg-brand-600 text-white ${btn}`}>
             {busy ? "جاري الحفظ..." : "إنشاء الكود"}
           </button>
-          <button type="button" onClick={() => setForm(null)} className={`${btn} bg-gray-200 text-gray-700`}>
+          <button type="button" onClick={() => setForm(null)} className={`bg-white border border-slate-200 text-slate-700 ${btn}`}>
             إلغاء
           </button>
         </div>
@@ -564,7 +564,7 @@ function CouponsTab({ isAdmin, instructors, coupons, bundles, reload, busy, setB
 
   return (
     <div className="space-y-4">
-      <button onClick={() => setForm({ ...emptyCoupon })} className={`${btn} bg-accent text-white`}>
+      <button onClick={() => setForm({ ...emptyCoupon })} className={`bg-brand-600 text-white ${btn}`}>
         + كود خصم جديد
       </button>
       {coupons.length === 0 ? (

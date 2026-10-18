@@ -73,9 +73,9 @@ const Instructors = () => {
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-400/10 rounded-full blur-3xl"></div>
       </div>
 
       <NavBar />
@@ -84,7 +84,7 @@ const Instructors = () => {
         <div className="mb-8">
           <Link
             href={"/"}
-            className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-brand-50 border border-gray-200 hover:border-brand-300 rounded-xl transition-all duration-300 text-gray-700 hover:text-brand-600 shadow-sm hover:shadow-md"
+            className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-brand-50 border border-gray-200 hover:border-brand-300 rounded-xl transition-all duration-150 text-gray-700 hover:text-brand-600 shadow-sm"
           >
             <FaArrowLeft className="w-4 h-4" />
             <span className="font-medium">العودة للصفحة الرئيسية</span>
@@ -94,7 +94,7 @@ const Instructors = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex flex-col md:flex-row items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-brand-600 to-brand-600 rounded-2xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-brand-600 rounded-2xl flex items-center justify-center">
               <FaChalkboardTeacher className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold pb-2 bg-gradient-to-r from-brand-600 to-brand-600 bg-clip-text text-transparent">
@@ -109,15 +109,15 @@ const Instructors = () => {
 
         {/* Search Section */}
         <div className="max-w-3xl mx-auto">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12 relative overflow-hidden">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/20 p-8 md:p-12 relative overflow-hidden">
             {/* Background decoration */}
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-brand-500/5"></div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-2xl"></div>
+            <div className="absolute inset-0 bg-brand-500/5"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-400/10 rounded-full blur-2xl"></div>
 
             <div className="relative">
               <div className="text-center mb-8">
                 <div className="inline-flex items-center flex-col md:flex-row gap-3 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-brand-500 to-brand-500 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-brand-500 rounded-xl flex items-center justify-center">
                     <FaSearch className="w-6 h-6 text-white" />
                   </div>
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -139,7 +139,7 @@ const Instructors = () => {
 
         {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
-          <div className="bg-white rounded-xl p-6 shadow-lg text-center hover:transform hover:scale-105 transition-all duration-300">
+          <div className="bg-white rounded-xl p-6 shadow-sm text-center hover:transform transition-all duration-150">
             <div className="bg-brand-100 w-16 h-16 rounded-full flexCenter mx-auto mb-4">
               <FaUsers className="w-8 h-8 text-brand-600" />
             </div>
@@ -149,7 +149,7 @@ const Instructors = () => {
             </p>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-lg text-center hover:transform hover:scale-105 transition-all duration-300">
+          <div className="bg-white rounded-xl p-6 shadow-sm text-center hover:transform transition-all duration-150">
             <div className="bg-emerald-100 w-16 h-16 rounded-full flexCenter mx-auto mb-4">
               <FaBookOpen className="w-8 h-8 text-emerald-600" />
             </div>

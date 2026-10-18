@@ -276,23 +276,23 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   }
 
   return (
-    <div className="group bg-white/95 backdrop-blur-md border border-white/40 w-full rounded-2xl lg:rounded-3xl p-4 md:p-6 lg:p-8 hover:shadow-3xl transition-all duration-500 relative overflow-hidden shadow-xl">
+    <div className="group bg-white/95 backdrop-blur-md border border-white/40 w-full rounded-2xl lg:rounded-2xl p-4 md:p-6 lg:p-8 hover:shadow-3xl transition-all duration-150 relative overflow-hidden shadow-xl">
       {/* Background decorations */}
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-50/30 to-brand-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-xl"></div>
+      <div className="absolute inset-0 bg-brand-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-150"></div>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-brand-400/10 rounded-full blur-xl"></div>
 
       {/* Enhanced Lesson Header */}
       <div className="relative flex flex-col md:flex-row items-start gap-4 md:gap-6 mb-4 md:mb-6">
         {/* Lesson Photo */}
         <div className="relative group/photo flex-shrink-0 mx-auto md:mx-0">
-          <div className="w-45 h-40 md:w-32 md:h-32 rounded-xl md:rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border-2 border-white shadow-lg">
+          <div className="w-45 h-40 md:w-32 md:h-32 rounded-xl md:rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center border-2 border-white shadow-sm">
             {lesson.photoUrl ? (
               <Image
                 src={lesson.photoUrl}
                 width={160}
                 height={160}
                 alt={lesson.name}
-                className="w-full h-full object-cover group-hover/photo:scale-110 transition-transform duration-300"
+                className="w-full h-full object-cover group-hover/photo:scale-110 transition-transform duration-150"
                 onError={(e) => {
                   e.target.style.display = "none";
                   const fallback = e.target.nextElementSibling;
@@ -306,11 +306,11 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
             )}
           </div>
           {/* Photo overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity duration-150 rounded-2xl"></div>
         </div>
 
         <div className="flex-1 min-w-0 text-center mx-auto md:text-right">
-          <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 mb-2 md:mb-3 flex items-center justify-center md:justify-start gap-2 md:gap-3 group-hover:text-brand-600 transition-colors duration-300">
+          <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 mb-2 md:mb-3 flex items-center justify-center md:justify-start gap-2 md:gap-3 group-hover:text-brand-600 transition-colors duration-150">
             {lesson.name}
             {accessStatus?.hasAccess &&
               getProgressIcon(lessonProgress?.progressStatus)}
@@ -335,7 +335,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
           {/* Enhanced Role Badge for non-students */}
           {user?.role !== "STUDENT" && accessStatus?.isEnhancedAccess && (
-            <div className="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-4 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-sm md:text-base">
+            <div className="bg-brand-500 text-white px-4 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 shadow-sm transition-all duration-150 text-sm md:text-base">
               <FaEye className="w-3 h-3 md:w-4 md:h-4" />
               {user?.role === "ADMIN"
                 ? "مدير"
@@ -350,7 +350,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
       {/* Enhanced Progress Status */}
       {accessStatus?.hasAccess && lessonProgress && (
         <div
-          className={`relative mb-4 md:mb-6 px-4 md:px-5 py-1 rounded-xl md:rounded-2xl border-2 ${getProgressColor(lessonProgress.progressStatus)} backdrop-blur-sm shadow-lg`}
+          className={`relative mb-4 md:mb-6 px-4 md:px-5 py-1 rounded-xl md:rounded-2xl border-2   backdrop-blur-sm shadow-sm ${getProgressColor(lessonProgress.progressStatus)}`}
         >
           <div className="flex items-center justify-center md:justify-start gap-3 md:gap-4">
             <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/30 flex items-center justify-center">
@@ -367,28 +367,28 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
       <div className="relative grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
         {/* Enhanced Exam */}
         <div
-          className={`group/exam p-3 rounded-xl md:rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
-            componentsLoading
-              ? "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 animate-pulse"
-              : hasExam
-                ? canAccessPart("exam")
-                  ? "bg-gradient-to-br from-brand-50 to-brand-100 border-brand-200 hover:border-brand-300 shadow-md"
-                  : "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200"
-                : "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300"
-          }`}
+          className={`group/exam p-3 rounded-xl md:rounded-2xl border-2 text-center transition-all duration-150   ${
+ componentsLoading
+ ? "bg-gray-100 border-gray-300 animate-pulse"
+ : hasExam
+ ? canAccessPart("exam")
+ ? "bg-brand-50 border-brand-200 hover:border-brand-300 shadow-sm"
+ : "bg-gray-50 border-gray-200"
+ : "bg-gray-100 border-gray-300"
+ }`}
         >
           <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 rounded-full bg-white/60 flex items-center justify-center">
             {componentsLoading ? (
               <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
             ) : (
               <FaQuestionCircle
-                className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-300 ${
-                  hasExam
-                    ? canAccessPart("exam")
-                      ? "text-brand-500 group-hover/exam:text-brand-600 group-hover/exam:scale-110"
-                      : "text-gray-400"
-                    : "text-gray-300"
-                }`}
+                className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-150 ${
+ hasExam
+ ? canAccessPart("exam")
+ ? "text-brand-500 group-hover/exam:text-brand-600 group-hover/exam:scale-110"
+ : "text-gray-400"
+ : "text-gray-300"
+ }`}
               />
             )}
           </div>
@@ -403,19 +403,19 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
         {/* Enhanced Video */}
         <div
-          className={`group/video p-3 md:p-4 lg:p-5 rounded-xl md:rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
-            canAccessPart("video")
-              ? "bg-gradient-to-br from-brand-50 to-brand-100 border-emerald-200 hover:border-emerald-300 shadow-md"
-              : "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200"
-          }`}
+          className={`group/video p-3 md:p-4 lg:p-5 rounded-xl md:rounded-2xl border-2 text-center transition-all duration-150   ${
+ canAccessPart("video")
+ ? "bg-brand-50 border-emerald-200 hover:border-emerald-300 shadow-sm"
+ : "bg-gray-50 border-gray-200"
+ }`}
         >
           <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 rounded-full bg-white/60 flex items-center justify-center">
             <FaPlay
-              className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-300 ${
-                canAccessPart("video")
-                  ? "text-emerald-500 group-hover/video:text-emerald-600 group-hover/video:scale-110"
-                  : "text-gray-400"
-              }`}
+              className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-150 ${
+ canAccessPart("video")
+ ? "text-emerald-500 group-hover/video:text-emerald-600 group-hover/video:scale-110"
+ : "text-gray-400"
+ }`}
             />
           </div>
           <p className="text-xs md:text-sm font-semibold text-gray-700">
@@ -425,28 +425,28 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
         {/* Enhanced Assignment */}
         <div
-          className={`group/assignment p-3 md:p-4 lg:p-5 rounded-xl md:rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
-            componentsLoading
-              ? "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 animate-pulse"
-              : hasAssignment
-                ? canAccessPart("assignment")
-                  ? "bg-gradient-to-br from-brand-50 to-brand-100 border-brand-200 hover:border-brand-300 shadow-md"
-                  : "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200"
-                : "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300"
-          }`}
+          className={`group/assignment p-3 md:p-4 lg:p-5 rounded-xl md:rounded-2xl border-2 text-center transition-all duration-150   ${
+ componentsLoading
+ ? "bg-gray-100 border-gray-300 animate-pulse"
+ : hasAssignment
+ ? canAccessPart("assignment")
+ ? "bg-brand-50 border-brand-200 hover:border-brand-300 shadow-sm"
+ : "bg-gray-50 border-gray-200"
+ : "bg-gray-100 border-gray-300"
+ }`}
         >
           <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 rounded-full bg-white/60 flex items-center justify-center">
             {componentsLoading ? (
               <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
             ) : (
               <FaFileAlt
-                className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-300 ${
-                  hasAssignment
-                    ? canAccessPart("assignment")
-                      ? "text-brand-500 group-hover/assignment:text-brand-600 group-hover/assignment:scale-110"
-                      : "text-gray-400"
-                    : "text-gray-300"
-                }`}
+                className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-150 ${
+ hasAssignment
+ ? canAccessPart("assignment")
+ ? "text-brand-500 group-hover/assignment:text-brand-600 group-hover/assignment:scale-110"
+ : "text-gray-400"
+ : "text-gray-300"
+ }`}
               />
             )}
           </div>
@@ -465,11 +465,11 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
         {shouldShowPurchaseButton() && (
           <button
             onClick={() => onPurchase(lesson)}
-            className={`cursor-pointer text-white py-3 md:py-4 px-6 md:px-8 rounded-xl md:rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm md:text-base ${
-              lesson.free
-                ? "bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700"
-                : "bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700"
-            }`}
+            className={`cursor-pointer text-white py-2 md:py-2.5 px-4 md:px-5 rounded-xl md:rounded-2xl font-bold transition-all duration-150 flex items-center justify-center gap-2 md:gap-3 text-sm md:text-base ${
+ lesson.free
+ ? "bg-brand-500 hover:bg-brand-600"
+ : "bg-brand-500 hover:bg-brand-600"
+ }`}
           >
             {lesson.free ? (
               <>
@@ -490,7 +490,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
             onClick={() => {
               onViewLesson(lesson);
             }}
-            className="w-full md:flex-1 bg-gradient-to-r from-brand-500 to-brand-600 text-white py-3 md:py-4 px-6 rounded-xl md:rounded-2xl font-bold hover:from-brand-600 hover:to-brand-700 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer text-sm md:text-base"
+            className="w-full md:flex-1 bg-brand-500 text-white py-2 md:py-2.5 px-4 rounded-xl md:rounded-2xl font-bold hover:bg-brand-600 transition-all duration-150 flex items-center justify-center gap-2 md:gap-3 cursor-pointer text-sm md:text-base"
           >
             <FaEye className="w-4 h-4 md:w-5 md:h-5" />
             {accessStatus?.isEnhancedAccess ? "إدارة الدرس" : "عرض الدرس"}
@@ -500,7 +500,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
         {!shouldShowPurchaseButton() &&
           !shouldShowViewButton() &&
           user?.role === "STUDENT" && (
-            <div className="w-full md:flex-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 py-3 md:py-4 px-6 rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 md:gap-3 border-2 border-gray-300 text-sm md:text-base">
+            <div className="w-full md:flex-1 bg-gray-100 text-gray-500 py-3 md:py-4 px-6 rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 md:gap-3 border-2 border-gray-300 text-sm md:text-base">
               <FaLock className="w-4 h-4 md:w-5 md:h-5" />
               غير متاح
             </div>
@@ -508,7 +508,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
         {(user?.role === "INSTRUCTOR" || user?.role === "ASSISTANT") &&
           !shouldShowViewButton() && (
-            <div className="w-full md:flex-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 py-3 md:py-4 px-6 rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 md:gap-3 border-2 border-gray-300 text-sm md:text-base">
+            <div className="w-full md:flex-1 bg-gray-100 text-gray-500 py-3 md:py-4 px-6 rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 md:gap-3 border-2 border-gray-300 text-sm md:text-base">
               <FaLock className="w-4 h-4 md:w-5 md:h-5" />
               ليس من دروسك
             </div>

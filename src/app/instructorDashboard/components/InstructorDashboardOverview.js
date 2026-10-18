@@ -142,7 +142,7 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
           </p>
         </div>
         <div className="flex">
-          <Link href={'/'} className="flex items-center border rounded-md px-5 py-2 gap-3 border-secondary text-secondary hover:text-white hover:bg-brand-400 transition duration-300">
+          <Link href={'/'} className="flex items-center border rounded-md px-5 py-2 gap-3 border-secondary text-secondary hover:text-white hover:bg-brand-400 transition duration-150">
             <FaArrowLeftLong /> العودة للرئيسية
           </Link>
         </div>
@@ -155,10 +155,10 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
           return (
             <div
               key={index}
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
+              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-all duration-150"
             >
               <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 rounded-lg ${card.bgColor}`}>
+                <div className={`p-3 rounded-lg   ${card.bgColor}`}>
                   <Icon className={`w-6 h-6 ${card.textColor}`} />
                 </div>
                 <div className="text-right">
@@ -190,7 +190,7 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
                 <p className="regular-14 text-gray-600 mb-4">لم تقم بإنشاء أي كورسات بعد</p>
                 <button
                   onClick={() => setActiveTab('courses')}
-                  className="cursor-pointer bg-secondary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
+                  className="cursor-pointer bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-all duration-150"
                 >
                   إنشاء أول كورس
                 </button>
@@ -230,23 +230,23 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <button
             onClick={() => setActiveTab('courses')}
-            className="cursor-pointer p-4 bg-secondary bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
+            className="cursor-pointer p-4 bg-brand-600 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-150 text-center group"
           >
-            <FiBook className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
+            <FiBook className="w-6 h-6 text-white mx-auto mb-2 transition-transform" />
             <p className="regular-14 text-white">إدارة الكورسات</p>
           </button>
           <button
             onClick={() => setActiveTab('lessons')}
-            className="cursor-pointer p-4 bg-brand-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
+            className="cursor-pointer p-4 bg-brand-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-150 text-center group"
           >
-            <FiFileText className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
+            <FiFileText className="w-6 h-6 text-white mx-auto mb-2 transition-transform" />
             <p className="regular-14 text-white">إدارة الدروس</p>
           </button>
           <button
             onClick={() => setActiveTab('access-codes')}
-            className="cursor-pointer p-4 bg-brand-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
+            className="cursor-pointer p-4 bg-brand-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-150 text-center group"
           >
-            <FiCode className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
+            <FiCode className="w-6 h-6 text-white mx-auto mb-2 transition-transform" />
             <p className="regular-14 text-white">إدارة أكواد الوصول</p>
           </button>
         </div>

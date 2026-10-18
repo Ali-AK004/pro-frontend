@@ -181,7 +181,7 @@ const LessonExpirationManagement = () => {
         <button
           onClick={handleProcessExpired}
           disabled={isLoading}
-          className="bg-accent text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer disabled:opacity-50 w-full md:w-auto"
+          className="bg-brand-600 text-white px-4 py-2 lg:px-4 lg:py-2 rounded-lg bold-14 lg:text-sm font-semibold hover:bg-brand-700 transition-all duration-150 flexCenter gap-2 cursor-pointer disabled:opacity-50 w-full md:w-auto"
         >
           <FiRefreshCw
             className={`w-4 h-4 lg:w-5 lg:h-5 ${isLoading ? "animate-spin" : ""}`}
@@ -263,14 +263,14 @@ const LessonExpirationManagement = () => {
       <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 mb-6 lg:mb-8">
         <button
           onClick={() => setShowExtendModal(true)}
-          className="bg-brand-600 text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-brand-700 transition-all duration-300 flexCenter gap-2 w-full sm:w-auto"
+          className="bg-brand-600 text-white px-4 py-2 lg:px-4 lg:py-2 rounded-lg bold-14 lg:text-sm font-semibold hover:bg-brand-700 transition-all duration-150 flexCenter gap-2 w-full sm:w-auto"
         >
           <FiPlus className="w-4 h-4 lg:w-5 lg:h-5" />
           تمديد الوصول
         </button>
         <button
           onClick={() => setShowResetModal(true)}
-          className="bg-amber-600 text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-amber-700 transition-all duration-300 flexCenter gap-2 w-full sm:w-auto"
+          className="bg-amber-600 text-white px-4 py-2 lg:px-4 lg:py-2 rounded-lg bold-14 lg:text-sm font-semibold hover:bg-amber-700 transition-all duration-150 flexCenter gap-2 w-full sm:w-auto"
         >
           <FiUserX className="w-4 h-4 lg:w-5 lg:h-5" />
           إعادة تعيين بيانات الطالب
@@ -289,7 +289,7 @@ const LessonExpirationManagement = () => {
           <select
             value={daysFilter}
             onChange={(e) => setDaysFilter(parseInt(e.target.value))}
-            className="px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm lg:text-base"
+            className="px-3 lg:px-4 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm lg:text-base focus:outline-none"
           >
             <option value={1}>يوم واحد</option>
             <option value={3}>3 أيام</option>
@@ -447,26 +447,26 @@ const LessonExpirationManagement = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4 mb-3 lg:mb-4">
           <div>
-            <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-2">
+            <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-1">
               معرف الطالب
             </label>
             <input
               type="text"
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
-              className="w-full px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm lg:text-base"
+              className="w-full px-3 lg:px-4 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm lg:text-base focus:outline-none"
               placeholder="أدخل معرف الطالب"
             />
           </div>
           <div>
-            <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-2">
+            <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-1">
               معرف الدرس
             </label>
             <input
               type="text"
               value={lessonId}
               onChange={(e) => setLessonId(e.target.value)}
-              className="w-full px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm lg:text-base"
+              className="w-full px-3 lg:px-4 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm lg:text-base focus:outline-none"
               placeholder="أدخل معرف الدرس"
             />
           </div>
@@ -474,7 +474,7 @@ const LessonExpirationManagement = () => {
             <button
               onClick={checkRepurchaseEligibility}
               disabled={isLoading || !studentId || !lessonId}
-              className="w-full bg-brand-600 text-white px-4 lg:px-6 py-2 rounded-lg bold-14 lg:bold-16 hover:bg-brand-700 transition-all duration-300 disabled:opacity-50"
+              className="w-full bg-brand-600 text-white px-4 lg:px-4 py-2 rounded-lg bold-14 lg:text-sm font-semibold hover:bg-brand-700 transition-all duration-150 disabled:opacity-50"
             >
               فحص الأهلية
             </button>
@@ -483,7 +483,7 @@ const LessonExpirationManagement = () => {
 
         {repurchaseCheck && (
           <div
-            className={`p-3 lg:p-4 rounded-lg ${repurchaseCheck.canRepurchase ? "bg-emerald-100 border border-emerald-200" : "bg-red-100 border border-red-200"}`}
+            className={`p-3 lg:p-4 rounded-lg   ${repurchaseCheck.canRepurchase ? "bg-emerald-100 border border-emerald-200" : "bg-red-100 border border-red-200"}`}
           >
             <div className="flex items-center gap-2 mb-1 lg:mb-2">
               {repurchaseCheck.canRepurchase ? (
@@ -511,7 +511,7 @@ const LessonExpirationManagement = () => {
 
       {/* Extend Access Modal */}
       {showExtendModal && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
           <div className="bg-white rounded-lg lg:rounded-xl shadow-xl max-w-md w-full">
             <div className="p-4 lg:p-6 border-b border-gray-100">
               <h3 className="bold-16 lg:bold-18 text-gray-900">
@@ -521,33 +521,33 @@ const LessonExpirationManagement = () => {
             <form onSubmit={handleExtendAccess} className="p-4 lg:p-6">
               <div className="space-y-3 lg:space-y-4">
                 <div>
-                  <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-2">
+                  <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-1">
                     معرف الطالب
                   </label>
                   <input
                     type="text"
                     value={selectedStudent}
                     onChange={(e) => setSelectedStudent(e.target.value)}
-                    className="w-full px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm lg:text-base"
+                    className="w-full px-3 lg:px-4 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm lg:text-base focus:outline-none"
                     placeholder="أدخل معرف الطالب"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-2">
+                  <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-1">
                     معرف الدرس
                   </label>
                   <input
                     type="text"
                     value={selectedLesson}
                     onChange={(e) => setSelectedLesson(e.target.value)}
-                    className="w-full px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm lg:text-base"
+                    className="w-full px-3 lg:px-4 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm lg:text-base focus:outline-none"
                     placeholder="أدخل معرف الدرس"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-2">
+                  <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-1">
                     عدد الأيام الإضافية
                   </label>
                   <input
@@ -556,7 +556,7 @@ const LessonExpirationManagement = () => {
                     onChange={(e) =>
                       setAdditionalDays(parseInt(e.target.value))
                     }
-                    className="w-full px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm lg:text-base"
+                    className="w-full px-3 lg:px-4 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm lg:text-base focus:outline-none"
                     min="1"
                     max="365"
                     required
@@ -567,7 +567,7 @@ const LessonExpirationManagement = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-accent text-white py-2 rounded-lg bold-14 lg:bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                  className="flex-1 bg-brand-600 text-white py-2 rounded-lg bold-14 lg:text-sm font-semibold hover:bg-brand-700 transition-all duration-150 disabled:opacity-50"
                 >
                   تمديد الوصول
                 </button>
@@ -577,7 +577,7 @@ const LessonExpirationManagement = () => {
                     setShowExtendModal(false);
                     resetExtendForm();
                   }}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg bold-14 lg:bold-16 hover:bg-gray-400 transition-all duration-300"
+                  className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg bold-14 lg:text-sm font-semibold hover:bg-gray-400 transition-all duration-150"
                 >
                   إلغاء
                 </button>
@@ -589,7 +589,7 @@ const LessonExpirationManagement = () => {
 
       {/* Reset Student Data Modal */}
       {showResetModal && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
           <div className="bg-white rounded-lg lg:rounded-xl shadow-xl max-w-md w-full">
             <div className="p-4 lg:p-6 border-b border-gray-100">
               <h3 className="bold-16 lg:bold-18 text-gray-900">
@@ -599,27 +599,27 @@ const LessonExpirationManagement = () => {
             <form onSubmit={handleResetStudentData} className="p-4 lg:p-6">
               <div className="space-y-3 lg:space-y-4">
                 <div>
-                  <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-2">
+                  <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-1">
                     معرف الطالب
                   </label>
                   <input
                     type="text"
                     value={selectedStudent}
                     onChange={(e) => setSelectedStudent(e.target.value)}
-                    className="w-full px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm lg:text-base"
+                    className="w-full px-3 lg:px-4 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm lg:text-base focus:outline-none"
                     placeholder="أدخل معرف الطالب"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-2">
+                  <label className="block regular-12 lg:regular-14 text-gray-700 mb-1 lg:mb-1">
                     معرف الدرس
                   </label>
                   <input
                     type="text"
                     value={selectedLesson}
                     onChange={(e) => setSelectedLesson(e.target.value)}
-                    className="w-full px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm lg:text-base"
+                    className="w-full px-3 lg:px-4 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm lg:text-base focus:outline-none"
                     placeholder="أدخل معرف الدرس"
                     required
                   />
@@ -641,7 +641,7 @@ const LessonExpirationManagement = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-red-600 text-white py-2 rounded-lg bold-14 lg:bold-16 hover:bg-red-700 transition-all duration-300 disabled:opacity-50"
+                  className="flex-1 bg-red-600 text-white py-2 rounded-lg bold-14 lg:text-sm font-semibold hover:bg-red-700 transition-all duration-150 disabled:opacity-50"
                 >
                   إعادة تعيين البيانات
                 </button>
@@ -651,7 +651,7 @@ const LessonExpirationManagement = () => {
                     setShowResetModal(false);
                     resetResetForm();
                   }}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg bold-14 lg:bold-16 hover:bg-gray-400 transition-all duration-300"
+                  className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg bold-14 lg:text-sm font-semibold hover:bg-gray-400 transition-all duration-150"
                 >
                   إلغاء
                 </button>

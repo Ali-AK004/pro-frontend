@@ -1,6 +1,7 @@
 import axios from "axios";
 import { apiConfig } from "../../config/api";
 import { attachAuthRefresh } from "../utils/authRefresh";
+import { asList, listParams } from "../utils/pageList";
 
 // Bundles (باقات) and discount coupons (أكواد الخصم)
 const apiClient = axios.create({
@@ -12,8 +13,9 @@ attachAuthRefresh(apiClient);
 
 export const commerceAPI = {
   // Public: bundles on sale for a course or an instructor
-  bundlesForCourse: (courseId) => apiClient.get("/public/bundles", { params: { courseId } }),
-  bundlesForInstructor: (instructorId) => apiClient.get("/public/bundles", { params: { instructorId } }),
+  bundlesForCourse: (courseId) => apiClient.get("/public/bundles", { params: listParams({ courseId }) }).then(asList),
+  bundlesForInstructor: (instructorId) =>
+    apiClient.get("/public/bundles", { params: listParams({ instructorId }) }).then(asList),
 
   // Student
   buyBundle: (bundleId, paymentMethod, couponCode) =>
@@ -26,13 +28,15 @@ export const commerceAPI = {
 
   // Instructor / assistant / admin
   manage: {
-    bundles: () => apiClient.get("/manage/bundles"),
-    bundleLessons: (instructorId) =>
-      apiClient.get("/manage/bundle-lessons", { params: instructorId ? { instructorId } : {} }),
+    bundles: () => apiClient.get("/manage/bundles", { params: listParams() }).then(asList),
+    bundleLessons: (instructorId, q) =>
+      apiClient
+        .get("/manage/bundle-lessons", { params: listParams({ instructorId: instructorId || undefined, q: q || undefined }) })
+        .then(asList),
     createBundle: (data) => apiClient.post("/manage/bundles", data),
     updateBundle: (id, data) => apiClient.put(`/manage/bundles/${id}`, data),
     deleteBundle: (id) => apiClient.delete(`/manage/bundles/${id}`),
-    coupons: () => apiClient.get("/manage/coupons"),
+    coupons: () => apiClient.get("/manage/coupons", { params: listParams() }).then(asList),
     createCoupon: (data) => apiClient.post("/manage/coupons", data),
     setCouponActive: (id, active) => apiClient.patch(`/manage/coupons/${id}/active`, { active }),
   },

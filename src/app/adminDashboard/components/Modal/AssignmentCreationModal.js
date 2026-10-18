@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { assignmentAPI } from "../../../services/assignmentAPI";
-import {
-  FiX,
-  FiSave,
-  FiFileText,
-  FiCalendar,
-  FiAward,
-  FiAlignLeft,
-} from "react-icons/fi";
+import { FiSave } from "react-icons/fi";
+import { Dialog, Button, Field, inputClass, textareaClass, cx } from "../../../components/ui";
 
 const AssignmentCreationModal = ({
   isOpen,
@@ -84,206 +78,103 @@ const AssignmentCreationModal = ({
     });
   };
 
-  if (!isOpen) return null;
+  const fieldClass = (key) => cx(inputClass, errors[key] && "border-red-300 focus:border-red-400 focus:ring-red-100");
+  const hasCourses = lessons.some((lesson) => lesson.courseName);
+  const courseNames = hasCourses ? [...new Set(lessons.map((lesson) => lesson.courseName))] : [];
 
   return (
-    <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-      <div className="bg-white rounded-xl w-full max-w-2xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="bold-24 text-gray-900">
-            {isEdit ? "تعديل الواجب" : "إنشاء واجب جديد"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
-          >
-            <FiX className="w-6 h-6 text-gray-500" />
-          </button>
+    <Dialog
+      open={isOpen}
+      wide
+      closeOnBackdrop={false}
+      title={isEdit ? "تعديل الواجب" : "واجب جديد"}
+      onClose={onClose}
+      footer={
+        <>
+          <Button type="submit" form="assignment-form" loading={isLoading}>
+            <FiSave /> {isEdit ? "حفظ التغييرات" : "إنشاء الواجب"}
+          </Button>
+          <Button variant="secondary" onClick={onClose}>إلغاء</Button>
+        </>
+      }
+    >
+      <form id="assignment-form" onSubmit={handleSubmit} className="space-y-3">
+        {!isEdit && (
+          <Field label="الدرس" error={errors.lessonId}>
+            <select
+              value={assignmentData.lessonId}
+              onChange={(e) => handleInputChange("lessonId", e.target.value)}
+              className={fieldClass("lessonId")}
+              required
+            >
+              <option value="">اختر الدرس</option>
+              {hasCourses
+                ? courseNames.map((courseName) => (
+                    <optgroup key={courseName} label={courseName}>
+                      {lessons
+                        .filter((lesson) => lesson.courseName === courseName)
+                        .map((lesson) => (
+                          <option key={lesson.id} value={lesson.id}>{lesson.name}</option>
+                        ))}
+                    </optgroup>
+                  ))
+                : lessons.map((lesson) => (
+                    <option key={lesson.id} value={lesson.id}>{lesson.name}</option>
+                  ))}
+            </select>
+          </Field>
+        )}
+
+        <Field label="عنوان الواجب" error={errors.title}>
+          <input
+            type="text"
+            value={assignmentData.title}
+            onChange={(e) => handleInputChange("title", e.target.value)}
+            className={fieldClass("title")}
+            placeholder="مثال: واجب الوحدة الأولى"
+            required
+          />
+        </Field>
+
+        <Field label="الوصف" hint="اختياري">
+          <textarea
+            value={assignmentData.description}
+            onChange={(e) => handleInputChange("description", e.target.value)}
+            className={cx(textareaClass, "resize-y")}
+            rows={4}
+            placeholder="ما المطلوب من الطالب؟"
+          />
+        </Field>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Field label="موعد التسليم" error={errors.dueDate} hint="اختياري">
+            <input
+              type="datetime-local"
+              value={assignmentData.dueDate}
+              onChange={(e) => handleInputChange("dueDate", e.target.value)}
+              className={fieldClass("dueDate")}
+              min={new Date().toISOString().slice(0, 16)}
+            />
+          </Field>
+          <Field label="الدرجة القصوى" error={errors.maxPoints}>
+            <input
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={assignmentData.maxPoints}
+              onChange={(e) => {
+                const value = e.target.value;
+                handleInputChange("maxPoints", value === "" ? "" : parseFloat(value) || 0.01);
+              }}
+              className={fieldClass("maxPoints")}
+              required
+            />
+          </Field>
         </div>
 
-        {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Lesson Selection */}
-            {!isEdit && (
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  <FiFileText className="inline w-4 h-4 ml-1" />
-                  الدرس
-                </label>
-                <select
-                  value={assignmentData.lessonId}
-                  onChange={(e) =>
-                    handleInputChange("lessonId", e.target.value)
-                  }
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.lessonId ? "border-red-300" : "border-gray-300"
-                  }`}
-                  required
-                >
-                  <option value="">اختر الدرس</option>
-                  {/* Group lessons by course if they have course information */}
-                  {lessons.some((lesson) => lesson.courseName)
-                    ? // Group lessons by course
-                      [
-                        ...new Set(lessons.map((lesson) => lesson.courseName)),
-                      ].map((courseName) => {
-                        const courseLessons = lessons.filter(
-                          (lesson) => lesson.courseName === courseName
-                        );
-                        return (
-                          <optgroup
-                            key={courseName}
-                            label={`كورس: ${courseName}`}
-                          >
-                            {courseLessons.map((lesson) => (
-                              <option key={lesson.id} value={lesson.id}>
-                                {lesson.name}
-                              </option>
-                            ))}
-                          </optgroup>
-                        );
-                      })
-                    : // Fallback to simple list if no course information
-                      lessons.map((lesson) => (
-                        <option key={lesson.id} value={lesson.id}>
-                          {lesson.name}
-                        </option>
-                      ))}
-                </select>
-                {errors.lessonId && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lessonId}</p>
-                )}
-              </div>
-            )}
-
-            {/* Title */}
-            <div>
-              <label className="block bold-14 text-gray-700 mb-2">
-                عنوان الواجب
-              </label>
-              <input
-                type="text"
-                value={assignmentData.title}
-                onChange={(e) => handleInputChange("title", e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                  errors.title ? "border-red-300" : "border-gray-300"
-                }`}
-                placeholder="أدخل عنوان الواجب"
-                required
-              />
-              {errors.title && (
-                <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-              )}
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block bold-14 text-gray-700 mb-2">
-                <FiAlignLeft className="inline w-4 h-4 ml-1" />
-                وصف الواجب
-              </label>
-              <textarea
-                value={assignmentData.description}
-                onChange={(e) =>
-                  handleInputChange("description", e.target.value)
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
-                rows="4"
-                placeholder="أدخل وصف الواجب (اختياري)"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Due Date */}
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  <FiCalendar className="inline w-4 h-4 ml-1" />
-                  تاريخ التسليم
-                </label>
-                <input
-                  type="datetime-local"
-                  value={assignmentData.dueDate}
-                  onChange={(e) => handleInputChange("dueDate", e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.dueDate ? "border-red-300" : "border-gray-300"
-                  }`}
-                  min={new Date().toISOString().slice(0, 16)}
-                />
-                {errors.dueDate && (
-                  <p className="mt-1 text-sm text-red-600">{errors.dueDate}</p>
-                )}
-              </div>
-
-              {/* Max Points */}
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  <FiAward className="inline w-4 h-4 ml-1" />
-                  النقاط القصوى
-                </label>
-                <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  value={assignmentData.maxPoints}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    handleInputChange(
-                      "maxPoints",
-                      value === "" ? "" : parseFloat(value) || 0.01
-                    );
-                  }}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.maxPoints ? "border-red-300" : "border-gray-300"
-                  }`}
-                  required
-                />
-                {errors.maxPoints && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.maxPoints}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Instructions */}
-            <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
-              <h4 className="bold-14 text-brand-900 mb-2">تعليمات:</h4>
-              <ul className="regular-12 text-brand-800 space-y-1">
-                <li>• تأكد من وضوح عنوان الواجب ووصفه</li>
-                <li>• حدد تاريخ التسليم بدقة</li>
-                <li>• النقاط القصوى ستستخدم في حساب الدرجات</li>
-                <li>• يمكن للطلاب رؤية الواجب فور إنشائه</li>
-              </ul>
-            </div>
-          </form>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-4 p-6 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-          >
-            إلغاء
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              <FiSave className="w-4 h-4" />
-            )}
-            {isEdit ? "حفظ التغييرات" : "إنشاء الواجب"}
-          </button>
-        </div>
-      </div>
-    </div>
+        <p className="text-[11px] text-slate-400">يظهر الواجب للطلاب فور إنشائه، وتُستخدم الدرجة القصوى في حساب النتيجة.</p>
+      </form>
+    </Dialog>
   );
 };
 

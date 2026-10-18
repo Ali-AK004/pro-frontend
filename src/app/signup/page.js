@@ -238,14 +238,14 @@ const SignUp = () => {
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50 py-8 px-4 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-brand-400/20 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative w-full max-w-4xl mx-auto">
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
           {/* Header with gradient */}
-          <div className="bg-gradient-to-r from-brand-600 to-brand-600 px-8 py-12 text-center">
+          <div className="bg-brand-600 px-8 py-12 text-center">
             <div className="inline-block mb-4 bg-white/20 rounded-md px-5 py-2 backdrop-blur-sm">
               <Link href="/" className="flexCenter gap-2">
                 <Image
@@ -271,13 +271,13 @@ const SignUp = () => {
           {/* Form Container */}
           <div className="px-8 py-8">
             {/* Form */}
-            <form className="space-y-6" onSubmit={handleSubmit}>
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Full Name */}
                 <div className="md:col-span-2">
                   <label
                     htmlFor="fullname"
-                    className="block text-sm font-semibold text-gray-700 mb-2"
+                    className="block text-sm font-semibold text-gray-700 mb-1"
                   >
                     الاسم الكامل
                   </label>
@@ -287,11 +287,11 @@ const SignUp = () => {
                     type="text"
                     required
                     autoComplete="name"
-                    className={`w-full px-4 py-4 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 text-right ${
-                      errors.fullname
-                        ? "border-red-300 focus:ring-red-500 bg-red-50"
-                        : "border-gray-200 focus:ring-brand-500"
-                    }`}
+                    className={`w-full px-4 py-4 bg-gray-50 border rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-150 text-right text-sm ${
+ errors.fullname
+ ? "border-red-300 focus:ring-red-500 bg-red-50"
+ : "border-gray-200 focus:ring-brand-500"
+ }`}
                     placeholder="أدخل اسمك الكامل"
                     value={formData.fullname}
                     onChange={handleChange}
@@ -303,7 +303,7 @@ const SignUp = () => {
                 <div className="md:col-span-2">
                   <label
                     htmlFor="username"
-                    className="block bold-14 text-gray-700 mb-2"
+                    className="block text-xs font-medium text-slate-600 mb-1"
                   >
                     اسم المستخدم
                   </label>
@@ -314,17 +314,17 @@ const SignUp = () => {
                       type="text"
                       required
                       autoComplete="username"
-                      className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                        errors.username
-                          ? "border-red-300 focus:ring-red-500"
-                          : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                      }`}
+                      className={`font-main appearance-none relative block w-full px-3 py-2 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-200 text-sm ${
+ errors.username
+ ? "border-red-300 focus:ring-red-500"
+ : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
+ }`}
                       placeholder="أدخل اسم المستخدم"
                       value={formData.username}
                       onChange={handleChange}
                     />
                     {isCheckingUsername && (
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-600"></div>
                       </div>
                     )}
@@ -374,7 +374,7 @@ const SignUp = () => {
                 <div className="md:col-span-2">
                   <label
                     htmlFor="email"
-                    className="block bold-14 text-gray-700 mb-2"
+                    className="block text-xs font-medium text-slate-600 mb-1"
                   >
                     البريد الإلكتروني
                   </label>
@@ -384,7 +384,7 @@ const SignUp = () => {
                     type="email"
                     required
                     autoComplete="email"
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
+                    className={`font-main appearance-none relative block w-full px-3 py-2 border rounded-lg border-slate-200 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-200 text-sm `}
                     placeholder="أدخل بريدك الإلكتروني"
                     value={formData.email}
                     onChange={handleChange}
@@ -396,7 +396,7 @@ const SignUp = () => {
                 <div>
                   <label
                     htmlFor="password"
-                    className="block bold-14 text-gray-700 mb-2"
+                    className="block text-xs font-medium text-slate-600 mb-1"
                   >
                     كلمة المرور
                   </label>
@@ -407,14 +407,14 @@ const SignUp = () => {
                       name="password"
                       type={showPassword ? "text" : "password"}
                       autoComplete="new-password"
-                      className={`font-main appearance-none relative block border-gray-300 w-full pr-4 pl-10 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
+                      className={`font-main appearance-none relative block border-slate-200 w-full pr-4 pl-10 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-200 text-sm `}
                       placeholder="أدخل كلمة المرور"
                       value={formData.password}
                       onChange={handleChange}
                     />
                     <button
                       type="button"
-                      className="absolute cursor-pointer left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
+                      className="absolute cursor-pointer left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
@@ -435,7 +435,7 @@ const SignUp = () => {
                 <div>
                   <label
                     htmlFor="confirmPassword"
-                    className="block bold-14 text-gray-700 mb-2"
+                    className="block text-xs font-medium text-slate-600 mb-1"
                   >
                     تأكيد كلمة المرور
                   </label>
@@ -445,18 +445,18 @@ const SignUp = () => {
                       name="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       autoComplete="new-password"
-                      className={`font-main appearance-none relative block w-full pr-4 pl-10 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                        errors.confirmPassword
-                          ? "border-red-300 focus:ring-red-500"
-                          : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                      }`}
+                      className={`font-main appearance-none relative block w-full pr-4 pl-10 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-200 text-sm ${
+ errors.confirmPassword
+ ? "border-red-300 focus:ring-red-500"
+ : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
+ }`}
                       placeholder="أعد إدخال كلمة المرور"
                       value={formData.confirmPassword}
                       onChange={handleChange}
                     />
                     <button
                       type="button"
-                      className="absolute cursor-pointer left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
+                      className="absolute cursor-pointer left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
@@ -492,7 +492,7 @@ const SignUp = () => {
                 <div>
                   <label
                     htmlFor="nationalId"
-                    className="block bold-14 text-gray-700 mb-2"
+                    className="block text-xs font-medium text-slate-600 mb-1"
                   >
                     الرقم القومي
                   </label>
@@ -502,7 +502,7 @@ const SignUp = () => {
                     type="text"
                     required
                     maxLength="14"
-                    className={`font-main appearance-none relative border-gray-300 block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
+                    className={`font-main appearance-none relative border-slate-200 block w-full px-3 py-2 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-200 text-sm `}
                     placeholder="أدخل الرقم القومي (14 رقم)"
                     value={formData.nationalId}
                     onChange={handleChange}
@@ -514,7 +514,7 @@ const SignUp = () => {
                 <div>
                   <label
                     htmlFor="dateOfBirth"
-                    className="block bold-14 text-gray-700 mb-2"
+                    className="block text-xs font-medium text-slate-600 mb-1"
                   >
                     تاريخ الميلاد
                   </label>
@@ -523,7 +523,7 @@ const SignUp = () => {
                     name="dateOfBirth"
                     type="date"
                     required
-                    className={`font-main appearance-none border-gray-300 relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200`}
+                    className={`font-main appearance-none border-slate-200 relative block w-full px-3 py-2 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-200 text-sm `}
                     value={formData.dateOfBirth}
                     onChange={handleChange}
                   />
@@ -533,7 +533,7 @@ const SignUp = () => {
                 <div>
                   <label
                     htmlFor="phoneNumber"
-                    className="block bold-14 text-gray-700 mb-2"
+                    className="block text-xs font-medium text-slate-600 mb-1"
                   >
                     هاتف الطالب
                   </label>
@@ -542,11 +542,11 @@ const SignUp = () => {
                     name="phoneNumber"
                     type="tel"
                     maxLength="11"
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                      errors.phoneNumber
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                    }`}
+                    className={`font-main appearance-none relative block w-full px-3 py-2 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-200 text-sm ${
+ errors.phoneNumber
+ ? "border-red-300 focus:ring-red-500"
+ : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
+ }`}
                     placeholder="01xxxxxxxxx"
                     value={formData.phoneNumber}
                     onChange={handleChange}
@@ -562,7 +562,7 @@ const SignUp = () => {
                 <div>
                   <label
                     htmlFor="parentPhoneNumber"
-                    className="block bold-14 text-gray-700 mb-2"
+                    className="block text-xs font-medium text-slate-600 mb-1"
                   >
                     هاتف ولي الأمر
                   </label>
@@ -571,11 +571,11 @@ const SignUp = () => {
                     name="parentPhoneNumber"
                     type="tel"
                     maxLength="11"
-                    className={`font-main appearance-none relative block w-full px-4 py-3 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                      errors.parentPhoneNumber
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                    }`}
+                    className={`font-main appearance-none relative block w-full px-3 py-2 border rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-200 text-sm ${
+ errors.parentPhoneNumber
+ ? "border-red-300 focus:ring-red-500"
+ : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
+ }`}
                     placeholder="01xxxxxxxxx"
                     value={formData.parentPhoneNumber}
                     onChange={handleChange}
@@ -591,18 +591,18 @@ const SignUp = () => {
                 <div className="md:col-span-2">
                   <label
                     htmlFor="government"
-                    className="block bold-14 text-gray-700 mb-2"
+                    className="block text-xs font-medium text-slate-600 mb-1"
                   >
                     المحافظة
                   </label>
                   <select
                     id="government"
                     name="government"
-                    className={`font-main relative block w-full px-4 py-3 border rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                      errors.government
-                        ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
-                    }`}
+                    className={`font-main relative block w-full px-3 py-2 border rounded-lg text-gray-900 focus:outline-none focus:ring-4 focus:border-brand-600 transition-all duration-200 text-sm ${
+ errors.government
+ ? "border-red-300 focus:ring-red-500"
+ : "border-gray-300 focus:ring-secondary focus:ring-opacity-50"
+ }`}
                     value={formData.government}
                     onChange={handleChange}
                   >
@@ -644,7 +644,7 @@ const SignUp = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="font-main cursor-pointer w-full flexCenter py-3 px-6 bg-accent text-white bold-16 rounded-lg hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
+                  className="font-main cursor-pointer w-full flexCenter py-2 px-4 bg-brand-600 text-white text-sm font-semibold rounded-lg hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {isLoading ? (
                     <div className="flexCenter">

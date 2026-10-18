@@ -17,15 +17,34 @@ import {
   FiHash,
 } from "react-icons/fi";
 import Image from "next/image";
+import {
+  PageHeader, Button, IconButton, Badge, Toolbar, SearchBox, Select, PagedTable,
+  Dialog, ConfirmDialog, Field, inputClass, textareaClass, cx,
+  usePaged, useDebounced, fmtMoney,
+} from "../../components/ui";
 
 const LessonManagement = () => {
-  const [lessons, setLessons] = useState([]);
-  const [allLessons, setAllLessons] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [instructors, setInstructors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  // Every lesson shows straight away; the filters only narrow the list.
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLessonFilter, setSelectedLessonFilter] = useState("");
+  const [instructorFilter, setInstructorFilter] = useState("");
+  const [courseFilter, setCourseFilter] = useState("");
+  const q = useDebounced(searchTerm.trim());
+  const list = usePaged(
+    (page, size) =>
+      adminAPI.lessons.list({
+        instructorId: instructorFilter || undefined,
+        courseId: courseFilter || undefined,
+        q: q || undefined,
+        page,
+        size,
+      }),
+    [instructorFilter, courseFilter, q],
+    { onError: (e) => toast.error(handleAPIError(e, "فشل في تحميل الدروس")) }
+  );
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -65,13 +84,15 @@ const LessonManagement = () => {
 
   useEffect(() => {
     fetchCourses();
-    fetchAllLessons();
+    adminAPI.users
+      .getAllInstructors()
+      .then(({ data }) => setInstructors(data))
+      .catch(() => setInstructors([]));
   }, []);
 
   const fetchCourses = async () => {
     try {
       const response = await adminAPI.courses.getAll();
-      // Handle paginated response
       setCourses(response.data?.content || response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
@@ -79,38 +100,8 @@ const LessonManagement = () => {
     }
   };
 
-  const fetchAllLessons = async () => {
-    try {
-      const coursesResponse = await adminAPI.courses.getAll();
-      const coursesData =
-        coursesResponse.data?.content || coursesResponse.data || [];
-
-      // Fetch lessons for each course
-      const allLessonsPromises = coursesData.map(async (course) => {
-        try {
-          const lessonsResponse = await adminAPI.lessons.getByCourse(course.id);
-          const courseLessons =
-            lessonsResponse.data?.content || lessonsResponse.data || [];
-          // Add course information to each lesson
-          return courseLessons.map((lesson) => ({
-            ...lesson,
-            courseName: course.name,
-            courseId: course.id,
-          }));
-        } catch (error) {
-          console.error(`Error fetching lessons for course ${course.id}:`);
-          return [];
-        }
-      });
-
-      const allLessonsArrays = await Promise.all(allLessonsPromises);
-      const flattenedLessons = allLessonsArrays.flat();
-      setAllLessons(flattenedLessons);
-    } catch (error) {
-      console.error("Error fetching all lessons");
-      setAllLessons([]);
-    }
-  };
+  // Reload the current page after a change
+  const fetchAllLessons = () => list.reload();
 
   const handleCreateLesson = async (e) => {
     e.preventDefault();
@@ -216,14 +207,7 @@ const handleUpdateLesson = async (e) => {
       toast.success("تم حذف الدرس بنجاح");
       setShowDeleteModal(false);
       setLessonToDelete(null);
-
-      // Clear the selected lesson filter if the deleted lesson was selected
-      if (selectedLessonFilter === lessonToDelete.id) {
-        setSelectedLessonFilter("");
-        setLessons([]); // Clear the displayed lessons immediately
-      }
-
-      fetchAllLessons(); // Refresh the lessons dropdown data
+      fetchAllLessons();
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في حذف الدرس"));
     } finally {
@@ -282,34 +266,6 @@ const handleUpdateLesson = async (e) => {
     }
   };
 
-  const handleSearch = () => {
-    try {
-      let filteredLessons = [...allLessons];
-
-      // Apply search term filter if it exists
-      if (searchTerm.trim()) {
-        const searchLower = searchTerm.toLowerCase();
-        filteredLessons = filteredLessons.filter(
-          (lesson) =>
-            lesson.name.toLowerCase().includes(searchLower) ||
-            lesson.description?.toLowerCase().includes(searchLower) ||
-            lesson.courseName?.toLowerCase().includes(searchLower)
-        );
-      }
-
-      // Apply dropdown filter if it exists
-      if (selectedLessonFilter) {
-        filteredLessons = filteredLessons.filter(
-          (lesson) => lesson.id === selectedLessonFilter
-        );
-      }
-
-      setLessons(filteredLessons);
-    } catch (error) {
-      toast.error("خطأ في البحث");
-      setLessons([]);
-    }
-  };
   const fetchLessonStatus = async (lessonId) => {
     try {
       setLessonStatus((prev) => ({ ...prev, isLoading: true }));
@@ -347,733 +303,365 @@ const handleUpdateLesson = async (e) => {
     setShowEditModal(true);
   };
 
-  return (
-    <div className="p-4 lg:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-col md:flex-row gap-4 mb-8">
-        <div>
-          <h1 className="bold-32 text-gray-900 mb-2">إدارة الدروس</h1>
-          <p className="regular-16 text-gray-600">
-            إنشاء وتعديل وإدارة الدروس التعليمية
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
-        >
-          <FiPlus className="w-5 h-5" />
-          إنشاء درس جديد
-        </button>
-      </div>
+  const courseOptions = courses
+    .filter((c) => !instructorFilter || c.instructorId === instructorFilter)
+    .map((c) => ({ value: c.id, label: c.name }));
 
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="grid lg:gap-4 grid-cols-1 gap-y-3 lg:grid-cols-2">
-          <div className="flex-1 flex relative">
-            <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+  const columns = [
+    {
+      key: "name",
+      label: "الدرس",
+      render: (l) => (
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-10 h-10 shrink-0 rounded-md bg-slate-100 overflow-hidden flex items-center justify-center">
+            {l.photoUrl ? (
+              <img src={l.photoUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <FiPlay className="w-4 h-4 text-slate-400" />
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="font-medium text-slate-900 truncate max-w-56">{l.name}</p>
+            <p className="text-[11px] text-slate-400 truncate max-w-56">{l.description || "بدون وصف"}</p>
+          </div>
+        </div>
+      ),
+    },
+    { key: "courseName", label: "الكورس", render: (l) => l.courseName || "—" },
+    { key: "instructorName", label: "المدرس", render: (l) => l.instructorName || "—" },
+    {
+      key: "price",
+      label: "السعر",
+      render: (l) => (l.free ? <Badge tone="success">مجاني</Badge> : fmtMoney(l.price)),
+    },
+    {
+      key: "video",
+      label: "الفيديو",
+      render: (l) => (l.hasVideo ? <Badge tone="brand">متاح</Badge> : <Badge>بدون</Badge>),
+    },
+    {
+      key: "actions",
+      label: "",
+      className: "w-px",
+      render: (l) => (
+        <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+          <IconButton
+            label="عرض"
+            icon={FiEye}
+            onClick={() => {
+              setSelectedLesson(l);
+              setShowViewModal(true);
+              fetchLessonStatus(l.id);
+            }}
+          />
+          <IconButton label="تعديل" icon={FiEdit} onClick={() => openEditModal(l)} />
+          <IconButton label="حذف" icon={FiTrash2} tone="danger" onClick={() => openDeleteModal(l)} />
+        </div>
+      ),
+    },
+  ];
+
+  const filtered = Boolean(searchTerm || instructorFilter || courseFilter);
+
+  return (
+    <div className="p-4 lg:p-6">
+      <PageHeader
+        title="إدارة الدروس"
+        subtitle="كل الدروس على المنصة، استخدم الفلاتر للتضييق"
+        actions={
+          <Button onClick={() => setShowCreateModal(true)}>
+            <FiPlus /> درس جديد
+          </Button>
+        }
+      />
+
+      <Toolbar
+        actions={
+          filtered ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchTerm("");
+                setInstructorFilter("");
+                setCourseFilter("");
+              }}
+            >
+              مسح الفلاتر
+            </Button>
+          ) : null
+        }
+      >
+        <SearchBox value={searchTerm} onChange={setSearchTerm} placeholder="ابحث باسم الدرس أو الكورس" />
+        <Select
+          value={instructorFilter}
+          onChange={(v) => {
+            setInstructorFilter(v);
+            setCourseFilter("");
+          }}
+          allLabel="كل المدرسين"
+          options={instructors.map((i) => ({ value: i.id, label: i.fullname || i.username }))}
+        />
+        <Select value={courseFilter} onChange={setCourseFilter} allLabel="كل الكورسات" options={courseOptions} />
+      </Toolbar>
+
+      <PagedTable
+        list={list}
+        columns={columns}
+        empty={filtered ? "لا توجد دروس مطابقة" : "لا توجد دروس بعد"}
+        emptyHint={filtered ? "جرّب تغيير الفلاتر" : "ابدأ بإنشاء أول درس"}
+      />
+
+      {/* Create lesson */}
+      <Dialog
+        open={showCreateModal}
+        wide
+        closeOnBackdrop={false}
+        title="درس جديد"
+        onClose={() => !isLoading && setShowCreateModal(false)}
+        footer={
+          <>
+            <Button type="submit" form="create-lesson" loading={isLoading}>إنشاء الدرس</Button>
+            <Button variant="secondary" disabled={isLoading} onClick={() => setShowCreateModal(false)}>إلغاء</Button>
+          </>
+        }
+      >
+        <form id="create-lesson" onSubmit={handleCreateLesson} className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field label="اسم الدرس">
+              <input
+                type="text"
+                required
+                value={lessonForm.name}
+                onChange={(e) => setLessonForm({ ...lessonForm, name: e.target.value })}
+                className={inputClass}
+                placeholder="مثال: الدرس الأول - المقدمة"
+              />
+            </Field>
+            <Field label="الكورس">
+              <select
+                required
+                value={lessonForm.courseId}
+                onChange={(e) => setLessonForm({ ...lessonForm, courseId: e.target.value })}
+                className={inputClass}
+              >
+                <option value="">اختر الكورس</option>
+                {courses.map((course) => (
+                  <option key={course.id} value={course.id}>{course.name}</option>
+                ))}
+              </select>
+            </Field>
+          </div>
+
+          <Field label="الوصف" hint="اختياري">
+            <textarea
+              rows={3}
+              value={lessonForm.description}
+              onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
+              className={textareaClass}
+              placeholder="ماذا سيتعلم الطالب في هذا الدرس؟"
+            />
+          </Field>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+            <Field label="السعر (ج.م)">
+              <input
+                type="number"
+                required
+                min="0"
+                step="5"
+                value={lessonForm.price}
+                onChange={(e) => setLessonForm({ ...lessonForm, price: e.target.value })}
+                disabled={lessonForm.free}
+                className={inputClass}
+                placeholder="0"
+              />
+            </Field>
+            <label className="flex items-center gap-2 h-9 px-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={lessonForm.free}
+                onChange={(e) => {
+                  const isFree = e.target.checked;
+                  setLessonForm({ ...lessonForm, free: isFree, price: isFree ? "0" : lessonForm.price });
+                }}
+                className="w-4 h-4 accent-brand-600"
+              />
+              درس مجاني
+            </label>
+          </div>
+
+          <Field label="رابط صورة الدرس" hint="اختياري">
             <input
-              type="text"
-              placeholder="البحث في الدروس..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+              type="url"
+              dir="ltr"
+              value={lessonForm.photoUrl}
+              onChange={(e) => setLessonForm({ ...lessonForm, photoUrl: e.target.value })}
+              className={inputClass}
+              placeholder="https://..."
+            />
+          </Field>
+
+          <div>
+            <span className="block mb-1 text-xs font-medium text-slate-600">فيديو الدرس</span>
+            <VideoFileSelector
+              onFileSelected={(file) => handleVideoFileSelected(file, false)}
+              onFileRemoved={() => handleVideoRemoved(false)}
+              selectedFile={selectedVideoFile}
+              isRequired={true}
             />
           </div>
-          <div className="flex flex-col gap-3 md:flex-row md:w-full">
-            <select
-              value={selectedLessonFilter}
-              onChange={(e) => {
-                setSelectedLessonFilter(e.target.value);
-                // Only filter by dropdown selection immediately
-                if (e.target.value) {
-                  const selected = allLessons.find(
-                    (l) => l.id === e.target.value
-                  );
-                  setLessons(selected ? [selected] : []);
-                } else {
-                  setLessons([]);
-                }
+
+          {isLoading && selectedVideoFile && uploadProgress > 0 && (
+            <div className="rounded-lg border border-slate-200 p-3">
+              <div className="flex items-center justify-between mb-1.5 text-xs">
+                <span className="font-medium text-slate-700">جاري رفع الفيديو…</span>
+                <span className="text-brand-700 font-semibold">{uploadProgress}%</span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-full bg-brand-600 transition-all" style={{ width: `${uploadProgress}%` }} />
+              </div>
+              <p className="mt-1.5 text-[11px] text-slate-400">لا تغلق النافذة حتى ينتهي الرفع</p>
+            </div>
+          )}
+        </form>
+      </Dialog>
+
+      {/* Edit lesson */}
+      <Dialog
+        open={showEditModal && !!selectedLesson}
+        wide
+        closeOnBackdrop={false}
+        title="تعديل الدرس"
+        onClose={() => { setShowEditModal(false); setSelectedLesson(null); }}
+        footer={
+          <>
+            <Button type="submit" form="edit-lesson" loading={isLoading}>حفظ التغييرات</Button>
+            <Button variant="secondary" onClick={() => { setShowEditModal(false); setSelectedLesson(null); }}>إلغاء</Button>
+          </>
+        }
+      >
+        <form id="edit-lesson" onSubmit={handleUpdateLesson} className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_10rem] gap-3">
+            <Field label="اسم الدرس">
+              <input
+                type="text"
+                required
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className={inputClass}
+              />
+            </Field>
+            <Field label="السعر (ج.م)">
+              <input
+                type="number"
+                min="0"
+                step="5"
+                value={editForm.price}
+                onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                className={inputClass}
+              />
+            </Field>
+          </div>
+          <Field label="الوصف">
+            <textarea
+              rows={3}
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              className={textareaClass}
+            />
+          </Field>
+          <Field label="رابط الصورة">
+            <input
+              type="url"
+              dir="ltr"
+              value={editForm.photoUrl}
+              onChange={(e) => setEditForm({ ...editForm, photoUrl: e.target.value })}
+              className={inputClass}
+            />
+          </Field>
+          <div>
+            <span className="block mb-1 text-xs font-medium text-slate-600">فيديو الدرس</span>
+            <VideoUpload
+              onVideoUploaded={(videoData) => handleVideoUploaded(videoData, true)}
+              onVideoRemoved={() => handleVideoRemoved(true)}
+              currentVideoId={editForm.videoId}
+              currentVideoUrl={editForm.videoUrl}
+              isRequired={false}
+              uploadAPI={adminAPI.videos}
+            />
+          </div>
+        </form>
+      </Dialog>
+
+      {/* Lesson details */}
+      <Dialog
+        open={showViewModal && !!selectedLesson}
+        wide
+        title="تفاصيل الدرس"
+        onClose={() => { setShowViewModal(false); setSelectedLesson(null); }}
+        footer={
+          <>
+            <Button
+              onClick={() => {
+                const lesson = selectedLesson;
+                setShowViewModal(false);
+                openEditModal(lesson);
               }}
-              className="px-4 py-3 md:w-3/4 border md:flex-none border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
             >
-              <option value="">اختر درس</option>
-              {courses.map((course) => {
-                // Filter lessons that belong to this course
-                const courseLessons = allLessons.filter(
-                  (lesson) => lesson.courseId === course.id
-                );
-
-                // Only render optgroup if course has lessons
-                if (courseLessons.length === 0) return null;
-
-                return (
-                  <optgroup key={course.id} label={`كورس: ${course.name}`}>
-                    {courseLessons.map((lesson) => (
-                      <option key={lesson.id} value={lesson.id}>
-                        {lesson.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                );
-              })}
-            </select>
-            <button
-              onClick={() => handleSearch()}
-              className="bg-accent md:w-1/4 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
-            >
-              بحث
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Lessons List */}
-      <div className="space-y-4">
-        {isLoading ? (
-          // Loading skeleton
-          Array.from({ length: 3 }).map((_, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 animate-pulse flex flex-col sm:flex-row"
-            >
-              <div className="bg-gray-200 w-full h-48 sm:w-48 sm:h-32 rounded-lg flex-shrink-0"></div>
-              <div className="mt-3 sm:mt-0 sm:ml-4 flex-1">
-                <div className="bg-gray-200 h-5 sm:h-6 rounded mb-2"></div>
-                <div className="bg-gray-200 h-3 sm:h-4 rounded mb-3"></div>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="bg-gray-200 h-8 rounded w-full sm:w-16"></div>
-                  <div className="bg-gray-200 h-8 rounded w-full sm:w-16"></div>
-                  <div className="bg-gray-200 h-8 rounded w-full sm:w-16"></div>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : lessons.length === 0 ? (
-          <div className="text-center col-span-full py-12">
-            <FiFileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="regular-16 text-gray-600">
-              {selectedLessonFilter
-                ? "الدرس المحدد غير موجود"
-                : "اختر درس محدد من القائمة المنسدلة لعرضه"}
-            </p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="mt-4 bg-accent text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
-            >
-              إنشاء درس جديد
-            </button>
-          </div>
-        ) : (
-          lessons.map((lesson) => (
-            <div
-              key={lesson.id}
-              className="bg-white rounded-lg flex flex-col sm:flex-row shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 min-h-[200px]"
-            >
-              {/* Lesson Image/Video Thumbnail */}
-              <div className="w-full h-48 sm:w-58 sm:h-auto bg-gradient-to-br from-brand-500 to-brand-500 relative flex-shrink-0">
-                {lesson.photoUrl ? (
-                  <img
-                    src={lesson.photoUrl}
-                    alt={lesson.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flexCenter">
-                    <FiPlay className="w-12 h-12 text-white opacity-50" />
-                  </div>
-                )}
-                {lesson.price && (
-                  <div className="absolute top-2 left-2 bg-emerald-500 text-white px-2 py-1 rounded-full bold-10">
-                    {lesson.price} جنيه
-                  </div>
-                )}
-              </div>
-
-              {/* Lesson Content */}
-              <div className="p-3 sm:p-4 flex-1 flex flex-col">
-                <div className="flex-1">
-                  <div className="flex sm:flex-row sm:justify-between sm:items-start justify-between mb-2">
-                    <h3 className="bold-16 sm:bold-18 text-gray-900 line-clamp-1 mb-1 sm:mb-0">
-                      {lesson.name}
-                    </h3>
-                    {/* Lesson Stats */}
-                    <div className="text-xs sm:text-sm text-gray-500 flex flex-col gap-2 sm:ml-4">
-                      <div className="flex items-center gap-1">
-                        <FiBook className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="truncate">
-                          {lesson.courseName || "غير محدد"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FiHash className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="truncate">
-                          {lesson.id || "غير محدد"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="regular-12 sm:regular-14 text-gray-600 line-clamp-2 mb-3">
-                    {lesson.description || "لا يوجد وصف متاح"}
-                  </p>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedLesson(lesson);
-                      setShowViewModal(true);
-                      fetchLessonStatus(lesson.id);
-                    }}
-                    className="cursor-pointer flex-1 bg-brand-50 text-brand-600 border border-brand-300 py-2 px-2 sm:px-3 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-1 text-sm"
-                  >
-                    <FiEye className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">عرض</span>
-                  </button>
-                  <button
-                    onClick={() => openEditModal(lesson)}
-                    className="cursor-pointer flex-1 bg-emerald-50 text-emerald-600 border border-emerald-300 py-2 px-2 sm:px-3 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-1 text-sm"
-                  >
-                    <FiEdit className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">تعديل</span>
-                  </button>
-                  <button
-                    onClick={() => openDeleteModal(lesson)}
-                    className="cursor-pointer flex-1 bg-red-50 text-red-600 border border-red-300 py-2 px-2 sm:px-3 rounded-lg hover:bg-red-100 transition-colors flexCenter gap-1 text-sm"
-                  >
-                    <FiTrash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">حذف</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Create Lesson Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-24 text-gray-900">إنشاء درس جديد</h2>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
-              >
-                <FiX className="w-6 h-6 text-gray-500" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateLesson} className="space-y-6">
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  اسم الدرس *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={lessonForm.name}
-                  onChange={(e) =>
-                    setLessonForm({ ...lessonForm, name: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  placeholder="أدخل اسم الدرس"
-                />
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  وصف الدرس
-                </label>
-                <textarea
-                  rows={4}
-                  value={lessonForm.description}
-                  onChange={(e) =>
-                    setLessonForm({
-                      ...lessonForm,
-                      description: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  placeholder="أدخل وصف الدرس"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="">
-                  <label className="block bold-14 text-gray-900 mb-2">
-                    السعر {lessonForm.free ? "(مجاني)" : "*"}
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    step="5"
-                    value={lessonForm.price}
-                    onChange={(e) =>
-                      setLessonForm({ ...lessonForm, price: e.target.value })
-                    }
-                    disabled={lessonForm.free}
-                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                      lessonForm.free ? "bg-gray-100" : ""
-                    }`}
-                    placeholder="0"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="free-lesson"
-                    checked={lessonForm.free}
-                    onChange={(e) => {
-                      const isFree = e.target.checked;
-                      setLessonForm({
-                        ...lessonForm,
-                        free: isFree,
-                        price: isFree ? "0" : lessonForm.price,
-                      });
-                    }}
-                    className="w-4 h-4 text-accent rounded focus:ring-accent"
-                  />
-                  <label
-                    htmlFor="free-lesson"
-                    className="regular-14 text-gray-700"
-                  >
-                    درس مجاني
-                  </label>
-                </div>
-
-                <div>
-                  <label className="block bold-14 text-gray-900 mb-2">
-                    الكورس *
-                  </label>
-                  <select
-                    required
-                    value={lessonForm.courseId}
-                    onChange={(e) =>
-                      setLessonForm({ ...lessonForm, courseId: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  >
-                    <option value="">اختر الكورس</option>
-                    {courses.map((course) => (
-                      <option key={course.id} value={course.id}>
-                        {course.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  فيديو الدرس *
-                </label>
-                <VideoFileSelector
-                  onFileSelected={(file) =>
-                    handleVideoFileSelected(file, false)
-                  }
-                  onFileRemoved={() => handleVideoRemoved(false)}
-                  selectedFile={selectedVideoFile}
-                  isRequired={true}
-                />
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  رابط صورة الدرس
-                </label>
-                <input
-                  type="url"
-                  value={lessonForm.photoUrl}
-                  onChange={(e) =>
-                    setLessonForm({ ...lessonForm, photoUrl: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
-
-              {/* Upload Progress */}
-              {isLoading && selectedVideoFile && uploadProgress > 0 && (
-                <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-brand-700">
-                      جاري رفع الفيديو...
-                    </span>
-                    <span className="text-sm font-medium text-brand-700">
-                      {uploadProgress}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-brand-200 rounded-full h-2">
-                    <div
-                      className="bg-brand-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-brand-600 mt-2">
-                    يرجى عدم إغلاق النافذة أثناء رفع الفيديو
-                  </p>
-                </div>
+              <FiEdit /> تعديل
+            </Button>
+            <Button variant="secondary" onClick={() => { setShowViewModal(false); setSelectedLesson(null); }}>إغلاق</Button>
+          </>
+        }
+      >
+        {selectedLesson && (
+          <div className="grid grid-cols-1 sm:grid-cols-[14rem_1fr] gap-4">
+            <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-slate-100">
+              {selectedLesson.photoUrl ? (
+                <img src={selectedLesson.photoUrl} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+              ) : (
+                <FiPlay className="absolute inset-0 m-auto w-8 h-8 text-slate-300" />
               )}
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                >
-                  {isLoading ? "جاري الإنشاء..." : "إنشاء الدرس"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  disabled={isLoading}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Lesson Modal */}
-      {showEditModal && selectedLesson && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-24 text-gray-900">تعديل الدرس</h2>
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setSelectedLesson(null);
-                }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-              >
-                <FiX className="w-6 h-6 text-gray-500" />
-              </button>
             </div>
-
-            <form onSubmit={handleUpdateLesson} className="space-y-6">
-              {/* Lesson Name */}
+            <div className="space-y-3 min-w-0">
               <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  اسم الدرس
-                </label>
-                <input
-                  type="text"
-                  value={editForm.name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, name: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  required
-                />
+                <h3 className="text-base font-semibold text-slate-900">{selectedLesson.name}</h3>
+                <p className="mt-1 text-xs text-slate-500 leading-relaxed whitespace-pre-line">
+                  {selectedLesson.description || "لا يوجد وصف"}
+                </p>
               </div>
-
-              {/* Description */}
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  وصف الدرس
-                </label>
-                <textarea
-                  value={editForm.description}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, description: e.target.value })
-                  }
-                  rows="4"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                />
-              </div>
-
-              {/* Photo URL */}
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  رابط الصورة
-                </label>
-                <input
-                  type="url"
-                  value={editForm.photoUrl}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, photoUrl: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                />
-              </div>
-
-              {/* Price */}
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  السعر
-                </label>
-                <input
-                  type="number"
-                  value={editForm.price}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, price: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                  min="0"
-                  step="5"
-                />
-              </div>
-
-              {/* Video Upload */}
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  فيديو الدرس
-                </label>
-                <VideoUpload
-                  onVideoUploaded={(videoData) =>
-                    handleVideoUploaded(videoData, true)
-                  }
-                  onVideoRemoved={() => handleVideoRemoved(true)}
-                  currentVideoId={editForm.videoId}
-                  currentVideoUrl={editForm.videoUrl}
-                  isRequired={false}
-                  uploadAPI={adminAPI.videos}
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1 bg-accent text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-                >
-                  {isLoading ? "جاري التحديث..." : "حفظ التغييرات"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setSelectedLesson(null);
-                  }}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* View Lesson Modal */}
-      {showViewModal && selectedLesson && (
-        <div className="fixed inset-0 bg-black/30 flexCenter z-50">
-          <div className="bg-white rounded-xl w-full max-w-4xl overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="bold-24 text-gray-900">تفاصيل الدرس</h2>
-              <button
-                onClick={() => {
-                  setShowViewModal(false);
-                  setSelectedLesson(null);
-                }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-              >
-                <FiX className="w-6 h-6 text-gray-500" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Lesson Image */}
-                <div>
-                  {selectedLesson.photoUrl ? (
-                    <Image
-                      src={selectedLesson.photoUrl}
-                      width={192}
-                      height={192}
-                      alt={selectedLesson.name}
-                      className="w-full h-64 object-cover rounded-lg"
-                    />
-                  ) : (
-                    <div className="w-full h-64 bg-gradient-to-br from-brand-500 to-brand-500 rounded-lg flexCenter">
-                      <FiPlay className="w-16 h-16 text-white" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Lesson Details */}
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="bold-20 text-gray-900 mb-2">
-                      {selectedLesson.name}
-                    </h3>
-                    <p className="regular-16 text-gray-600">
-                      {selectedLesson.description || "لا يوجد وصف"}
-                    </p>
+              <dl className="grid grid-cols-2 gap-2 text-xs">
+                {[
+                  ["الكورس", selectedLesson.courseName || "—"],
+                  ["السعر", selectedLesson.price ? fmtMoney(selectedLesson.price) : "مجاني"],
+                  ["الامتحان", lessonStatus.isLoading ? "…" : lessonStatus.hasExam ? "موجود" : "لا يوجد"],
+                  ["الواجب", lessonStatus.isLoading ? "…" : lessonStatus.hasAssignment ? "موجود" : "لا يوجد"],
+                ].map(([k, v]) => (
+                  <div key={k} className="rounded-lg border border-slate-200 px-3 py-2">
+                    <dt className="text-slate-400">{k}</dt>
+                    <dd className="mt-0.5 font-medium text-slate-800 truncate">{v}</dd>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <FiDollarSign className="w-5 h-5 text-emerald-500" />
-                        <span className="bold-14 text-gray-700">السعر</span>
-                      </div>
-                      <span className="bold-18 text-emerald-600">
-                        {selectedLesson.price
-                          ? `${selectedLesson.price} ج.م`
-                          : "مجاني"}
-                      </span>
-                    </div>
-
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <FiBook className="w-5 h-5 text-brand-500" />
-                        <span className="bold-14 text-gray-700">الكورس</span>
-                      </div>
-                      <span className="regular-14 text-gray-600">
-                        {selectedLesson.courseName || "غير محدد"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Lesson Components Status */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    <div
-                      className={`p-4 rounded-lg border ${
-                        lessonStatus.isLoading
-                          ? "bg-gray-50 border-gray-200"
-                          : lessonStatus.hasExam
-                            ? "bg-brand-50 border-brand-200"
-                            : "bg-gray-50 border-gray-200"
-                      }`}
-                    >
-                      <div className="flex items-center flex-col md:flex-row gap-2 mb-2">
-                        <FiFileText className="w-5 h-5 text-brand-500" />
-                        <span className="bold-14 text-gray-700">الامتحان</span>
-                      </div>
-                      {lessonStatus.isLoading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
-                          <span className="regular-14 text-gray-500">
-                            جاري التحميل...
-                          </span>
-                        </div>
-                      ) : (
-                        <span
-                          className={`bold-14 text-center block md:inline-block md:text-right ${
-                            lessonStatus.hasExam
-                              ? "text-brand-700"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {lessonStatus.hasExam ? "✓ متوفر" : "✗ غير متوفر"}
-                        </span>
-                      )}
-                    </div>
-
-                    <div
-                      className={`p-4 rounded-lg border ${
-                        lessonStatus.isLoading
-                          ? "bg-gray-50 border-gray-200"
-                          : lessonStatus.hasAssignment
-                            ? "bg-brand-50 border-brand-200"
-                            : "bg-gray-50 border-gray-200"
-                      }`}
-                    >
-                      <div className="flex items-center flex-col md:flex-row gap-2 mb-2">
-                        <FiFileText className="w-5 h-5 text-brand-500" />
-                        <span className="bold-14 text-gray-700">الواجب</span>
-                      </div>
-                      {lessonStatus.isLoading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
-                          <span className="regular-14 text-gray-500">
-                            جاري التحميل...
-                          </span>
-                        </div>
-                      ) : (
-                        <span
-                          className={`bold-14 text-center block md:inline-block md:text-right ${
-                            lessonStatus.hasAssignment
-                              ? "text-brand-700"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {lessonStatus.hasAssignment
-                            ? "✓ متوفر"
-                            : "✗ غير متوفر"}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-end gap-4 p-6 border-t border-gray-200">
-              <button
-                onClick={() => {
-                  setShowViewModal(false);
-                  setSelectedLesson(null);
-                }}
-                className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
-              >
-                إغلاق
-              </button>
+                ))}
+              </dl>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Dialog>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && lessonToDelete && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <div className="text-center">
-              {/* Warning Icon */}
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <FiTrash2 className="h-6 w-6 text-red-600" />
-              </div>
-
-              {/* Title */}
-              <h3 className="bold-18 text-gray-900 mb-2">تأكيد حذف الدرس</h3>
-
-              {/* Message */}
-              <p className="regular-14 text-gray-600 mb-6">
-                هل أنت متأكد من حذف درس "{lessonToDelete.name}"؟
-                <br />
-                <span className="text-red-600 bold-14">
-                  سيتم حذف جميع المحتوى والواجبات والامتحانات المرتبطة به
-                  نهائياً.
-                </span>
-              </p>
-
-              {/* Actions */}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowDeleteModal(false);
-                    setLessonToDelete(null);
-                  }}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg bold-14 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
-                >
-                  إلغاء
-                </button>
-                <button
-                  onClick={handleDeleteLesson}
-                  disabled={isLoading}
-                  className="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg bold-14 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  {isLoading ? "جاري الحذف..." : "حذف نهائياً"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showDeleteModal && !!lessonToDelete}
+        title="حذف الدرس"
+        message={`سيتم حذف "${lessonToDelete?.name || ""}" نهائياً مع الامتحان والواجب المرتبطين به.`}
+        confirmLabel="حذف نهائياً"
+        danger
+        busy={isLoading}
+        onConfirm={handleDeleteLesson}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setLessonToDelete(null);
+        }}
+      />
     </div>
   );
 };

@@ -85,11 +85,11 @@ const OptimizedImage = ({
   return (
     <div
       ref={imgRef}
-      className={`relative overflow-hidden rounded-2xl ${className}`}
+      className={`relative overflow-hidden rounded-2xl   ${className}`}
     >
       {/* Enhanced Loading skeleton */}
       {isLoading && (
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200%_100%] animate-shimmer flex items-center justify-center">
+        <div className="absolute inset-0 bg-gray-200 bg-[length:200%_100%] animate-shimmer flex items-center justify-center">
           <div className="relative">
             <div className="w-12 h-12 bg-white/50 backdrop-blur-sm rounded-full flex items-center justify-center">
               <svg
@@ -107,7 +107,7 @@ const OptimizedImage = ({
               </svg>
             </div>
             {/* Loading dots */}
-            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-1">
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex space-x-1">
               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce animation-delay-100"></div>
               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce animation-delay-200"></div>
@@ -129,9 +129,9 @@ const OptimizedImage = ({
           blurDataURL={blurDataURL || generateBlurDataURL()}
           onLoad={handleLoad}
           onError={handleError}
-          className={`transition-opacity duration-300 ${
-            isLoading ? "opacity-0" : "opacity-100"
-          }`}
+          className={`transition-opacity duration-150 ${
+ isLoading ? "opacity-0" : "opacity-100"
+ }`}
           {...props}
         />
       )}
@@ -178,7 +178,7 @@ export const OptimizedAvatar = ({
 
   return (
     <div
-      className={`relative rounded-full overflow-hidden bg-gray-200 flex items-center justify-center ${className}`}
+      className={`relative rounded-full overflow-hidden bg-gray-200 flex items-center justify-center   ${className}`}
       style={{ width: size, height: size }}
     >
       {!imageError && src ? (
@@ -221,9 +221,9 @@ export const OptimizedGallery = ({
   };
 
   return (
-    <div className={`grid gap-4 ${className}`}>
+    <div className={`grid gap-4   ${className}`}>
       {images.map((image, index) => (
-        <div key={index} className={`relative ${itemClassName}`}>
+        <div key={index} className={`relative   ${itemClassName}`}>
           <OptimizedImage
             src={image.src}
             alt={image.alt || `Image ${index + 1}`}

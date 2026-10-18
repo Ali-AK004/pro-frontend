@@ -21,7 +21,7 @@ export default function BundlesSection({ courseId, refreshKey, onBuy }) {
   if (!bundles.length) return null;
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 mb-6">
+    <div className="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6">
       <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
         <FaLayerGroup className="w-5 h-5 text-accent" />
         الباقات
@@ -32,7 +32,7 @@ export default function BundlesSection({ courseId, refreshKey, onBuy }) {
           const total = Number(b.lessonsTotal || 0);
           const saving = total > price ? Math.round(((total - price) / total) * 100) : 0;
           return (
-            <div key={b.id} className="border border-gray-200 rounded-xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+            <div key={b.id} className="border border-gray-200 rounded-xl p-4 flex flex-col gap-3 transition-shadow">
               <div className="flex items-start justify-between gap-3">
                 <h3 className="bold-18 text-gray-900">{b.title}</h3>
                 {saving > 0 ? (
@@ -68,7 +68,7 @@ export default function BundlesSection({ courseId, refreshKey, onBuy }) {
                 </div>
                 <button
                   onClick={() => onBuy(b)}
-                  className="bg-accent text-white px-5 py-2 rounded-lg bold-14 hover:bg-opacity-90 cursor-pointer"
+                  className="bg-brand-600 text-white px-5 py-2 rounded-lg bold-14 hover:bg-brand-700 cursor-pointer"
                 >
                   اشترِ الباقة
                 </button>

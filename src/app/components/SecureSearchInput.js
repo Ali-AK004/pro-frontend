@@ -35,7 +35,7 @@ const SecureSearchInput = ({
 
   return (
     <div className="relative flex w-full">
-      <FiSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+      <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
       <input
         type="text"
         placeholder={placeholder}
@@ -43,9 +43,9 @@ const SecureSearchInput = ({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         maxLength={maxLength}
-        className={`w-full pr-12 pl-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-          !isValid ? 'border-red-500' : 'border-gray-300'
-        } ${className}`}
+        className={`w-full pr-12 pl-4 py-3 border rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm focus:outline-none ${
+ !isValid ? 'border-red-500' : 'border-gray-300'
+ }${className}`}
         autoComplete="off"
         spellCheck="false"
       />

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { apiConfig } from "../../../../../../config/api";
 import { attachAuthRefresh } from "@/app/utils/authRefresh";
+import { asList, listParams } from "../../../../../utils/pageList";
 
 const BASE_URL = apiConfig.baseURL;
 
@@ -62,7 +63,7 @@ export const lessonAPI = {
     getDetails: (lessonId) => apiClient.get(`/students/lessons/${lessonId}`),
 
     // Get student's paid lessons
-    getPaidLessons: () => apiClient.get("/students/my-lessons"),
+    getPaidLessons: () => apiClient.get("/students/my-lessons", { params: listParams() }).then(asList),
   },
 
   // Exam Management
@@ -93,11 +94,11 @@ export const lessonAPI = {
   courses: {
     // Get instructor profile with courses
     getInstructorProfile: (instructorId) =>
-      apiClient.get(`/students/instructors/${instructorId}/full-profile`),
+      apiClient.get(`/students/instructors/${instructorId}/full-profile`, { params: { size: 100 } }),
 
     // Get instructor courses
     getInstructorCourses: (instructorId) =>
-      apiClient.get(`/students/instructors/${instructorId}/courses`),
+      apiClient.get(`/students/instructors/${instructorId}/courses`, { params: listParams() }).then(asList),
   },
 };
 

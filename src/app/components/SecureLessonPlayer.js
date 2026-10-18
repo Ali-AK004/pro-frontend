@@ -173,7 +173,7 @@ export default function SecureLessonPlayer({ lessonId, remainingViews, onViewsCh
         <button
           onClick={start}
           disabled={loading || remainingViews === 0}
-          className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 px-6 py-3 rounded-lg font-bold"
+          className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 px-4 py-2 rounded-lg font-bold"
         >
           {loading ? "جاري التحميل..." : "تشغيل الفيديو"}
         </button>
@@ -194,9 +194,9 @@ export default function SecureLessonPlayer({ lessonId, remainingViews, onViewsCh
         ref={containerRef}
         onContextMenu={block}
         onDragStart={block}
-        className={`relative bg-black overflow-hidden select-none ${
-          fallbackFullscreen ? "fixed inset-0 z-[9999]" : "w-full aspect-video rounded-lg"
-        }`}
+        className={`relative bg-black overflow-hidden select-none   ${
+ fallbackFullscreen ? "fixed inset-0 z-[9999]" : "w-full aspect-video rounded-lg"
+ }`}
         style={{ WebkitUserSelect: "none", WebkitTouchCallout: "none" }}
       >
         <iframe

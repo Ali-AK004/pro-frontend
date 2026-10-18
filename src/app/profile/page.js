@@ -211,17 +211,17 @@ const Profile = () => {
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-brand-400/20 rounded-full blur-3xl"></div>
       </div>
 
       <NavBar />
       <div className="relative max-container px-4 pt-4">
         {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 mb-8 relative overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/20 p-8 mb-8 relative overflow-hidden">
           {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-brand-500/5"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-2xl"></div>
+          <div className="absolute inset-0 bg-brand-500/5"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-400/10 rounded-full blur-2xl"></div>
 
           <div className="relative flex flex-col lg:flex-row items-center gap-8">
             {/* Profile Image and Basic Info */}
@@ -229,15 +229,15 @@ const Profile = () => {
               <div className="relative group overflow-hidden w-24 h-24 lg:w-32 lg:h-32 rounded-full shadow-xl flex-shrink-0">
                 {/* Background gradient layer - role-based coloring */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br ${
-                    user?.role === "STUDENT"
-                      ? "from-brand-100 to-brand-200"
-                      : user?.role === "INSTRUCTOR"
-                        ? "from-brand-100 to-brand-200"
-                        : user?.role === "ADMIN"
-                          ? "from-brand-100 to-brand-200"
-                          : "from-gray-100 to-gray-200"
-                  }`}
+                  className={`absolute inset-0 bg-gradient-to-br   ${
+ user?.role === "STUDENT"
+ ? "from-brand-100 to-brand-200"
+ : user?.role === "INSTRUCTOR"
+ ? "from-brand-100 to-brand-200"
+ : user?.role === "ADMIN"
+ ? "from-brand-100 to-brand-200"
+ : "from-gray-100 to-gray-200"
+ }`}
                 ></div>
 
                 {/* White border */}
@@ -260,9 +260,9 @@ const Profile = () => {
 
                 {/* Fallback content - role-specific icon */}
                 <div
-                  className={`absolute inset-0 flex items-center justify-center ${
-                    user?.avatarUrl ? "hidden" : "flex"
-                  }`}
+                  className={`absolute inset-0 flex items-center justify-center   ${
+ user?.avatarUrl ? "hidden" : "flex"
+ }`}
                 >
                   {user?.role === "STUDENT" ? (
                     <FaUserGraduate className="w-12 h-12 text-brand-600 opacity-80" />
@@ -300,11 +300,11 @@ const Profile = () => {
             {/* Quick Stats */}
             <div className="flex-1 w-full md:w-auto lg:mr-8">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-r from-brand-500 to-brand-600 text-white p-4 rounded-2xl text-center">
+                <div className="bg-brand-500 text-white p-4 rounded-2xl text-center">
                   <div className="text-2xl font-bold">{userLessons.length}</div>
                   <div className="text-sm opacity-90">إجمالي الحصص</div>
                 </div>
-                <div className="bg-gradient-to-r from-brand-500 to-brand-600 text-white p-4 rounded-2xl text-center">
+                <div className="bg-brand-500 text-white p-4 rounded-2xl text-center">
                   <div className="text-2xl font-bold">
                     {
                       userLessons.filter((lesson) => lesson.expired === false)
@@ -313,7 +313,7 @@ const Profile = () => {
                   </div>
                   <div className="text-sm opacity-90">حصص نشطة</div>
                 </div>
-                <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-4 rounded-2xl text-center">
+                <div className="bg-amber-500 text-white p-4 rounded-2xl text-center">
                   <div className="text-2xl font-bold">
                     {isLoadingLessons
                       ? "..."
@@ -331,7 +331,7 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* معلومات المستخدم */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="bold-20 text-gray-900 mb-6">المعلومات الشخصية</h2>
 
               <div className="space-y-4">
@@ -411,8 +411,8 @@ const Profile = () => {
           </div>
 
           {/* الحصص والكورسات */}
-          <div className="lg:col-span-2 ">
-            <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flexBetween mb-6">
                 <h2 className="bold-20 text-gray-900">
                   {getCourseSectionTitle(user?.role)}
@@ -457,7 +457,7 @@ const Profile = () => {
                     return (
                       <div
                         key={lesson.id}
-                        className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow overflow-hidden"
+                        className="border border-gray-200 rounded-lg transition-shadow overflow-hidden"
                       >
                         <div className="flex flex-col md:flex-row gap-4 p-4">
                           {/* Lesson Image - Full width on mobile, fixed width on desktop */}
@@ -509,7 +509,7 @@ const Profile = () => {
                               </span>
                             </p>
 
-                            <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 ">
+                            <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
                               <div className="flex items-center gap-1 text-gray-600">
                                 <FaClock className="w-4 h-4" />
                                 <span className="regular-12">
@@ -521,10 +521,10 @@ const Profile = () => {
                                 <Link
                                   href={`/instructors/${lesson.instructorId}/courses/${lesson.courseId}/lessons/${lesson.id}`}
                                   className={`px-4 py-2 flex-1 cursor-pointer justify-center md:justify-start rounded-md regular-12 transition-colors flex items-center gap-2 ${
-                                    lesson.expired
-                                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                      : "bg-accent text-white hover:bg-opacity-90 cursor-pointer"
-                                  }`}
+ lesson.expired
+ ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+ : "bg-accent text-white hover:bg-opacity-90 cursor-pointer"
+ }`}
                                   disabled={lesson.expired}
                                 >
                                   <FaPlay className="w-3 h-3" />
@@ -547,7 +547,7 @@ const Profile = () => {
                         <button
                           type="button"
                           onClick={handleShowMore}
-                          className="bg-secondary text-white px-6 py-3 rounded-lg hover:bg-brand-400/90 transition-colors regular-14 cursor-pointer"
+                          className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-400/90 transition-colors regular-14 cursor-pointer"
                           style={{ pointerEvents: "auto" }}
                         >
                           عرض المزيد ({userLessons.length - 3} حصة إضافية)
@@ -556,7 +556,7 @@ const Profile = () => {
                         <button
                           type="button"
                           onClick={handleShowLess}
-                          className="border border-secondary text-secondary px-6 py-3 rounded-lg hover:bg-brand-400 hover:text-white transition-colors regular-14 cursor-pointer"
+                          className="border border-secondary text-secondary px-4 py-2 rounded-lg hover:bg-brand-400 hover:text-white transition-colors regular-14 cursor-pointer"
                           style={{ pointerEvents: "auto" }}
                         >
                           عرض أقل

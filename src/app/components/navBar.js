@@ -67,15 +67,15 @@ const NavBar = () => {
   };
 
   return (
-    <nav className="bg-white/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
+    <nav className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="max-container padding-container">
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-3 hover:opacity-80 transition-all duration-300 group"
+            className="flex items-center gap-3 hover:opacity-80 transition-all duration-150 group"
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform">
               <Image src={"/logo.png"} width={225} height={206} alt="logo" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">
@@ -89,17 +89,17 @@ const NavBar = () => {
             <div className="flex items-center gap-8">
               <Link
                 href="/instructors"
-                className="relative text-gray-700 hover:text-brand-600 font-medium transition-all duration-300 group"
+                className="relative text-gray-700 hover:text-brand-600 font-medium transition-all duration-150 group"
               >
                 المعلمين
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-brand-600 to-brand-500 group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 group-hover:w-full transition-all duration-150"></span>
               </Link>
               <a
                 href="/#footer"
-                className="relative text-gray-700 hover:text-brand-600 font-medium transition-all duration-300 group"
+                className="relative text-gray-700 hover:text-brand-600 font-medium transition-all duration-150 group"
               >
                 تواصل معنا
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-brand-600 to-brand-500 group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-600 group-hover:w-full transition-all duration-150"></span>
               </a>
             </div>
 
@@ -108,7 +108,7 @@ const NavBar = () => {
               {user && user.role === "ADMIN" && (
                 <Link
                   href="/adminDashboard"
-                  className="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-brand-600 hover:to-brand-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="bg-brand-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-brand-600 transition-all duration-150 shadow-sm"
                 >
                   لوحة الإدارة
                 </Link>
@@ -117,7 +117,7 @@ const NavBar = () => {
                 (user.role === "INSTRUCTOR" || user.role === "ASSISTANT") && (
                   <Link
                     href="/instructorDashboard"
-                    className="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-brand-600 hover:to-brand-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="bg-brand-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-brand-600 transition-all duration-150 shadow-sm"
                   >
                     لوحة المدرس
                   </Link>
@@ -132,9 +132,9 @@ const NavBar = () => {
               <div className="relative">
                 <button
                   onClick={toggleUserMenu}
-                  className="flex items-center cursor-pointer gap-3 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-xl transition-all duration-300 border border-gray-200 hover:border-gray-300"
+                  className="flex items-center cursor-pointer gap-3 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-xl transition-all duration-150 border border-gray-200 hover:border-gray-300"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-brand-500 rounded-full flex items-center justify-center">
                     <FaUser className="w-4 h-4 text-white" />
                   </div>
                   <div className="text-right">
@@ -203,7 +203,7 @@ const NavBar = () => {
                     <div className="border-t border-gray-100 mt-2 pt-2">
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-all duration-200 w-full text-right cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-all duration-200 w-full text-right cursor-pointer"
                       >
                         <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                           <FaSignOutAlt className="w-4 h-4 text-red-600" />
@@ -219,13 +219,13 @@ const NavBar = () => {
               <div className="flex items-center gap-3">
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-gray-700 hover:text-brand-600 font-medium transition-all duration-300 border border-gray-300 hover:border-brand-500 rounded-xl hover:bg-brand-50"
+                  className="px-4 py-2 text-gray-700 hover:text-brand-600 font-medium transition-all duration-150 border border-gray-300 hover:border-brand-500 rounded-xl hover:bg-brand-50"
                 >
                   تسجيل الدخول
                 </Link>
                 <Link
                   href="/signup"
-                  className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-6 py-2 rounded-xl font-semibold hover:from-brand-700 hover:to-brand-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="bg-brand-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-brand-700 transition-all duration-150 shadow-sm"
                 >
                   إنشاء حساب
                 </Link>
@@ -269,7 +269,7 @@ const NavBar = () => {
               {user && user.role === "ADMIN" && (
                 <Link
                   href="/adminDashboard"
-                  className="text-center py-3 bg-brand-600 text-white rounded-lg bold-16 hover:bg-brand-700 transition-all duration-300 cursor-pointer"
+                  className="text-center py-3 bg-brand-600 text-white rounded-lg bold-16 hover:bg-brand-700 transition-all duration-150 cursor-pointer"
                   onClick={closeMenus}
                 >
                   ADMIN
@@ -279,7 +279,7 @@ const NavBar = () => {
                 (user.role === "INSTRUCTOR" || user.role === "ASSISTANT") && (
                   <Link
                     href="/instructorDashboard"
-                    className="text-center py-3 bg-emerald-600 text-white rounded-lg bold-16 hover:bg-emerald-700 transition-all duration-300 cursor-pointer"
+                    className="text-center py-3 bg-emerald-600 text-white rounded-lg bold-16 hover:bg-emerald-700 transition-all duration-150 cursor-pointer"
                     onClick={closeMenus}
                   >
                     Instructor
@@ -332,14 +332,14 @@ const NavBar = () => {
                 <div className="flex flex-col space-y-3">
                   <Link
                     href="/login"
-                    className="text-center py-3 border border-brand-600 text-accent rounded-lg regular-16 hover:bg-accent hover:text-white transition-all duration-300 cursor-pointer"
+                    className="text-center py-3 border border-brand-600 text-accent rounded-lg regular-16 hover:bg-accent hover:text-white transition-all duration-150 cursor-pointer"
                     onClick={closeMenus}
                   >
                     تسجيل الدخول
                   </Link>
                   <Link
                     href="/signup"
-                    className="text-center py-3 bg-accent text-white rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
+                    className="text-center py-3 bg-accent text-white rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-150 cursor-pointer"
                     onClick={closeMenus}
                   >
                     إنشاء حساب

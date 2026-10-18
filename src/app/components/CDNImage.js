@@ -76,7 +76,7 @@ const CDNImage = ({
   const optimizedSrc = getOptimizedImageUrl(src, optimizationOptions);
 
   return (
-    <div className={`relative ${className}`} style={style}>
+    <div className={`relative   ${className}`} style={style}>
       {/* Loading placeholder */}
       {isLoading && (
         <div 
@@ -95,9 +95,9 @@ const CDNImage = ({
         priority={priority}
         quality={quality}
         sizes={sizes}
-        className={`transition-opacity duration-300 ${
-          isLoading ? 'opacity-0' : 'opacity-100'
-        }`}
+        className={`transition-opacity duration-150 ${
+ isLoading ? 'opacity-0' : 'opacity-100'
+ }`}
         onLoad={handleImageLoad}
         onError={handleImageError}
         {...props}
@@ -131,7 +131,7 @@ export const CDNAvatar = ({
   ...props
 }) => {
   return (
-    <div className={`relative rounded-full overflow-hidden ${className}`}>
+    <div className={`relative rounded-full overflow-hidden   ${className}`}>
       <CDNImage
         src={src}
         alt={alt}
@@ -168,7 +168,7 @@ export const CourseThumbnail = ({
   };
 
   return (
-    <div className={`relative ${aspectRatioClass[aspectRatio] || 'aspect-video'} ${className}`}>
+    <div className={`relative     ${aspectRatioClass[aspectRatio] || 'aspect-video'}${className}`}>
       <CDNImage
         src={src}
         alt={alt}
@@ -227,13 +227,13 @@ export const GalleryImage = ({
 
   return (
     <div 
-      className={`cursor-pointer transition-transform hover:scale-105 ${className}`}
+      className={`cursor-pointer transition-transform   ${className}`}
       onClick={handleClick}
     >
       <CDNImage
         src={src}
         alt={alt}
-        className="rounded-lg shadow-md"
+        className="rounded-lg shadow-sm"
         quality={thumbnail ? 60 : 90}
         {...props}
       />

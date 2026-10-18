@@ -239,11 +239,11 @@ const LessonViewer = ({
     //       <nav className="flex space-x-8 space-x-reverse">
     //         <button
     //           onClick={() => setActiveTab("overview")}
-    //           className={`py-4 px-2 border-b-2 font-medium text-sm ${
-    //             activeTab === "overview"
-    //               ? "border-accent text-accent"
-    //               : "border-transparent text-gray-500 hover:text-gray-700"
-    //           }`}
+    //           className={`py-2.5 px-2 border-b-2 font-medium text-sm ${
+ // activeTab === "overview"
+ // ? "border-accent text-accent"
+ // : "border-transparent text-gray-500 hover:text-gray-700"
+ // }`}
     //         >
     //           نظرة عامة
     //         </button>
@@ -252,13 +252,13 @@ const LessonViewer = ({
     //           <button
     //             onClick={() => canAccessTab("exam") && setActiveTab("exam")}
     //             disabled={!canAccessTab("exam")}
-    //             className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
-    //               activeTab === "exam"
-    //                 ? "border-accent text-accent"
-    //                 : canAccessTab("exam")
-    //                   ? "border-transparent text-gray-500 hover:text-gray-700"
-    //                   : "border-transparent text-gray-300 cursor-not-allowed"
-    //             }`}
+    //             className={`py-2.5 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
+ // activeTab === "exam"
+ // ? "border-accent text-accent"
+ // : canAccessTab("exam")
+ // ? "border-transparent text-gray-500 hover:text-gray-700"
+ // : "border-transparent text-gray-300 cursor-not-allowed"
+ // }`}
     //           >
     //             {getTabIcon("exam")}
     //             الامتحان
@@ -268,13 +268,13 @@ const LessonViewer = ({
     //         <button
     //           onClick={() => canAccessTab("video") && setActiveTab("video")}
     //           disabled={!canAccessTab("video")}
-    //           className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
-    //             activeTab === "video"
-    //               ? "border-accent text-accent"
-    //               : canAccessTab("video")
-    //                 ? "border-transparent text-gray-500 hover:text-gray-700"
-    //                 : "border-transparent text-gray-300 cursor-not-allowed"
-    //           }`}
+    //           className={`py-2.5 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
+ // activeTab === "video"
+ // ? "border-accent text-accent"
+ // : canAccessTab("video")
+ // ? "border-transparent text-gray-500 hover:text-gray-700"
+ // : "border-transparent text-gray-300 cursor-not-allowed"
+ // }`}
     //         >
     //           {getTabIcon("video")}
     //           الفيديو
@@ -286,13 +286,13 @@ const LessonViewer = ({
     //               canAccessTab("assignment") && setActiveTab("assignment")
     //             }
     //             disabled={!canAccessTab("assignment")}
-    //             className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
-    //               activeTab === "assignment"
-    //                 ? "border-accent text-accent"
-    //                 : canAccessTab("assignment")
-    //                   ? "border-transparent text-gray-500 hover:text-gray-700"
-    //                   : "border-transparent text-gray-300 cursor-not-allowed"
-    //             }`}
+    //             className={`py-2.5 px-2 border-b-2 font-medium text-sm flex items-center gap-2 ${
+ // activeTab === "assignment"
+ // ? "border-accent text-accent"
+ // : canAccessTab("assignment")
+ // ? "border-transparent text-gray-500 hover:text-gray-700"
+ // : "border-transparent text-gray-300 cursor-not-allowed"
+ // }`}
     //           >
     //             {getTabIcon("assignment")}
     //             الواجب
@@ -350,7 +350,7 @@ const getProgressText = (status) => {
 // Overview Tab Component
 const OverviewTab = ({ lesson, lessonProgress }) => (
   <div className="bg-white rounded-lg shadow-sm p-6">
-    <h2 className="bold-24 text-gray-900 mb-4">نظرة عامة على الدرس</h2>
+    <h2 className="text-base font-semibold text-slate-900 mb-4">نظرة عامة على الدرس</h2>
 
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
@@ -456,7 +456,7 @@ const ExamTab = ({
           ) : (
             <FaExclamationTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           )}
-          <h2 className="bold-24 text-gray-900 mb-2">
+          <h2 className="text-base font-semibold text-slate-900 mb-2">
             {examResult.passed ? "تهانينا!" : "لم تجتز الامتحان"}
           </h2>
           <p className="regular-16 text-gray-600 mb-4">
@@ -477,7 +477,7 @@ const ExamTab = ({
                   ([questionId, result], index) => (
                     <div
                       key={questionId}
-                      className={`p-3 rounded-lg ${result.correct ? "bg-emerald-50" : "bg-red-50"}`}
+                      className={`p-3 rounded-lg   ${result.correct ? "bg-emerald-50" : "bg-red-50"}`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="regular-14">السؤال {index + 1}</span>
@@ -504,7 +504,7 @@ const ExamTab = ({
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="text-center">
           <FaPlay className="w-16 h-16 text-accent mx-auto mb-4" />
-          <h2 className="bold-24 text-gray-900 mb-4">{examData.title}</h2>
+          <h2 className="text-base font-semibold text-slate-900 mb-4">{examData.title}</h2>
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
               <div>
@@ -529,7 +529,7 @@ const ExamTab = ({
           </div>
           <button
             onClick={() => setExamStarted(true)}
-            className="bg-accent text-white px-8 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-colors"
+            className="bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors"
           >
             بدء الامتحان
           </button>
@@ -542,14 +542,14 @@ const ExamTab = ({
     <div className="bg-white rounded-lg shadow-sm p-6">
       {/* Header with timer */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-        <h2 className="bold-24 text-gray-900">{examData.title}</h2>
+        <h2 className="text-base font-semibold text-slate-900">{examData.title}</h2>
         {timeLeft !== null && (
           <div
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-              timeLeft < 300
-                ? "bg-red-50 text-red-600"
-                : "bg-brand-50 text-brand-600"
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg   ${
+ timeLeft < 300
+ ? "bg-red-50 text-red-600"
+ : "bg-brand-50 text-brand-600"
+ }`}
           >
             <FaClock className="w-4 h-4" />
             <span className="bold-16">{formatTime(timeLeft)}</span>
@@ -573,7 +573,7 @@ const ExamTab = ({
         <button
           onClick={onSubmit}
           disabled={isLoading}
-          className="bg-accent text-white px-8 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "جاري التقديم..." : "تقديم الامتحان"}
         </button>
@@ -644,7 +644,7 @@ const QuestionComponent = ({
                 onChange={(e) =>
                   handleAnswerChange(answer.id, e.target.checked)
                 }
-                className="w-4 h-4 text-accent focus:ring-accent border-gray-300 rounded"
+                className="w-4 h-4 text-accent focus:ring-brand-600/10 border-slate-200 rounded focus:outline-none"
               />
               <span className="regular-14 text-gray-700">
                 {answer.answerText}
@@ -660,7 +660,7 @@ const QuestionComponent = ({
 // Video Tab Component
 const VideoTab = ({ lesson, onVideoEnd, videoWatched }) => (
   <div className="bg-white rounded-lg shadow-sm p-6">
-    <h2 className="bold-24 text-gray-900 mb-6">فيديو الدرس</h2>
+    <h2 className="text-base font-semibold text-slate-900 mb-6">فيديو الدرس</h2>
 
     <div className="w-full mb-4">
       <LessonVideoPlayer
@@ -696,10 +696,10 @@ const VideoTab = ({ lesson, onVideoEnd, videoWatched }) => (
           onClick={onVideoEnd}
           disabled={videoWatched}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            videoWatched
-              ? "bg-emerald-100 text-emerald-700 cursor-not-allowed"
-              : "bg-brand-600 text-white hover:bg-brand-700"
-          }`}
+ videoWatched
+ ? "bg-emerald-100 text-emerald-700 cursor-not-allowed"
+ : "bg-brand-600 text-white hover:bg-brand-700"
+ }`}
         >
           {videoWatched ? "✓ تم المشاهدة" : "تم المشاهدة"}
         </button>
@@ -778,7 +778,7 @@ const AssignmentTab = ({
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="text-center mb-6">
           <FaClipboardCheck className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
-          <h2 className="bold-24 text-gray-900 mb-2">تم تقديم الواجب</h2>
+          <h2 className="text-base font-semibold text-slate-900 mb-2">تم تقديم الواجب</h2>
           <p className="regular-16 text-gray-600">
             تم تقديم واجبك بنجاح في {formatDate(assignmentData.submissionDate)}
           </p>
@@ -850,8 +850,8 @@ const AssignmentTab = ({
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="bold-24 text-gray-900">{assignmentData.title}</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-base font-semibold text-slate-900">{assignmentData.title}</h2>
         {isOverdue && (
           <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">
             منتهي الصلاحية
@@ -878,7 +878,7 @@ const AssignmentTab = ({
             <div>
               <div className="regular-12 text-gray-600">الوقت المتبقي</div>
               <div
-                className={`bold-12 ${isOverdue ? "text-red-600" : "text-gray-900"}`}
+                className={`bold-12   ${isOverdue ? "text-red-600" : "text-gray-900"}`}
               >
                 {getTimeRemaining()}
               </div>
@@ -915,7 +915,7 @@ const AssignmentTab = ({
           value={submission}
           onChange={(e) => setSubmission(e.target.value)}
           rows={8}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm focus:outline-none"
           placeholder="اكتب إجابتك هنا..."
           disabled={isOverdue}
         />
@@ -931,7 +931,7 @@ const AssignmentTab = ({
         <button
           onClick={onSubmit}
           disabled={isLoading || !submission.trim() || isOverdue}
-          className="bg-accent text-white px-8 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "جاري التقديم..." : "تقديم الواجب"}
         </button>

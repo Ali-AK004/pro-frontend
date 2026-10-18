@@ -2,6 +2,7 @@ import axios from "axios";
 import { validateSearchTerm } from "../../utils/security";
 import { apiConfig } from "../../../config/api";
 import { attachAuthRefresh } from "../../utils/authRefresh";
+import { asList, fetchAllPages, listParams } from "../../utils/pageList";
 
 const BASE_URL = `${apiConfig.baseURL}/admin`;
 const API_BASE_URL = apiConfig.baseURL;
@@ -97,14 +98,15 @@ export const adminAPI = {
     createAssistant: (instructorId, data) =>
       apiClient.post(`/assistants/${instructorId}`, data),
 
-    // Get all students
-    getAllStudents: () => apiClient.get("/students"),
+    // Short lists for pickers (first 100, plain array)
+    getAllStudents: () => apiClient.get("/students", { params: listParams() }).then(asList),
+    getAllInstructors: () => apiClient.get("/instructors", { params: listParams() }).then(asList),
+    getAllAssistants: () => apiClient.get("/assistants", { params: listParams() }).then(asList),
 
-    // Get all instructors
-    getAllInstructors: () => apiClient.get("/instructors"),
-
-    // Get all assistants
-    getAllAssistants: () => apiClient.get("/assistants"),
+    // Paged lists: params = { q, page, size }
+    students: (params) => apiClient.get("/students", { params }),
+    instructors: (params) => apiClient.get("/instructors", { params }),
+    assistants: (params) => apiClient.get("/assistants", { params }),
 
     // Search students by username
     searchStudents: (usernamePart) => {
@@ -146,6 +148,9 @@ export const adminAPI = {
     // Get all courses (paginated)
     getAll: (page = 0, size = 100) =>
       apiClient.get(`/courses?page=${page}&size=${size}`),
+
+    // Paged list: params = { instructorId, q, page, size } (all optional)
+    list: (params) => apiClient.get("/courses", { params }),
 
     // Get courses by instructor (paginated)
     getByInstructor: (instructorId, page = 0, size = 100) =>
@@ -195,6 +200,13 @@ updateWithVideo: (lessonId, formData, onUploadProgress) =>
     // Delete lesson
     delete: (lessonId) => apiClient.delete(`/lessons/${lessonId}`),
 
+    // Every lesson, newest first; params = { instructorId, courseId, q, page, size } (all optional)
+    list: (params) => apiClient.get("/lessons", { params }),
+
+    // Every lesson for pickers (plain array, read 100 at a time)
+    options: (params = {}) =>
+      fetchAllPages((p) => apiClient.get("/lessons", { params: p }), params).then((data) => ({ data })),
+
     // Get lessons by course (paginated)
     getByCourse: (courseId, page = 0, size = 100) =>
       apiClient.get(`/courses/${courseId}/lessons?page=${page}&size=${size}`),
@@ -243,11 +255,18 @@ updateWithVideo: (lessonId, formData, onUploadProgress) =>
 
     // Get exams by lesson
     getByLesson: (lessonId) =>
-      generalApiClient.get(`/exams/lessons/${lessonId}`),
+      generalApiClient.get(`/exams/lessons/${lessonId}`, { params: listParams() }).then(asList),
 
     // Get exams by instructor
     getByInstructor: (instructorId) =>
-      generalApiClient.get(`/exams/instructors/${instructorId}`),
+      generalApiClient.get(`/exams/instructors/${instructorId}`, { params: listParams() }).then(asList),
+
+    // Every exam; params = { instructorId, courseId, lessonId, q, page, size } (all optional)
+    list: (params) => generalApiClient.get("/exams", { params }),
+
+    // Students' attempts at one exam, newest first
+    submissions: (examId, page = 0, size = 20) =>
+      generalApiClient.get(`/exams/${examId}/submissions`, { params: { page, size } }),
 
     // إضافة الدوال الجديدة:
     updateExam: (examId, data) => generalApiClient.put(`/exams/${examId}`, data),
@@ -296,11 +315,14 @@ updateWithVideo: (lessonId, formData, onUploadProgress) =>
 
     // Get assignments by lesson
     getByLesson: (lessonId) =>
-      generalApiClient.get(`/assignments/lessons/${lessonId}`),
+      generalApiClient.get(`/assignments/lessons/${lessonId}`, { params: listParams() }).then(asList),
 
     // Get assignments by instructor
     getByInstructor: (instructorId) =>
-      generalApiClient.get(`/assignments/instructors/${instructorId}`),
+      generalApiClient.get(`/assignments/instructors/${instructorId}`, { params: listParams() }).then(asList),
+
+    // Every assignment; params = { instructorId, courseId, lessonId, q, page, size } (all optional)
+    list: (params) => generalApiClient.get("/assignments", { params }),
 
     // Get assignment submissions
     getSubmissions: (assignmentId) =>
@@ -335,6 +357,12 @@ updateWithVideo: (lessonId, formData, onUploadProgress) =>
       apiClient.get(
         `/lessons/${lessonId}/access-codes?page=${page}&size=${size}`
       ),
+
+    // Paged list: params = { lessonId, instructorId, used, q, page, size } (all optional)
+    list: (params) => apiClient.get("/access-codes", { params }),
+
+    // Totals: { total, used, unused }
+    stats: () => apiClient.get("/access-codes/stats"),
 
     delete: (codeId) => apiClient.delete(`/access-codes/${codeId}`),
 
@@ -382,9 +410,9 @@ updateWithVideo: (lessonId, formData, onUploadProgress) =>
     getDashboardStats: async () => {
       try {
         const [studentsRes, instructorsRes, coursesRes] = await Promise.all([
-          apiClient.get("/students"),
-          apiClient.get("/instructors"),
-          apiClient.get("/courses"), // Fetch all courses to get lesson counts
+          apiClient.get("/students", { params: { size: 1 } }),
+          apiClient.get("/instructors", { params: { size: 1 } }),
+          apiClient.get("/courses", { params: listParams() }), // lesson counts come from the courses
         ]);
 
         // Calculate total lessons by summing lessonCount from each course
@@ -396,9 +424,9 @@ updateWithVideo: (lessonId, formData, onUploadProgress) =>
         );
 
         return {
-          students: studentsRes.data?.length || 0,
-          instructors: instructorsRes.data?.length || 0,
-          courses: courses.length,
+          students: studentsRes.data?.totalElements || 0,
+          instructors: instructorsRes.data?.totalElements || 0,
+          courses: coursesRes.data?.totalElements ?? courses.length,
           lessons: totalLessons, // This will be the sum of all course.lessonCount
           totalRevenue: 0,
           activeUsers: 0,
@@ -417,7 +445,7 @@ updateWithVideo: (lessonId, formData, onUploadProgress) =>
 
     // Get lessons expiring soon
     getLessonsExpiringSoon: (days = 7) =>
-      apiClient.get(`/lesson-expiration/expiring-soon?days=${days}`),
+      apiClient.get("/lesson-expiration/expiring-soon", { params: listParams({ days }) }).then(asList),
 
     // Get expiration statistics
     getExpirationStatistics: () =>

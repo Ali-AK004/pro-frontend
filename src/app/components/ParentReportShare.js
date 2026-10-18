@@ -35,7 +35,7 @@ export default function ParentReportShare() {
     : null;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 mb-8" dir="rtl">
+    <div className="bg-white rounded-lg shadow-sm p-6 mb-8" dir="rtl">
       <h2 className="bold-18 text-gray-900 mb-2">تقرير ولي الأمر</h2>
       <p className="regular-14 text-gray-600 mb-4">
         ابعت لولي أمرك رابط يتابع منه الدروس والدرجات بدون تسجيل دخول. الرابط صالح لمدة 30 يوم.
@@ -44,7 +44,7 @@ export default function ParentReportShare() {
         <button
           onClick={create}
           disabled={busy}
-          className="bg-accent text-white px-5 py-2 rounded-lg bold-14 disabled:opacity-50 cursor-pointer"
+          className="bg-brand-600 text-white px-5 py-2 rounded-lg bold-14 disabled:opacity-50 cursor-pointer"
         >
           إنشاء رابط التقرير
         </button>

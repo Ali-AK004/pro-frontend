@@ -167,7 +167,7 @@ const VideoUpload = ({
   };
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-4   ${className}`}>
       {/* Current Video Display */}
       {currentVideoId && currentVideoUrl && !selectedFile && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
@@ -206,11 +206,11 @@ const VideoUpload = ({
       {/* File Upload Area */}
       {!currentVideoId && (
         <div
-          className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
-            dragActive
-              ? "border-accent bg-accent/5"
-              : "border-gray-300 hover:border-gray-400"
-          }`}
+          className={`relative border-2 border-dashed rounded-lg p-6 transition-colors   ${
+ dragActive
+ ? "border-accent bg-accent/5"
+ : "border-gray-300 hover:border-gray-400"
+ }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -278,7 +278,7 @@ const VideoUpload = ({
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-brand-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-brand-600 h-2 rounded-full transition-all duration-150"
                   style={{ width: `${uploadProgress}%` }}
                 ></div>
               </div>

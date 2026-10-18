@@ -20,11 +20,14 @@ import {
 } from "react-icons/fi";
 import AssignmentCreationModal from "../../adminDashboard/components/Modal/AssignmentCreationModal";
 import { getInstructorId, getRolePermissions } from "../../utils/roleHelpers";
+import { fetchAllPages } from "../../utils/pageList";
+import {
+  PageHeader, Button, IconButton, Badge, Toolbar, SearchBox, Select, PagedTable,
+  usePaged, useDebounced, fmtNumber,
+} from "../../components/ui";
 
 const InstructorAssignmentManagement = React.memo(() => {
   const { user } = useUserData();
-  const [assignments, setAssignments] = useState([]);
-  const [lessons, setLessons] = useState([]);
   const [allLessons, setAllLessons] = useState([]); // All lessons for modal
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,100 +45,52 @@ const InstructorAssignmentManagement = React.memo(() => {
   const instructorId = getInstructorId(user);
   const permissions = getRolePermissions(user?.role);
 
+  // All of the teacher's assignments show straight away; course, lesson and search only narrow the list.
+  const q = useDebounced(searchTerm.trim());
+  const list = usePaged(
+    (page, size) =>
+      instructorId
+        ? instructorAPI.assignments.list(instructorId, {
+            courseId: selectedCourse || undefined,
+            lessonId: selectedLesson || undefined,
+            q: q || undefined,
+            page,
+            size,
+          })
+        : Promise.resolve({ data: { content: [], totalElements: 0 } }),
+    [instructorId, selectedCourse, selectedLesson, q],
+    { onError: (e) => toast.error(handleAPIError(e, "فشل في تحميل الواجبات")) }
+  );
+
   useEffect(() => {
     if (instructorId) {
       fetchCourses();
-      fetchAllLessons(); // Fetch all lessons for modal
+      fetchAllLessons();
     }
   }, [instructorId]);
 
-  useEffect(() => {
-    if (selectedCourse) {
-      fetchLessons();
-    } else {
-      setLessons([]);
-      setSelectedLesson("");
-    }
-  }, [selectedCourse]);
-
-  useEffect(() => {
-    if (selectedLesson) {
-      fetchAssignments();
-    } else {
-      // Clear assignments when no lesson is selected
-      setAssignments([]);
-    }
-  }, [selectedLesson]);
-
   const fetchCourses = async () => {
     try {
-      const response =
-        await instructorAPI.courses.getByInstructor(instructorId);
+      const response = await instructorAPI.courses.getByInstructor(instructorId);
       setCourses(response.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الكورسات"));
     }
   };
 
-  const fetchLessons = async () => {
-    try {
-      const response = await instructorAPI.courses.getLessons(selectedCourse);
-      setLessons(response.data || []);
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
-    }
-  };
-
+  // Every lesson of the teacher, for the lesson filter and the "pick a lesson" field
   const fetchAllLessons = async () => {
     try {
-      const response =
-        await instructorAPI.courses.getByInstructor(instructorId);
-      const coursesData = response.data || [];
-
-      let allLessonsData = [];
-      for (const course of coursesData) {
-        try {
-          const lessonsResponse = await instructorAPI.courses.getLessons(
-            course.id
-          );
-          const courseLessons = lessonsResponse.data || [];
-          // Add course information to each lesson for optgroups
-          const lessonsWithCourse = courseLessons.map((lesson) => ({
-            ...lesson,
-            courseId: course.id,
-            courseName: course.name,
-          }));
-          allLessonsData = [...allLessonsData, ...lessonsWithCourse];
-        } catch (error) {
-          toast.error(`خطأ في احضار حصص الكورس: ${course.id}:`)
-        }
-      }
-
-      setAllLessons(allLessonsData);
+      setAllLessons(await fetchAllPages((params) => instructorAPI.lessons.list(instructorId, params)));
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل جميع الدروس"));
       setAllLessons([]);
     }
   };
 
-  const fetchAssignments = async () => {
-    if (!selectedLesson) {
-      setAssignments([]);
-      return;
-    }
+  const lessons = allLessons.filter((l) => !selectedCourse || l.courseId === selectedCourse);
 
-    try {
-      setIsLoading(true);
-      const response =
-        await instructorAPI.assignments.getByLesson(selectedLesson);
-      setAssignments(response.data || []);
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل الواجبات"));
-      setAssignments([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const fetchAssignments = () => list.reload();
 
   const handleCreateAssignment = async (assignmentData) => {
     try {
@@ -235,133 +190,99 @@ const InstructorAssignmentManagement = React.memo(() => {
     return allLessons;
   };
 
-  const filteredAssignments = assignments.filter((assignment) =>
-    assignment.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = Boolean(searchTerm || selectedCourse || selectedLesson);
 
   return (
-    <div className="p-4 md:p-8">
-      {/* Header */}
-      <div className="flex items-center flex-col gap-5 sm:flex-row md:gap-0 justify-between mb-8">
-        <div>
-          <h1 className="bold-32 text-gray-900 mb-2">إدارة الواجبات</h1>
-          <p className="regular-16 text-gray-600">
-            إنشاء وتعديل وإدارة واجبات دروسك
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
-        >
-          <FiPlus className="w-5 h-5" />
-          إنشاء واجب جديد
-        </button>
-      </div>
+    <div className="p-4 lg:p-6">
+      <PageHeader
+        title="إدارة الواجبات"
+        subtitle="كل واجباتك في مكان واحد، استخدم الفلاتر للتضييق"
+        actions={
+          <Button onClick={() => setShowCreateModal(true)}>
+            <FiPlus /> واجب جديد
+          </Button>
+        }
+      />
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-          {/* Course Filter */}
-          <select
-            value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
-            className="w-full px-4 py-3 border md:col-span-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-          >
-            <option value="">اختر كورس</option>
-            {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Lesson Filter */}
-          <select
-            value={selectedLesson}
-            onChange={(e) => setSelectedLesson(e.target.value)}
-            className="w-full px-4 py-3 border md:col-span-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-          >
-            <option value="">اختر درس</option>
-            {lessons.map((lesson) => (
-              <option key={lesson.id} value={lesson.id}>
-                {lesson.name}
-              </option>
-            ))}
-          </select>
-
-          <button
-            onClick={() => {
-              setSelectedLesson("");
-              setSelectedCourse("");
-            }}
-            disabled={!selectedLesson}
-            className="bg-accent flexCenter gap-2 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
-          >
-            <FiX className="w-4 h-4" />
-            إعادة تعيين
-          </button>
-        </div>
-      </div>
-
-      {/* Assignments Grid */}
-      <div className="grid grid-cols-1">
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
-            >
-              <div className="h-4 bg-gray-200 rounded mb-4"></div>
-              <div className="h-3 bg-gray-200 rounded mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded mb-4"></div>
-              <div className="flex gap-2">
-                <div className="h-8 bg-gray-200 rounded flex-1"></div>
-                <div className="h-8 bg-gray-200 rounded flex-1"></div>
-                <div className="h-8 bg-gray-200 rounded w-8"></div>
-              </div>
-            </div>
-          ))
-        ) : filteredAssignments.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <FiFileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            {!selectedLesson ? (
-              <>
-                <p className="regular-16 text-gray-600 mb-2">
-                  اختر درساً من القائمة أعلاه لعرض الواجبات
-                </p>
-                <p className="regular-14 text-gray-500">
-                  يمكنك البحث عن الدرس باستخدام شريط البحث
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="regular-16 text-gray-600">
-                  لا توجد واجبات لهذا الدرس
-                </p>
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="mt-4 bg-secondary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
-                >
-                  إنشاء أول واجب
-                </button>
-              </>
-            )}
-          </div>
-        ) : (
-          filteredAssignments.map((assignment) => (
-            <AssignmentCard
-              key={assignment.id}
-              assignment={assignment}
-              onEdit={(assignment) => {
-                setSelectedAssignment(assignment);
-                setShowEditModal(true);
+      <Toolbar
+        actions={
+          filtered ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedCourse("");
+                setSelectedLesson("");
               }}
-              onDelete={openDeleteModal}
-              onViewSubmissions={handleViewSubmissions}
-            />
-          ))
-        )}
-      </div>
+            >
+              <FiX /> مسح الفلاتر
+            </Button>
+          ) : null
+        }
+      >
+        <SearchBox value={searchTerm} onChange={setSearchTerm} placeholder="ابحث بالعنوان أو الدرس" />
+        <Select
+          value={selectedCourse}
+          onChange={(v) => {
+            setSelectedCourse(v);
+            setSelectedLesson("");
+          }}
+          allLabel="كل الكورسات"
+          options={courses.map((c) => ({ value: c.id, label: c.name }))}
+        />
+        <Select
+          value={selectedLesson}
+          onChange={setSelectedLesson}
+          allLabel="كل الدروس"
+          options={lessons.map((l) => ({ value: l.id, label: l.name }))}
+        />
+      </Toolbar>
+
+      <PagedTable
+        list={list}
+        empty={filtered ? "لا توجد واجبات مطابقة" : "لا توجد واجبات بعد"}
+        emptyHint={filtered ? "جرّب تغيير الفلاتر" : "ابدأ بإنشاء أول واجب"}
+        columns={[
+          {
+            key: "title",
+            label: "الواجب",
+            render: (a) => (
+              <div className="min-w-0">
+                <p className="font-medium text-slate-900 truncate max-w-64">{a.title}</p>
+                <p className="text-[11px] text-slate-400 truncate max-w-64">{a.lessonName || "—"}</p>
+              </div>
+            ),
+          },
+          { key: "courseName", label: "الكورس", render: (a) => a.courseName || "—" },
+          { key: "maxPoints", label: "الدرجة", render: (a) => fmtNumber(a.maxPoints) },
+          {
+            key: "submissionCount",
+            label: "التسليمات",
+            render: (a) =>
+              a.submissionCount ? <Badge tone="brand">{fmtNumber(a.submissionCount)}</Badge> : <Badge>لا يوجد</Badge>,
+          },
+          {
+            key: "actions",
+            label: "",
+            className: "w-px",
+            render: (a) => (
+              <div className="flex items-center gap-0.5">
+                <IconButton label="التسليمات" icon={FiEye} onClick={() => handleViewSubmissions(a)} />
+                <IconButton
+                  label="تعديل"
+                  icon={FiEdit}
+                  onClick={() => {
+                    setSelectedAssignment(a);
+                    setShowEditModal(true);
+                  }}
+                />
+                <IconButton label="حذف" icon={FiTrash2} tone="danger" onClick={() => openDeleteModal(a)} />
+              </div>
+            ),
+          },
+        ]}
+      />
 
       {/* Create Assignment Modal */}
       {showCreateModal && (
@@ -392,8 +313,8 @@ const InstructorAssignmentManagement = React.memo(() => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && assignmentToDelete && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
+          <div className="bg-white rounded-xl shadow-xl p-5 w-full max-w-md mx-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
                 <FiAlertCircle className="w-5 h-5 text-red-600" />
@@ -434,9 +355,9 @@ const InstructorAssignmentManagement = React.memo(() => {
 
       {/* Submissions Modal */}
       {showSubmissionsModal && selectedAssignment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-brand-600 to-brand-600 text-white p-6">
+            <div className="bg-brand-600 text-white p-6">
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="text-xl font-bold">تسليمات الواجب</h3>
@@ -480,7 +401,7 @@ const InstructorAssignmentManagement = React.memo(() => {
                   {assignmentSubmissions.map((submission) => (
                     <div
                       key={submission.submissionId || submission.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                      className="border border-gray-200 rounded-lg p-4 transition-shadow"
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div>
@@ -536,7 +457,7 @@ const InstructorAssignmentManagement = React.memo(() => {
                           <input
                             type="number"
                             placeholder="الدرجة"
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                            className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm focus:outline-none"
                             min="0"
                             max="100"
                             id={`grade-${submission.submissionId || submission.id}`}
@@ -544,7 +465,7 @@ const InstructorAssignmentManagement = React.memo(() => {
                           <input
                             type="text"
                             placeholder="تعليق (اختياري)"
-                            className="flex-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                            className="flex-2 px-3 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm focus:outline-none"
                             id={`feedback-${submission.submissionId || submission.id}`}
                           />
                           <button
@@ -582,96 +503,5 @@ const InstructorAssignmentManagement = React.memo(() => {
     </div>
   );
 });
-
-// Assignment Card Component (reused from admin)
-const AssignmentCard = ({
-  assignment,
-  onEdit,
-  onDelete,
-  onViewSubmissions,
-}) => {
-  const isOverdue = assignmentAPI.validation.isOverdue(assignment.dueDate);
-  const timeRemaining = assignmentAPI.validation.getTimeRemaining(
-    assignment.dueDate
-  );
-
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-3">
-          <h3 className="bold-18 text-gray-900 flex-1">{assignment.title}</h3>
-          {isOverdue && (
-            <FiAlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          )}
-        </div>
-
-        <p className="regular-14 text-gray-600 mb-4 line-clamp-2">
-          {assignment.description || "لا يوجد وصف"}
-        </p>
-
-        <p className="regular-14 text-gray-600 mb-4 line-clamp-2">
-          {assignment.lessonName || "لا يوجد اسم درس"}
-        </p>
-
-        {/* Assignment Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="flex items-center gap-2">
-            <FiCalendar className="w-4 h-4 text-brand-500" />
-            <span className="regular-12 text-gray-600">
-              {assignmentAPI.validation.formatDate(assignment.dueDate)}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <FiAward className="w-4 h-4 text-emerald-500" />
-            <span className="regular-12 text-gray-600">
-              {assignment.maxPoints} نقطة
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <FiUsers className="w-4 h-4 text-brand-500" />
-            <span className="regular-12 text-gray-600">
-              {assignment.submissionCount || 0} تسليم
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <FiClock
-              className={`w-4 h-4 ${isOverdue ? "text-red-500" : "text-amber-500"}`}
-            />
-            <span
-              className={`regular-12 ${isOverdue ? "text-red-600" : "text-gray-600"}`}
-            >
-              {timeRemaining}
-            </span>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-          <button
-            onClick={() => onViewSubmissions(assignment)}
-            className="flex-1 bg-brand-50 text-brand-600 py-2 px-4 rounded-lg border border-brand-600 hover:bg-brand-100 transition-colors flexCenter gap-2 cursor-pointer"
-          >
-            <FiEye className="w-4 h-4" />
-            التسليمات
-          </button>
-          <button
-            onClick={() => onEdit(assignment)}
-            className="flex-1 bg-emerald-50 text-emerald-600 py-2 px-4 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-2 cursor-pointer"
-          >
-            <FiEdit className="w-4 h-4" />
-            تعديل
-          </button>
-          <button
-            onClick={() => onDelete(assignment)}
-            className="bg-red-50 text-red-600 flexCenter gap-2 py-2 px-4 border border-red-600 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
-          >
-            <FiTrash2 className="w-4 h-4" />
-            حذف
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default InstructorAssignmentManagement;

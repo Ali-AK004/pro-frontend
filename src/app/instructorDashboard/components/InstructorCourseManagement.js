@@ -17,7 +17,10 @@ import {
   FiRefreshCw,
 } from "react-icons/fi";
 import { getInstructorId, getRolePermissions } from "../../utils/roleHelpers";
-import SecureSearchInput from "@/app/components/SecureSearchInput";
+import {
+  PageHeader, Button, IconButton, Badge, Toolbar, SearchBox, Card, EmptyState, MediaCard, fmtNumber, fmtDate,
+  Dialog, ConfirmDialog, Field, inputClass, textareaClass,
+} from "../../components/ui";
 
 const InstructorCourseManagement = () => {
   const { user } = useUserData();
@@ -263,39 +266,14 @@ const InstructorCourseManagement = () => {
     setCourseToDelete(null);
   };
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      await fetchCourses(true); // Skip cache when resetting search
-      return;
-    }
-
-    // Filter locally first for instant results
-    const filteredCourses = courses.filter(
-      (course) =>
-        course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setCourses(filteredCourses);
-    
-    // If no local results, try searching on backend
-    if (filteredCourses.length === 0) {
-      try {
-        const response = await instructorAPI.courses.search(searchTerm);
-        if (response.data && response.data.length > 0) {
-          setCourses(response.data);
-        }
-      } catch (error) {
-        console.error("Search error:", error);
-      }
-    }
-  };
-
-  const handleSearchChange = (term) => {
-    setSearchTerm(term);
-    if (!term.trim()) {
-      fetchCourses(true);
-    }
-  };
+  // Instant search over the teacher's own courses (the list is already loaded)
+  const handleSearchChange = (term) => setSearchTerm(term.slice(0, 100));
+  const needle = searchTerm.trim().toLowerCase();
+  const visibleCourses = needle
+    ? courses.filter(
+        (c) => c.name?.toLowerCase().includes(needle) || c.description?.toLowerCase().includes(needle)
+      )
+    : courses;
 
   const openEditModal = (course) => {
     setSelectedCourse(course);
@@ -334,7 +312,7 @@ const InstructorCourseManagement = () => {
   };
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 lg:p-6">
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -349,523 +327,240 @@ const InstructorCourseManagement = () => {
         className="z-50"
       />
       
-      {/* Header with Refresh Button */}
-      <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
-        <div>
-          <h1 className="bold-32 text-gray-900 mb-2">
-            إدارة الكورسات{" "}
-            {user?.role === "ASSISTANT" && `- مساعد ${user.instructorName}`}
-          </h1>
-          <p className="regular-16 text-gray-600">
-            إنشاء وتعديل وإدارة كورساتك التعليمية
-          </p>
-        </div>
-        <div className="flex">
-          {canCreateCourse && (
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
-            >
-              <FiPlus className="w-5 h-5" />
-              إنشاء كورس جديد
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Search Bar */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <SecureSearchInput
-            placeholder="البحث في الكورسات..."
-            onSearch={handleSearchChange}
-            onEnterPress={handleSearch}
-            value={searchTerm}
-            className="border border-gray-300 focus:ring-secondary"
-            maxLength={100}
-          />
-          <button
-            onClick={handleSearch}
-            className="cursor-pointer bg-secondary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300"
-          >
-            بحث
-          </button>
-        </div>
-      </div>
-
-      {/* Courses Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {isLoading ? (
-          // Loading skeleton
-          Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse"
-            >
-              <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
-              <div className="bg-gray-200 h-6 rounded mb-2"></div>
-              <div className="bg-gray-200 h-4 rounded mb-4"></div>
-              <div className="flex gap-2">
-                <div className="bg-gray-200 h-8 rounded flex-1"></div>
-                <div className="bg-gray-200 h-8 rounded flex-1"></div>
-              </div>
-            </div>
-          ))
-        ) : courses.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <FiBook className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="regular-16 text-gray-600 mb-4">
-              لا توجد كورسات للعرض
-            </p>
+      <PageHeader
+        title={`إدارة الكورسات${user?.role === "ASSISTANT" && user.instructorName ? ` - مساعد ${user.instructorName}` : ""}`}
+        subtitle="كورساتك وعدد دروس كل كورس"
+        actions={
+          <>
+            <IconButton label="تحديث" icon={FiRefreshCw} onClick={() => fetchCourses(true, false)} disabled={isRefreshing} />
             {canCreateCourse && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="cursor-pointer bg-secondary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300"
-              >
-                إنشاء أول كورس
-              </button>
+              <Button onClick={() => setShowCreateModal(true)}>
+                <FiPlus /> كورس جديد
+              </Button>
             )}
-          </div>
-        ) : (
-          courses.map((course) => (
-            <div
+          </>
+        }
+      />
+
+      <Toolbar>
+        <SearchBox value={searchTerm} onChange={handleSearchChange} placeholder="ابحث في كورساتك" />
+      </Toolbar>
+
+      {isLoading && courses.length === 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+              <div className="aspect-[16/9] bg-slate-100 animate-pulse" />
+              <div className="p-3 space-y-2"><div className="h-3 w-2/3 rounded bg-slate-100" /><div className="h-3 w-1/2 rounded bg-slate-100" /></div>
+            </div>
+          ))}
+        </div>
+      ) : visibleCourses.length === 0 ? (
+        <Card>
+          <EmptyState
+            title={needle ? "لا توجد كورسات مطابقة" : "لا توجد كورسات بعد"}
+            hint={needle ? "جرّب كلمة بحث أخرى" : undefined}
+            action={
+              !needle && canCreateCourse ? (
+                <Button size="sm" onClick={() => setShowCreateModal(true)}>
+                  <FiPlus /> إنشاء أول كورس
+                </Button>
+              ) : null
+            }
+          />
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {visibleCourses.map((course) => (
+            <MediaCard
               key={course.id}
-              className="bg-white rounded-lg flex flex-col shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
-            >
-              {/* Course Image */}
-              <div className="h-48 bg-gradient-to-br from-secondary to-accent relative">
-                {course.photoUrl ? (
-                  <img
-                    src={course.photoUrl}
-                    alt={course.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "https://via.placeholder.com/400x200?text=No+Image";
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flexCenter">
-                    <FiBook className="w-16 h-16 text-white opacity-50" />
-                  </div>
-                )}
-              </div>
-
-              {/* Course Content */}
-              <div className="p-5 flex-1 flex flex-col">
-                <div className="flexBetween flex-1">
-                  <div className="flex flex-col">
-                    <h3 className="bold-18 text-gray-900 mb-2 line-clamp-2">
-                      {course.name}
-                    </h3>
-                    <p className="regular-14 text-gray-600 max-w-[250px] mb-4 line-clamp-3">
-                      {course.description || "لا يوجد وصف متاح"}
-                    </p>
-                  </div>
-                  {/* Course Stats */}
-                  <div className="text-sm min-w-[80px] text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <FiFileText className="w-4 h-4" />
-                      <span>{course.lessonCount || 0} درس</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions - Moved to bottom */}
-              <div className="p-4 pt-0 border-t border-gray-100">
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => openViewModal(course)}
-                    className="cursor-pointer flex-1 bg-brand-50 text-brand-600 border border-brand-300 py-2 px-4 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-2"
-                  >
-                    <FiEye className="w-4 h-4" />
-                    عرض
-                  </button>
-                  {canEditCourse && (
-                    <button
-                      onClick={() => openEditModal(course)}
-                      className="cursor-pointer flex-1 bg-emerald-50 text-emerald-600 border border-emerald-300 py-2 px-4 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-2"
-                    >
-                      <FiEdit className="w-4 h-4" />
-                      تعديل
-                    </button>
-                  )}
+              image={course.photoUrl}
+              fallbackIcon={FiBook}
+              title={course.name}
+              subtitle={course.description || "لا يوجد وصف"}
+              onClick={() => openViewModal(course)}
+              meta={<Badge tone="brand"><FiFileText className="w-3 h-3" />{fmtNumber(course.lessonCount)} درس</Badge>}
+              actions={
+                <>
+                  <IconButton label="عرض" icon={FiEye} onClick={() => openViewModal(course)} />
+                  {canEditCourse && <IconButton label="تعديل" icon={FiEdit} onClick={() => openEditModal(course)} />}
                   {canDeleteCourse && (
-                    <button
-                      onClick={() => handleDeleteCourse(course)}
-                      className="cursor-pointer flex-1 bg-red-50 text-red-400 py-2 border border-red-300 px-4 rounded-lg hover:bg-red-100 transition-colors flexCenter gap-2"
-                    >
-                      <MdDeleteForever className="w-5 h-5" />
-                      حذف
-                    </button>
+                    <IconButton label="حذف" icon={MdDeleteForever} tone="danger" onClick={() => handleDeleteCourse(course)} />
                   )}
-                </div>
-              </div>
+                </>
+              }
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Create course */}
+      <Dialog
+        open={showCreateModal}
+        closeOnBackdrop={false}
+        title="كورس جديد"
+        onClose={closeCreateModal}
+        footer={
+          <>
+            <Button type="submit" form="create-course" loading={isLoading}>إنشاء الكورس</Button>
+            <Button variant="secondary" onClick={closeCreateModal}>إلغاء</Button>
+          </>
+        }
+      >
+        <form id="create-course" onSubmit={handleCreateCourse} className="space-y-3">
+          <Field label="اسم الكورس">
+            <input
+              type="text"
+              required
+              value={courseForm.name}
+              onChange={(e) => setCourseForm({ ...courseForm, name: e.target.value })}
+              className={inputClass}
+              placeholder="مثال: الفيزياء - الصف الثالث الثانوي"
+            />
+          </Field>
+          <Field label="الوصف" hint="اختياري">
+            <textarea
+              rows={3}
+              value={courseForm.description}
+              onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
+              className={textareaClass}
+              placeholder="نبذة قصيرة عن محتوى الكورس"
+            />
+          </Field>
+          <Field label="رابط صورة الكورس" hint={"مطلوب"}>
+            <input
+              type="url"
+              dir="ltr"
+              required
+              value={courseForm.photoUrl}
+              onChange={(e) => setCourseForm({ ...courseForm, photoUrl: e.target.value })}
+              className={inputClass}
+              placeholder="https://..."
+            />
+          </Field>
+          {courseForm.photoUrl ? (
+            <div className="relative aspect-[16/9] w-40 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+              <img src={courseForm.photoUrl} alt="" className="absolute inset-0 w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = "none")} />
             </div>
-          ))
+          ) : null}
+        </form>
+      </Dialog>
+
+      {/* Edit course */}
+      <Dialog
+        open={showEditModal && !!selectedCourse}
+        closeOnBackdrop={false}
+        title="تعديل الكورس"
+        onClose={closeEditModal}
+        footer={
+          <>
+            <Button type="submit" form="edit-course" loading={isLoading}>حفظ التغييرات</Button>
+            <Button variant="secondary" onClick={closeEditModal}>إلغاء</Button>
+          </>
+        }
+      >
+        <form id="edit-course" onSubmit={handleUpdateCourse} className="space-y-3">
+          <Field label="اسم الكورس">
+            <input
+              type="text"
+              required
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              className={inputClass}
+            />
+          </Field>
+          <Field label="الوصف">
+            <textarea
+              rows={3}
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              className={textareaClass}
+            />
+          </Field>
+          <Field label="رابط صورة الكورس" hint={"مطلوب"}>
+            <input
+              type="url"
+              dir="ltr"
+              required
+              value={editForm.photoUrl}
+              onChange={(e) => setEditForm({ ...editForm, photoUrl: e.target.value })}
+              className={inputClass}
+            />
+          </Field>
+          {editForm.photoUrl ? (
+            <div className="relative aspect-[16/9] w-40 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+              <img src={editForm.photoUrl} alt="" className="absolute inset-0 w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = "none")} />
+            </div>
+          ) : null}
+        </form>
+      </Dialog>
+
+      {/* Course details */}
+      <Dialog
+        open={showViewModal && !!selectedCourse}
+        wide
+        title="تفاصيل الكورس"
+        onClose={closeViewModal}
+        footer={
+          <>
+            {canEditCourse && (
+              <Button
+                onClick={() => {
+                  const course = selectedCourse;
+                  setShowViewModal(false);
+                  openEditModal(course);
+                }}
+              >
+                <FiEdit /> تعديل
+              </Button>
+            )}
+            <Button variant="secondary" onClick={closeViewModal}>إغلاق</Button>
+          </>
+        }
+      >
+        {selectedCourse && (
+          <div className="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-4">
+            <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-slate-100">
+              {selectedCourse.photoUrl ? (
+                <img src={selectedCourse.photoUrl} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+              ) : (
+                <FiBook className="absolute inset-0 m-auto w-8 h-8 text-slate-300" />
+              )}
+            </div>
+            <div className="space-y-3 min-w-0">
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">{selectedCourse.name}</h3>
+                <p className="mt-1 text-xs text-slate-500 leading-relaxed whitespace-pre-line">
+                  {selectedCourse.description || "لا يوجد وصف"}
+                </p>
+              </div>
+              <dl className="grid grid-cols-3 gap-2 text-xs">
+                {[
+                  ["المدرس", selectedCourse.instructorName || "—"],
+                  ["الدروس", fmtNumber(selectedCourse.lessonCount)],
+                  ["الإنشاء", fmtDate(selectedCourse.createdAt)],
+                ].map(([k, v]) => (
+                  <div key={k} className="rounded-lg border border-slate-200 px-3 py-2">
+                    <dt className="text-slate-400">{k}</dt>
+                    <dd className="mt-0.5 font-medium text-slate-800 truncate">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
         )}
-      </div>
+      </Dialog>
 
-      {/* Create Course Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl overflow-y-auto max-h-[90vh]">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-24 text-gray-900">إنشاء كورس جديد</h2>
-              <button
-                onClick={closeCreateModal}
-                className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <FiX className="w-6 h-6 text-gray-500" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateCourse} className="space-y-6">
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  اسم الكورس *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={courseForm.name}
-                  onChange={(e) =>
-                    setCourseForm({ ...courseForm, name: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                  placeholder="أدخل اسم الكورس"
-                  maxLength={100}
-                />
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  وصف الكورس
-                </label>
-                <textarea
-                  rows={4}
-                  value={courseForm.description}
-                  onChange={(e) =>
-                    setCourseForm({
-                      ...courseForm,
-                      description: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                  placeholder="أدخل وصف الكورس"
-                  maxLength={500}
-                />
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  رابط صورة الكورس *
-                </label>
-                <input
-                  type="url"
-                  required
-                  value={courseForm.photoUrl}
-                  onChange={(e) =>
-                    setCourseForm({ ...courseForm, photoUrl: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                  placeholder="أدخل رابط صورة الكورس"
-                />
-                {!courseForm.photoUrl && (
-                  <p className="text-red-500 text-sm mt-1">رابط الصورة مطلوب</p>
-                )}
-              </div>
-
-              {/* Preview Image if URL exists */}
-              {courseForm.photoUrl && (
-                <div className="mt-2">
-                  <p className="text-sm text-gray-600 mb-2">معاينة الصورة:</p>
-                  <img 
-                    src={courseForm.photoUrl} 
-                    alt="Preview" 
-                    className="w-32 h-32 object-cover rounded-lg border border-gray-200"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "https://via.placeholder.com/128?text=Invalid+URL";
-                    }}
-                  />
-                </div>
-              )}
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="cursor-pointer flex-1 bg-secondary hover:bg-brand-700 text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
-                >
-                  {isLoading ? "جاري الإنشاء..." : "إنشاء الكورس"}
-                </button>
-                <button
-                  type="button"
-                  onClick={closeCreateModal}
-                  className="cursor-pointer flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Course Modal */}
-      {showEditModal && selectedCourse && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-24 text-gray-900">تعديل الكورس: {selectedCourse.name}</h2>
-              <button
-                onClick={closeEditModal}
-                className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <FiX className="w-6 h-6 text-gray-500" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdateCourse} className="space-y-6">
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  اسم الكورس *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editForm.name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, name: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                  maxLength={100}
-                />
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  وصف الكورس
-                </label>
-                <textarea
-                  rows={4}
-                  value={editForm.description}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, description: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                  maxLength={500}
-                />
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-900 mb-2">
-                  رابط صورة الكورس *
-                </label>
-                <input
-                  type="url"
-                  required
-                  value={editForm.photoUrl}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, photoUrl: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
-                  placeholder="أدخل رابط صورة الكورس"
-                />
-                {!editForm.photoUrl && (
-                  <p className="text-red-500 text-sm mt-1">رابط الصورة مطلوب</p>
-                )}
-              </div>
-
-              {/* Preview Image if URL exists */}
-              {editForm.photoUrl && (
-                <div className="mt-2">
-                  <p className="text-sm text-gray-600 mb-2">معاينة الصورة:</p>
-                  <img 
-                    src={editForm.photoUrl} 
-                    alt="Preview" 
-                    className="w-32 h-32 object-cover rounded-lg border border-gray-200"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "https://via.placeholder.com/128?text=Invalid+URL";
-                    }}
-                  />
-                </div>
-              )}
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="cursor-pointer flex-1 bg-secondary text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
-                >
-                  {isLoading ? "جاري التحديث..." : "تحديث الكورس"}
-                </button>
-                <button
-                  type="button"
-                  onClick={closeEditModal}
-                  className="cursor-pointer flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg bold-16 hover:bg-gray-300 transition-all duration-300"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* View Course Modal */}
-      {showViewModal && selectedCourse && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto mx-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="bold-24 text-gray-900">تفاصيل الكورس</h2>
-              <button
-                onClick={closeViewModal}
-                className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <FiX className="w-6 h-6 text-gray-500" />
-              </button>
-            </div>
-
-            <div className="space-y-6">
-              {/* Course Header */}
-              <div className="flex flex-col md:flex-row gap-6">
-                {/* Course Image */}
-                <div className="w-full md:w-1/3">
-                  <div className="h-48 bg-gradient-to-br from-secondary to-accent rounded-lg overflow-hidden">
-                    {selectedCourse.photoUrl ? (
-                      <img
-                        src={selectedCourse.photoUrl}
-                        alt={selectedCourse.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "https://via.placeholder.com/400x200?text=No+Image";
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flexCenter">
-                        <FiBook className="w-16 h-16 text-white opacity-50" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Course Info */}
-                <div className="flex-1 space-y-4">
-                  <div>
-                    <h3 className="bold-24 text-gray-900 mb-2">
-                      {selectedCourse.name}
-                    </h3>
-                    <p className="regular-16 text-gray-600 leading-relaxed">
-                      {selectedCourse.description || "لا يوجد وصف متاح"}
-                    </p>
-                  </div>
-
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-1">
-                    <div className="bg-brand-50 p-4 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-brand-600 mb-1">
-                        {selectedCourse.lessonCount || 0}
-                      </div>
-                      <div className="text-sm text-brand-600">درس</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Course Details */}
-              <div className="grid grid-cols-1 gap-6">
-                {/* Course Information */}
-                <div className="bg-gray-50 p-6 rounded-lg">
-                  <h4 className="bold-18 text-gray-900 mb-4 flex items-center gap-2">
-                    <FiBook className="w-5 h-5" />
-                    معلومات الكورس
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="regular-14 text-gray-600">
-                        تاريخ الإنشاء:
-                      </span>
-                      <span className="bold-14 text-gray-900">
-                        {selectedCourse.createdAt
-                          ? new Date(
-                              selectedCourse.createdAt
-                            ).toLocaleDateString("ar-EG")
-                          : "غير محدد"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="regular-14 text-gray-600">
-                        المدرس:
-                      </span>
-                      <span className="bold-14 text-gray-900">
-                        {selectedCourse.instructorName || "غير محدد"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Close Button */}
-              <div className="flex justify-end pt-4 border-t border-gray-200">
-                <button
-                  onClick={closeViewModal}
-                  className="cursor-pointer bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                  إغلاق
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && courseToDelete && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-[600px] mx-4">
-            <div className="text-center">
-              {/* Warning Icon */}
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <MdDeleteForever className="h-6 w-6 text-red-600" />
-              </div>
-
-              {/* Title */}
-              <h3 className="bold-18 text-gray-900 mb-2">تأكيد حذف الكورس</h3>
-
-              {/* Message */}
-              <p className="regular-16 text-gray-600 mb-4">
-                هل أنت متأكد من حذف كورس "{courseToDelete.name}"؟
-              </p>
-              <p className="regular-14 text-red-600 mb-6">
-                سيتم حذف جميع الدروس والمحتوى المرتبط بهذا الكورس نهائياً ولا يمكن
-                التراجع عن هذا الإجراء.
-              </p>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                <button
-                  onClick={confirmDeleteCourse}
-                  disabled={isLoading}
-                  className="cursor-pointer flex-1 bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                >
-                  {isLoading ? "جاري الحذف..." : "تأكيد الحذف"}
-                </button>
-                <button
-                  onClick={cancelDeleteCourse}
-                  className="cursor-pointer flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showDeleteModal && !!courseToDelete}
+        title="حذف الكورس"
+        message={`سيتم حذف "${courseToDelete?.name || ""}" نهائياً مع كل دروسه.`}
+        confirmLabel="حذف نهائياً"
+        danger
+        busy={isLoading}
+        onConfirm={confirmDeleteCourse}
+        onClose={cancelDeleteCourse}
+      />
     </div>
   );
 };

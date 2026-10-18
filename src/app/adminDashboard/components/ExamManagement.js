@@ -13,9 +13,12 @@ import {
   FiCopy,
 } from "react-icons/fi";
 import ExamCreationModal from "./Modal/ExamCreationModal";
+import {
+  PageHeader, Button, IconButton, Badge, Toolbar, SearchBox, Select, PagedTable,
+  usePaged, useDebounced, fmtNumber,
+} from "../../components/ui";
 
 const ExamManagement = () => {
-  const [exams, setExams] = useState([]);
   const [errors, setErrors] = useState({});
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,8 +31,23 @@ const ExamManagement = () => {
   const [selectedExam, setSelectedExam] = useState(null);
   const [examResults, setExamResults] = useState(null);
   const [examToDelete, setExamToDelete] = useState(null);
-  const [selectedLessonFilter, setSelectedLessonFilter] = useState("");
-  const [allExams, setAllExams] = useState([]);
+  // Every exam shows straight away; the filters only narrow the list.
+  const [instructors, setInstructors] = useState([]);
+  const [instructorFilter, setInstructorFilter] = useState("");
+  const [courseFilter, setCourseFilter] = useState("");
+  const q = useDebounced(searchTerm.trim());
+  const list = usePaged(
+    (page, size) =>
+      adminAPI.exams.list({
+        instructorId: instructorFilter || undefined,
+        courseId: courseFilter || undefined,
+        q: q || undefined,
+        page,
+        size,
+      }),
+    [instructorFilter, courseFilter, q],
+    { onError: (e) => toast.error(handleAPIError(e, "فشل في تحميل الامتحانات")) }
+  );
 
   // ... بعد useState الحالية، أضف:
   const [showCopyModal, setShowCopyModal] = useState(false);
@@ -44,58 +62,37 @@ const ExamManagement = () => {
 
   useEffect(() => {
     fetchLessons();
-    fetchExams();
+    adminAPI.users
+      .getAllInstructors()
+      .then(({ data }) => setInstructors(data))
+      .catch(() => setInstructors([]));
   }, []);
 
-  useEffect(() => {
-    if (selectedLessonFilter) {
-      const filtered = allExams.filter(
-        (exam) => exam.lessonId === selectedLessonFilter
-      );
-      setExams(filtered);
-    } else {
-      setExams([]); // Show nothing when no lesson is selected
-    }
-  }, [selectedLessonFilter, allExams]);
-
+  // Courses and every lesson, for the filters and the "pick a lesson" fields
   const fetchLessons = async () => {
     try {
-      // Get all courses first, then get lessons for each course
-      const coursesResponse = await adminAPI.courses.getAll();
-      const courses =
-        coursesResponse.data?.content || coursesResponse.data || [];
-      setCourses(courses);
-
-      let allLessons = [];
-      for (const course of courses) {
-        try {
-          const lessonsResponse = await adminAPI.lessons.getByCourse(course.id);
-          const courseLessons =
-            lessonsResponse.data?.content || lessonsResponse.data || [];
-          allLessons = [...allLessons, ...courseLessons];
-        } catch (error) {
-          handleAPIError(error, ` ${course.id} :فشل في تحميل دروس كورس`);
-        }
-      }
-
-      setLessons(allLessons);
+      const [coursesResponse, lessonsResponse] = await Promise.all([
+        adminAPI.courses.getAll(),
+        adminAPI.lessons.options(),
+      ]);
+      setCourses(coursesResponse.data?.content || coursesResponse.data || []);
+      setLessons(lessonsResponse.data || []);
     } catch (error) {
       toast.error(handleAPIError(error, "فشل في تحميل الدروس"));
       setLessons([]);
     }
   };
 
-  const fetchExams = async () => {
+  const fetchExams = () => list.reload();
+
+  // List rows are light (no questions), so load the full exam before editing
+  const openEdit = async (exam) => {
     try {
-      setIsLoading(true);
-      const response = await adminAPI.exams.getAll();
-      const examsData = response.data?.content || [];
-      setAllExams(examsData); // Only store in allExams
+      const { data } = await adminAPI.exams.getExam(exam.id);
+      setSelectedExam({ ...exam, ...data });
+      setShowEditModal(true);
     } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تحميل الامتحانات"));
-      setAllExams([]);
-    } finally {
-      setIsLoading(false);
+      toast.error(handleAPIError(error, "فشل في تحميل الامتحان"));
     }
   };
 
@@ -243,190 +240,101 @@ const ExamManagement = () => {
     }
   };
 
-  const filteredExams = exams.filter((exam) =>
-    exam.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const courseOptions = courses
+    .filter((c) => !instructorFilter || c.instructorId === instructorFilter)
+    .map((c) => ({ value: c.id, label: c.name }));
+  const filtered = Boolean(searchTerm || instructorFilter || courseFilter);
+
+  const columns = [
+    {
+      key: "title",
+      label: "الامتحان",
+      render: (e) => (
+        <div className="min-w-0">
+          <p className="font-medium text-slate-900 truncate max-w-64">{e.title}</p>
+          <p className="text-[11px] text-slate-400 truncate max-w-64">{e.lessonName || "—"}</p>
+        </div>
+      ),
+    },
+    { key: "courseName", label: "الكورس", render: (e) => e.courseName || "—" },
+    { key: "instructorName", label: "المدرس", render: (e) => e.instructorName || "—" },
+    { key: "questions", label: "الأسئلة", render: (e) => fmtNumber(e.questionCount ?? e.questions?.length ?? 0) },
+    {
+      key: "time",
+      label: "المدة",
+      render: (e) => (e.timeLimitMinutes ? `${fmtNumber(e.timeLimitMinutes)} د` : <Badge>مفتوح</Badge>),
+    },
+    { key: "passingScore", label: "النجاح", render: (e) => <Badge tone="brand">{fmtNumber(e.passingScore)}%</Badge> },
+    {
+      key: "actions",
+      label: "",
+      className: "w-px",
+      render: (e) => (
+        <div className="flex items-center gap-0.5">
+          <IconButton label="النتائج" icon={FiBarChart} onClick={() => handleViewResults(e)} />
+          <IconButton label="تعديل" icon={FiEdit} onClick={() => openEdit(e)} />
+          <IconButton
+            label="نسخ إلى درس آخر"
+            icon={FiCopy}
+            onClick={() => {
+              setCopyExamData({ examId: e.id, targetLessonId: "" });
+              setShowCopyModal(true);
+            }}
+          />
+          <IconButton label="حذف" icon={FiTrash2} tone="danger" onClick={() => openDeleteModal(e)} />
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div className="p-4 lg:p-8">
-      {/* Header */}
-      <div className="flex items-center flex-col gap-5 md:flex-row md:gap-0 justify-between mb-8">
-        <div>
-          <h1 className="bold-32 text-gray-900 mb-2">إدارة الامتحانات</h1>
-          <p className="regular-16 text-gray-600">
-            إنشاء وتعديل وإدارة امتحانات الدروس
-          </p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2 shadow-lg hover:shadow-xl cursor-pointer"
-        >
-          <FiPlus className="w-5 h-5" />
-          إنشاء امتحان جديد
-        </button>
-      </div>
+    <div className="p-4 lg:p-6">
+      <PageHeader
+        title="إدارة الامتحانات"
+        subtitle="كل الامتحانات على المنصة، استخدم الفلاتر للتضييق"
+        actions={
+          <Button onClick={() => setShowCreateModal(true)}>
+            <FiPlus /> امتحان جديد
+          </Button>
+        }
+      />
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <div className="grid md:grid-cols-5 gap-3 grid-cols-1">
-          {/* Lesson Filter */}
-          <select
-            value={selectedLessonFilter}
-            onChange={(e) => setSelectedLessonFilter(e.target.value)}
-            className="w-full px-4 py-3 md:col-span-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-          >
-            <option value="">اختر درس</option>
-            {courses.map((course) => {
-              const courseLessons = lessons.filter(
-                (lesson) => lesson.courseId === course.id
-              );
-              if (courseLessons.length === 0) return null;
-              return (
-                <optgroup key={course.id} label={course.name}>
-                  {courseLessons.map((lesson) => (
-                    <option key={lesson.id} value={lesson.id}>
-                      {lesson.name}
-                    </option>
-                  ))}
-                </optgroup>
-              );
-            })}
-          </select>
-          <button
-            onClick={() => setSelectedLessonFilter("")}
-            disabled={!selectedLessonFilter}
-            className="bg-accent flexCenter gap-2 text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
-          >
-            <FiX className="w-4 h-4" />
-            إعادة تعيين
-          </button>
-        </div>
-      </div>
-
-      {/* Exams List */}
-      <div className="space-y-4">
-        {isLoading ? (
-          Array.from({ length: 3 }).map((_, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 animate-pulse"
+      <Toolbar
+        actions={
+          filtered ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchTerm("");
+                setInstructorFilter("");
+                setCourseFilter("");
+              }}
             >
-              <div className="h-5 sm:h-6 bg-gray-200 rounded mb-3"></div>
-              <div className="h-3 sm:h-4 bg-gray-200 rounded mb-2"></div>
-              <div className="h-3 sm:h-4 bg-gray-200 rounded mb-4"></div>
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                <div className="h-3 bg-gray-200 rounded"></div>
-                <div className="h-3 bg-gray-200 rounded"></div>
-                <div className="h-3 bg-gray-200 rounded"></div>
-                <div className="h-3 bg-gray-200 rounded"></div>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="h-8 bg-gray-200 rounded flex-1"></div>
-                <div className="h-8 bg-gray-200 rounded flex-1"></div>
-                <div className="h-8 bg-gray-200 rounded w-full sm:w-12"></div>
-              </div>
-            </div>
-          ))
-        ) : filteredExams.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <FiBook className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="regular-16 text-gray-600">
-              {selectedLessonFilter
-                ? "لا توجد امتحانات للدرس المحدد"
-                : "الرجاء اختيار درس لعرض الامتحانات"}
-            </p>
-            {!selectedLessonFilter && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="mt-4 bg-accent text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-all duration-300 cursor-pointer"
-              >
-                إنشاء أول امتحان
-              </button>
-            )}
-          </div>
-        ) : (
-          filteredExams.map((exam) => (
-            <div
-              key={exam.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
-            >
-              {/* Exam Header */}
-              <div className="p-3 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="bold-16 sm:bold-18 text-gray-900 mb-2">
-                      {exam.title}
-                    </h3>
-                    <p className="regular-12 sm:regular-14 text-gray-600 mb-3 sm:mb-4 line-clamp-2">
-                      {exam.lessonName || "درس غير محدد"}
-                    </p>
-                  </div>
-                </div>
+              <FiX /> مسح الفلاتر
+            </Button>
+          ) : null
+        }
+      >
+        <SearchBox value={searchTerm} onChange={setSearchTerm} placeholder="ابحث بالعنوان أو الدرس أو الكورس" />
+        <Select
+          value={instructorFilter}
+          onChange={(v) => {
+            setInstructorFilter(v);
+            setCourseFilter("");
+          }}
+          allLabel="كل المدرسين"
+          options={instructors.map((i) => ({ value: i.id, label: i.fullname || i.username }))}
+        />
+        <Select value={courseFilter} onChange={setCourseFilter} allLabel="كل الكورسات" options={courseOptions} />
+      </Toolbar>
 
-                {/* Exam Stats */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
-                  <div className="flex items-center gap-2">
-                    <FiClock className="w-3 h-3 sm:w-4 sm:h-4 text-brand-500" />
-                    <span className="regular-10 sm:regular-12 text-gray-600">
-                      {exam.timeLimitMinutes} دقيقة
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FiAward className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-500" />
-                    <span className="regular-10 sm:regular-12 text-gray-600">
-                      {exam.passingScore}% للنجاح
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FiBook className="w-3 h-3 sm:w-4 sm:h-4 text-brand-500" />
-                    <span className="regular-10 sm:regular-12 text-gray-600">
-                      {exam.questions?.length || 0} سؤال
-                    </span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <button
-                    onClick={() => handleViewResults(exam)}
-                    className="flex-1 bg-brand-50 text-brand-600 py-3 border border-brand-600 px-2 sm:px-4 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
-                  >
-                    <FiBarChart className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">النتائج</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedExam(exam);
-                      setShowEditModal(true);
-                    }}
-                    className="flex-1 bg-emerald-50 text-emerald-600 py-3 border border-emerald-600 px-2 sm:px-4 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
-                  >
-                    <FiEdit className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">تعديل</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCopyExamData({ examId: exam.id, targetLessonId: '' });
-                      setShowCopyModal(true);
-                    }}
-                    className="flex-1 bg-brand-50 text-brand-600 py-3 border border-brand-600 px-2 sm:px-4 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
-                  >
-                    <FiCopy className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">نسخ</span>
-                  </button>
-                  <button
-                    onClick={() => openDeleteModal(exam)}
-                    className="bg-red-50 flex-1 text-red-600 border border-red-600 py-3 px-2 sm:px-4 rounded-lg hover:bg-red-100 transition-colors cursor-pointer flexCenter"
-                  >
-                    <FiTrash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline ml-1">حذف</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      <PagedTable
+        list={list}
+        columns={columns}
+        empty={filtered ? "لا توجد امتحانات مطابقة" : "لا توجد امتحانات بعد"}
+        emptyHint={filtered ? "جرّب تغيير الفلاتر" : "ابدأ بإنشاء أول امتحان"}
+      />
 
       {/* Create Exam Modal */}
       {showCreateModal && (
@@ -491,8 +399,8 @@ const ExamManagement = () => {
       {/* Grade Submission Modal */}
       {showGradeModal && gradingSubmission && (
         <div className="fixed inset-0 bg-black/50 flexCenter z-[60]">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <h2 className="bold-24 mb-4">تصحيح يدوي</h2>
+          <div className="bg-white rounded-xl shadow-xl p-5 w-full max-w-md">
+            <h2 className="text-base font-semibold mb-4">تصحيح يدوي</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">الدرجة (%)</label>
@@ -500,7 +408,7 @@ const ExamManagement = () => {
                   type="number"
                   value={gradeValue}
                   onChange={(e) => setGradeValue(e.target.value)}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-accent"
+                  className="w-full p-2 border rounded-lg focus:ring-4 focus:ring-brand-600/10 text-sm focus:outline-none"
                 />
               </div>
               <div>
@@ -508,14 +416,14 @@ const ExamManagement = () => {
                 <textarea
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-accent"
+                  className="w-full p-2 border rounded-lg focus:ring-4 focus:ring-brand-600/10 text-sm focus:outline-none"
                   rows="3"
                 ></textarea>
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={handleGradeSubmission} disabled={isLoading} className="flex-1 bg-accent text-white py-2 rounded-lg hover:bg-opacity-90">حفظ</button>
-              <button onClick={() => setShowGradeModal(false)} className="flex-1 bg-gray-200 py-2 rounded-lg hover:bg-gray-300">إلغاء</button>
+              <button onClick={handleGradeSubmission} disabled={isLoading} className="flex-1 bg-brand-600 text-white py-2 rounded-lg hover:bg-brand-700">حفظ</button>
+              <button onClick={() => setShowGradeModal(false)} className="flex-1 bg-gray-200 py-2 rounded-lg hover:bg-slate-50">إلغاء</button>
             </div>
           </div>
         </div>
@@ -523,8 +431,8 @@ const ExamManagement = () => {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && examToDelete && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
+          <div className="bg-white rounded-xl shadow-xl p-5 w-full max-w-md">
             <div className="text-center">
               {/* Warning Icon */}
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
@@ -550,14 +458,14 @@ const ExamManagement = () => {
                     setShowDeleteModal(false);
                     setExamToDelete(null);
                   }}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-lg bold-14 hover:bg-gray-300 transition-all duration-300 cursor-pointer"
+                  className="flex-1 bg-white border border-slate-200 text-slate-700 py-2 px-4 rounded-lg bold-14 hover:bg-slate-50 transition-all duration-150 cursor-pointer"
                 >
                   إلغاء
                 </button>
                 <button
                   onClick={handleDeleteExam}
                   disabled={isLoading}
-                  className="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg bold-14 hover:bg-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg bold-14 hover:bg-red-700 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isLoading ? "جاري الحذف..." : "حذف نهائياً"}
                 </button>
@@ -569,13 +477,13 @@ const ExamManagement = () => {
 
       {/* Copy Exam Modal */}
       {showCopyModal && (
-        <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
-            <h2 className="bold-24 mb-4">نسخ الامتحان</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
+          <div className="bg-white rounded-xl shadow-xl p-5 w-full max-w-md">
+            <h2 className="text-base font-semibold mb-4">نسخ الامتحان</h2>
             <select
               value={copyExamData.targetLessonId}
               onChange={(e) => setCopyExamData({ ...copyExamData, targetLessonId: e.target.value })}
-              className="w-full p-3 border rounded-lg mb-4"
+              className="w-full px-3 py-2 border rounded-lg mb-4 text-sm focus:outline-none"
             >
               <option value="">اختر الدرس الهدف</option>
               {lessons.map(lesson => (
@@ -583,7 +491,7 @@ const ExamManagement = () => {
               ))}
             </select>
             <div className="flex gap-3">
-              <button onClick={handleCopyExam} disabled={!copyExamData.targetLessonId || isLoading} className="flex-1 bg-accent text-white py-2 rounded-lg">نسخ</button>
+              <button onClick={handleCopyExam} disabled={!copyExamData.targetLessonId || isLoading} className="flex-1 bg-brand-600 text-white py-2 rounded-lg">نسخ</button>
               <button onClick={() => setShowCopyModal(false)} className="flex-1 bg-gray-200 py-2 rounded-lg">إلغاء</button>
             </div>
           </div>
@@ -598,18 +506,18 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results, page, totalPages, on
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/20 flexCenter z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
       <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="bold-24 text-gray-900">
+          <h2 className="text-base font-semibold text-slate-900">
             نتائج الامتحان: {exam.title}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer"
           >
-            <FiX className="w-6 h-6 text-gray-500" />
+            <FiX className="w-4 h-4 text-slate-500" />
           </button>
         </div>
 
@@ -747,7 +655,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results, page, totalPages, on
         <div className="flex items-center justify-end p-6 border-t border-gray-200">
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
           >
             إغلاق
           </button>

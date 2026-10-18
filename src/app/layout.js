@@ -1,9 +1,12 @@
 import { UserProvider } from "../../models/UserContext";
 import FloatingChatButton from "./components/FloatingChatButton";
-import AdminPerformanceWrapper from "./components/AdminPerformanceWrapper";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
+import { Cairo } from "next/font/google";
+
+// Self-hosted at build time, preloaded, no layout shift
+const cairo = Cairo({ subsets: ["arabic", "latin"], weight: ["400", "500", "600", "700"], display: "swap", variable: "--font-cairo" });
 
 export const metadata = {
   title: "أكاديميتنا - منصة التعليم الذكي",
@@ -20,7 +23,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" className={cairo.variable}>
       <head>
         {/* Preload critical resources */}
         <link
@@ -48,7 +51,6 @@ export default function RootLayout({ children }) {
         <UserProvider>
           {children}
           <FloatingChatButton />
-          <AdminPerformanceWrapper />
           <ToastContainer
             position="top-right"
             autoClose={5000}

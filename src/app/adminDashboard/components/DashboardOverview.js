@@ -157,14 +157,14 @@ const DashboardOverview = ({ setActiveTab }) => {
   const StatCard = ({ title, value, icon: Icon, color, subtitle }) => {
     const theme = colorMap.brand || Object.values(colorMap)[0];
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all border border-gray-100">
+      <div className="bg-white rounded-2xl shadow-sm p-6 transition-all border border-gray-100">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-500 text-sm mb-1">{title}</p>
             <p className="text-3xl font-bold text-gray-900">{value}</p>
             {subtitle && <p className="text-xs text-gray-400 mt-1">{subtitle}</p>}
           </div>
-          <div className={`p-4 rounded-2xl ${theme.bg}`}>
+          <div className={`p-4 rounded-2xl   ${theme.bg}`}>
             <Icon className={`w-8 h-8 ${theme.text}`} />
           </div>
         </div>
@@ -207,7 +207,7 @@ const DashboardOverview = ({ setActiveTab }) => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Payment Chart */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="bg-white rounded-2xl shadow-sm p-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
             <FiDollarSign className="text-emerald-600" />
             إحصائيات المدفوعات (المبالغ)
@@ -234,7 +234,7 @@ const DashboardOverview = ({ setActiveTab }) => {
         </div>
 
         {/* Access Codes Chart */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="bg-white rounded-2xl shadow-sm p-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
             <FiCode className="text-brand-600" />
             حالة أكواد الوصول
@@ -255,7 +255,7 @@ const DashboardOverview = ({ setActiveTab }) => {
       {/* Recent Activity & Expiring Soon */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activity */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="bg-white rounded-2xl shadow-sm p-6">
           <h2 className="text-xl font-bold mb-4">آخر الأنشطة</h2>
           <div className="space-y-4 max-h-96 overflow-y-auto pl-2">
             {recentActivity.length === 0 ? (
@@ -265,7 +265,7 @@ const DashboardOverview = ({ setActiveTab }) => {
                 const theme = colorMap[act.color] || colorMap.blue;
                 return (
                   <div key={idx} className="flex items-start gap-3 border-b border-gray-100 pb-3">
-                    <div className={`p-2 rounded-full ${theme.lightBg}`}>
+                    <div className={`p-2 rounded-full   ${theme.lightBg}`}>
                       <act.icon className={`w-4 h-4 ${theme.text}`} />
                     </div>
                     <div className="flex-1">
@@ -283,7 +283,7 @@ const DashboardOverview = ({ setActiveTab }) => {
         </div>
 
         {/* Expiring Soon */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="bg-white rounded-2xl shadow-sm p-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
             <FiClock className="text-amber-500" />
             الصلاحيات المنتهية قريباً (خلال 7 أيام)
@@ -312,23 +312,23 @@ const DashboardOverview = ({ setActiveTab }) => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
+      <div className="bg-white rounded-2xl shadow-sm p-6">
         <h2 className="text-xl font-bold mb-4">إجراءات سريعة</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <button onClick={() => setActiveTab('users')} className="p-4 bg-brand-50 rounded-xl hover:bg-brand-100 transition-colors text-center group">
-            <FiUsers className="w-6 h-6 mx-auto mb-2 text-brand-600 group-hover:scale-110 transition-transform" />
+            <FiUsers className="w-6 h-6 mx-auto mb-2 text-brand-600 transition-transform" />
             <span className="text-sm font-medium text-brand-900">إدارة المستخدمين</span>
           </button>
           <button onClick={() => setActiveTab('courses')} className="p-4 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors text-center group">
-            <FiBook className="w-6 h-6 mx-auto mb-2 text-emerald-600 group-hover:scale-110 transition-transform" />
+            <FiBook className="w-6 h-6 mx-auto mb-2 text-emerald-600 transition-transform" />
             <span className="text-sm font-medium text-emerald-900">إدارة الكورسات</span>
           </button>
           <button onClick={() => setActiveTab('exams')} className="p-4 bg-brand-50 rounded-xl hover:bg-brand-100 transition-colors text-center group">
-            <FiFileText className="w-6 h-6 mx-auto mb-2 text-brand-600 group-hover:scale-110 transition-transform" />
+            <FiFileText className="w-6 h-6 mx-auto mb-2 text-brand-600 transition-transform" />
             <span className="text-sm font-medium text-brand-900">إدارة الامتحانات</span>
           </button>
           <button onClick={() => setActiveTab('access-codes')} className="p-4 bg-amber-50 rounded-xl hover:bg-amber-100 transition-colors text-center group">
-            <FiCode className="w-6 h-6 mx-auto mb-2 text-amber-600 group-hover:scale-110 transition-transform" />
+            <FiCode className="w-6 h-6 mx-auto mb-2 text-amber-600 transition-transform" />
             <span className="text-sm font-medium text-amber-900">إنشاء أكواد</span>
           </button>
         </div>

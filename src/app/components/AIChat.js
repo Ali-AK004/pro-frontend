@@ -137,9 +137,9 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
 
   return (
     <div
-      className={`flex flex-col h-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 rounded-lg shadow-lg ${className}`}
+      className={`flex flex-col h-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 rounded-lg shadow-sm   ${className}`}
     >
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-t-lg relative overflow-hidden">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-brand-500 text-white rounded-t-lg relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
         <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
@@ -165,17 +165,17 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
         <div className="relative flex items-center gap-2">
           <button
             onClick={resetChat}
-            className="p-2 hover:bg-white/20 rounded-xl transition-all duration-300 cursor-pointer group"
+            className="p-2 hover:bg-white/20 rounded-xl transition-all duration-150 cursor-pointer group"
             title="بدء محادثة جديدة"
           >
-            <FiRefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
+            <FiRefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-150" />
           </button>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-xl transition-all duration-300 cursor-pointer group"
+            className="p-2 hover:bg-white/20 rounded-xl transition-all duration-150 cursor-pointer group"
             title="إغلاق"
           >
-            <FiX className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            <FiX className="w-4 h-4 transition-transform" />
           </button>
         </div>
       </div>
@@ -211,7 +211,7 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-2 dark:bg-gray-900 rounded-b-lg shadow-md sticky ">
+      <div className="p-2 dark:bg-gray-900 rounded-b-lg shadow-sm sticky">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -230,7 +230,7 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
               }}
               onKeyDown={handleKeyDown}
               placeholder="💬 اكتب رسالتك هنا..."
-              className="w-full px-4 py-3 borderborder-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:border-transparent focus:ring-transparent focus:outline-none overflow-hidden resize-none transition-all shadow-sm text-sm sm:text-base"
+              className="w-full px-3 py-2 borderborder-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-700 focus:border-brand-600 focus:ring-transparent focus:outline-none overflow-hidden resize-none transition-all shadow-sm text-sm sm:text-base"
               disabled={isLoading || !sessionId}
               aria-label="اكتب رسالتك"
               autoCapitalize="off"
@@ -262,18 +262,18 @@ const MessageBubble = ({ message }) => {
   const isError = message.isError;
 
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <div className={`flex   ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`flex items-start gap-2 max-w-[80%] ${isUser ? "flex-row-reverse" : "flex-row"}`}
+        className={`flex items-start gap-2 max-w-[80%]   ${isUser ? "flex-row-reverse" : "flex-row"}`}
       >
         <div
-          className={`w-8 h-8 rounded-full flexCenter flex-shrink-0 ${
-            isUser
-              ? "bg-brand-500 text-white"
-              : isError
-                ? "bg-red-500 text-white"
-                : "bg-gray-200 text-gray-600"
-          }`}
+          className={`w-8 h-8 rounded-full flexCenter flex-shrink-0   ${
+ isUser
+ ? "bg-brand-500 text-white"
+ : isError
+ ? "bg-red-500 text-white"
+ : "bg-gray-200 text-gray-600"
+ }`}
         >
           {isUser ? (
             <FiUser className="w-4 h-4" />
@@ -282,13 +282,13 @@ const MessageBubble = ({ message }) => {
           )}
         </div>
         <div
-          className={`rounded-sm px-4 py-3 ${
-            isUser
-              ? "bg-brand-500 text-white"
-              : isError
-                ? "bg-red-50 border border-red-200 text-red-700"
-                : "bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100"
-          }`}
+          className={`rounded-sm px-4 py-3   ${
+ isUser
+ ? "bg-brand-500 text-white"
+ : isError
+ ? "bg-red-50 border border-red-200 text-red-700"
+ : "bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100"
+ }`}
         >
           {isTyping ? (
             <div className="flex gap-1">

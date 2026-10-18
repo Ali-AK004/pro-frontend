@@ -1,6 +1,7 @@
 import axios from "axios";
 import { apiConfig } from "../../config/api";
 import { attachAuthRefresh } from "../utils/authRefresh";
+import { asList, listParams } from "../utils/pageList";
 
 const BASE_URL = apiConfig.baseURL;
 
@@ -47,7 +48,12 @@ export const chatAPI = {
     startNewSession: () => apiClient.post("/chat/start"),
 
     // Get chat history for a session
-    getChatHistory: (sessionId) => apiClient.get(`/chat/history/${sessionId}`),
+    // Last 100 messages, oldest first for display (the server sends newest first)
+    getChatHistory: (sessionId) =>
+      apiClient
+        .get(`/chat/history/${sessionId}`, { params: listParams() })
+        .then(asList)
+        .then((res) => ({ ...res, data: [...res.data].reverse() })),
   },
 
   // Message Management

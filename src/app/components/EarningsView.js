@@ -35,7 +35,7 @@ function Card({ title, value, hint, tone = "gray" }) {
     amber: "bg-amber-50 border-amber-200",
   };
   return (
-    <div className={`rounded-xl border border-gray-200 p-4 ${tones[tone]}`}>
+    <div className={`rounded-xl border border-gray-200 p-4   ${tones[tone]}`}>
       <p className="regular-14 text-gray-600">{title}</p>
       <p className="bold-20 text-gray-900 mt-1">{value}</p>
       {hint ? <p className="regular-12 text-gray-500 mt-1">{hint}</p> : null}
@@ -174,7 +174,7 @@ export default function EarningsView({ api, adminTools = false, onChanged }) {
           <label className="block regular-12 text-gray-600 mb-1">إلى</label>
           <input type="date" className={input} value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
-        <button onClick={() => load(0)} className="px-4 py-2 rounded-lg bg-accent text-white bold-14 cursor-pointer">
+        <button onClick={() => load(0)} className="px-4 py-2 rounded-lg bg-brand-600 text-white bold-14 cursor-pointer">
           عرض
         </button>
         <button onClick={exportCsv} className="px-4 py-2 rounded-lg bg-gray-800 text-white bold-14 cursor-pointer">
@@ -246,7 +246,7 @@ export default function EarningsView({ api, adminTools = false, onChanged }) {
             <h3 className="bold-16">تسجيل دفعة للمدرس</h3>
             <p className="regular-12 text-gray-500">سجّل المبلغ بعد تحويله فعليًا. لا يمكن تسجيل أكثر من المستحق ({money(summary.balanceDue)}).</p>
             <div className="flex flex-wrap gap-3">
-              <input className={`${input} w-36`} type="number" min="0.01" step="0.01" placeholder="المبلغ" required
+              <input className={`  w-36 ${input}`} type="number" min="0.01" step="0.01" placeholder="المبلغ" required
                 value={payout.amount} onChange={(e) => setPayout({ ...payout, amount: e.target.value })} />
               <select className={input} value={payout.method} onChange={(e) => setPayout({ ...payout, method: e.target.value })}>
                 {Object.entries(METHODS).map(([k, v]) => (
@@ -255,7 +255,7 @@ export default function EarningsView({ api, adminTools = false, onChanged }) {
               </select>
               <input className={input} type="date" value={payout.paidOn} onChange={(e) => setPayout({ ...payout, paidOn: e.target.value })} />
             </div>
-            <input className={`${input} w-full`} maxLength={300} placeholder="ملاحظة (رقم التحويل، الفترة...)"
+            <input className={`  w-full ${input}`} maxLength={300} placeholder="ملاحظة (رقم التحويل، الفترة...)"
               value={payout.note} onChange={(e) => setPayout({ ...payout, note: e.target.value })} />
             <button type="submit" disabled={busy || Number(summary.balanceDue) <= 0}
               className="px-4 py-2 rounded-lg bg-accent text-white bold-14 cursor-pointer disabled:opacity-50">
@@ -267,16 +267,16 @@ export default function EarningsView({ api, adminTools = false, onChanged }) {
             <h3 className="bold-16">عمولة المنصة لهذا المدرس</h3>
             <p className="regular-12 text-gray-500">التغيير يُطبق على المبيعات الجديدة فقط، ولا يغير المبيعات السابقة.</p>
             <div className="flex flex-wrap items-center gap-3">
-              <input className={`${input} w-28`} type="number" min="0" max="100" step="0.01" value={commission}
+              <input className={`  w-28 ${input}`} type="number" min="0" max="100" step="0.01" value={commission}
                 onChange={(e) => setCommission(e.target.value)} />
               <span className="regular-14">%</span>
               <button onClick={() => saveCommission(false)} disabled={busy || commission === ""}
-                className="px-4 py-2 rounded-lg bg-accent text-white bold-14 cursor-pointer disabled:opacity-50">
+                className="px-4 py-2 rounded-lg bg-brand-600 text-white bold-14 cursor-pointer disabled:opacity-50">
                 حفظ
               </button>
               {!summary.defaultCommission ? (
                 <button onClick={() => saveCommission(true)} disabled={busy}
-                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 bold-14 cursor-pointer">
+                  className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 bold-14 cursor-pointer">
                   العودة للنسبة الافتراضية
                 </button>
               ) : null}

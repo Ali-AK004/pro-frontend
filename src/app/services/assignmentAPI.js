@@ -1,6 +1,7 @@
 import axios from "axios";
 import { apiConfig } from "../../config/api";
 import { attachAuthRefresh } from "../utils/authRefresh";
+import { asList, listParams } from "../utils/pageList";
 
 const BASE_URL = apiConfig.baseURL;
 
@@ -71,14 +72,14 @@ export const assignmentAPI = {
 
     // Get assignments by lesson
     getByLesson: (lessonId) =>
-      apiClient.get(`/lessons/${lessonId}/assignments`),
+      apiClient.get(`/assignments/lessons/${lessonId}`, { params: listParams() }).then(asList),
 
     // Get all assignments for instructor
     getByInstructor: (instructorId) =>
-      apiClient.get(`/instructors/${instructorId}/assignments`),
+      apiClient.get(`/assignments/instructors/${instructorId}`, { params: listParams() }).then(asList),
 
     // Get all assignments (admin)
-    getAll: () => apiClient.get("/assignments"),
+    getAll: (params) => apiClient.get("/assignments", { params }),
 
     // Get assignment submissions (for instructors/admins)
     getSubmissions: (assignmentId) =>

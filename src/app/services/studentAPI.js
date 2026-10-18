@@ -1,6 +1,7 @@
 import axios from "axios";
 import { apiConfig } from "../../config/api";
 import { attachAuthRefresh } from "../utils/authRefresh";
+import { asList, listParams } from "../utils/pageList";
 
 const BASE_URL = apiConfig.baseURL;
 
@@ -51,11 +52,11 @@ export const studentAPI = {
 
     // Get instructor courses
     getInstructorCourses: (instructorId) =>
-      apiClient.get(`/students/instructors/${instructorId}/courses`),
+      apiClient.get(`/students/instructors/${instructorId}/courses`, { params: listParams() }).then(asList),
 
     // Get instructor full profile with courses
-    getInstructorFullProfile: (instructorId) =>
-      apiClient.get(`/students/instructors/${instructorId}/full-profile`),
+    getInstructorFullProfile: (instructorId, page = 0, size = 100) =>
+      apiClient.get(`/students/instructors/${instructorId}/full-profile`, { params: { page, size } }),
   },
 
   // Lesson Management
@@ -65,7 +66,10 @@ export const studentAPI = {
       apiClient.get(`/students/lessons/${lessonId}`),
 
     // Get student's paid lessons
-    getPaidLessons: () => apiClient.get("/students/my-lessons"),
+    getPaidLessons: () => apiClient.get("/students/my-lessons", { params: listParams() }).then(asList),
+
+    // Paged, most recent first
+    myLessons: (page = 0, size = 20) => apiClient.get("/students/my-lessons", { params: { page, size } }),
 
     // Mark video as watched
     markVideoWatched: (lessonId) =>

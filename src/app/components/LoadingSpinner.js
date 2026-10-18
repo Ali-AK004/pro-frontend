@@ -16,7 +16,7 @@ const LoadingSpinner = ({ size = "medium", color = "accent", fullScreen = false 
 
   const spinner = (
     <div
-      className={`animate-spin rounded-full border-t-transparent ${sizeClasses[size]} ${colorClasses[color]}`}
+      className={`animate-spin rounded-full border-t-transparent     ${sizeClasses[size]}${colorClasses[color]}`}
       role="status"
     />
   );

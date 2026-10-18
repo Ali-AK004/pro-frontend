@@ -114,7 +114,7 @@ const InstructorProfileManagement = () => {
         {!isEditing && canEditProfile && (
           <button
             onClick={() => setIsEditing(true)}
-            className="cursor-pointer bg-secondary text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 flexCenter gap-2"
+            className="cursor-pointer bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-all duration-150 flexCenter gap-2"
           >
             <FiEdit className="w-5 h-5" />
             تعديل الملف الشخصي
@@ -150,7 +150,7 @@ const InstructorProfileManagement = () => {
                   )}
                 </div>
                 {isEditing && canEditProfile && (
-                  <button className="cursor-pointer absolute bottom-0 right-0 bg-secondary text-white p-2 rounded-full hover:bg-opacity-90 transition-colors">
+                  <button className="cursor-pointer absolute bottom-0 right-0 bg-brand-600 text-white p-2 rounded-full hover:bg-brand-700 transition-colors">
                     <FiCamera className="w-4 h-4" />
                   </button>
                 )}
@@ -187,7 +187,7 @@ const InstructorProfileManagement = () => {
                     type="submit"
                     form="profile-form"
                     disabled={isLoading}
-                    className="cursor-pointer px-4 py-2 bg-secondary text-white rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2 disabled:opacity-50"
+                    className="cursor-pointer px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors flexCenter gap-2 disabled:opacity-50"
                   >
                     <FiSave className="w-4 h-4" />
                     {isLoading ? "جاري الحفظ..." : "حفظ التغييرات"}
@@ -199,7 +199,7 @@ const InstructorProfileManagement = () => {
             <form
               id="profile-form"
               onSubmit={handleUpdateProfile}
-              className="space-y-6"
+              className="space-y-4"
             >
               {/* Personal Information Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -232,7 +232,7 @@ const InstructorProfileManagement = () => {
                           username: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm focus:outline-none"
                       required
                     />
                   ) : (
@@ -277,7 +277,7 @@ const InstructorProfileManagement = () => {
                           phoneNumber: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm focus:outline-none"
                       required
                     />
                   ) : (
@@ -344,7 +344,7 @@ const InstructorProfileManagement = () => {
                     onChange={(e) =>
                       setProfileForm({ ...profileForm, bio: e.target.value })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm focus:outline-none"
                     placeholder="اكتب نبذة عن نفسك وخبراتك التعليمية..."
                   />
                 ) : (
@@ -372,7 +372,7 @@ const InstructorProfileManagement = () => {
                         avatarUrl: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm focus:outline-none"
                     placeholder="https://example.com/profile-photo.jpg"
                   />
                 </div>

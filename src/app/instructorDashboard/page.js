@@ -6,7 +6,6 @@ import "react-toastify/dist/ReactToastify.css";
 // Import only essential components
 import InstructorSidebar from "./components/InstructorSidebar";
 import InstructorDashboardOverview from "./components/InstructorDashboardOverview";
-import PerformanceMonitor from "./components/PerformanceMonitor";
 import { canAccessInstructorDashboard } from "../utils/roleHelpers";
 import { toast } from "react-toastify";
 
@@ -143,7 +142,7 @@ const InstructorDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-brand-50/30 to-brand-50/30 flex relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 flex relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-400/5 rounded-full blur-3xl"></div>
@@ -153,14 +152,12 @@ const InstructorDashboard = () => {
       <InstructorSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Content */}
-      <div className="flex-1 lg:mr-80 mr-0 relative">
+      <div className="flex-1 lg:mr-64 mr-0 relative">
         <div className="pt-16 lg:pt-0">
           <div className="max-w-7xl mx-auto">{renderContent()}</div>
         </div>
       </div>
 
-      {/* Performance Monitor (development only) */}
-      <PerformanceMonitor />
     </div>
   );
 };

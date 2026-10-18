@@ -7,23 +7,34 @@ import "react-toastify/dist/ReactToastify.css";
 
 // Import components
 import AdminSidebar from "./components/AdminSidebar";
-import DashboardOverview from "./components/DashboardOverview";
-import UserManagement from "./components/UserManagement";
-import CourseManagement from "./components/CourseManagement";
-import LessonManagement from "./components/LessonManagement";
-import ExamManagement from "./components/ExamManagement";
-import AssignmentManagement from "./components/AssignmentManagement";
-import AccessCodeManagement from "./components/AccessCodeManagement";
-import LessonExpirationManagement from "./components/LessonExpirationManagement";
-import AIChat from "../components/AIChat";
-import PerformanceMonitor from "../components/PerformanceMonitor";
-import AdminStudentLessonsPage from "./components/AdminStudentLessonsPage";
-import AuditLogsPage from "./components/AuditLogsPage";
-import WalletManagement from "./components/WalletManagement";
-import BundleCouponPage from "./components/BundleCouponPage";
-import AdminEarningsPage from "./components/AdminEarningsPage";
-import AnalyticsPage from "./components/AnalyticsPage";
-import PaymentsCenterPage from "./components/PaymentsCenterPage";
+import { canOpen } from "./permissions";
+import dynamic from "next/dynamic";
+
+// Each tab is its own chunk, downloaded the first time it is opened
+const TabLoading = () => (
+  <div className="p-6 space-y-3">
+    <div className="h-6 w-48 rounded bg-slate-200 animate-pulse" />
+    <div className="h-64 rounded-xl bg-white border border-slate-200 animate-pulse" />
+  </div>
+);
+const lazyTab = (load) => dynamic(load, { loading: TabLoading });
+const DashboardOverview = lazyTab(() => import("./components/DashboardOverview"));
+const UserManagement = lazyTab(() => import("./components/UserManagement"));
+const CourseManagement = lazyTab(() => import("./components/CourseManagement"));
+const LessonManagement = lazyTab(() => import("./components/LessonManagement"));
+const ExamManagement = lazyTab(() => import("./components/ExamManagement"));
+const AssignmentManagement = lazyTab(() => import("./components/AssignmentManagement"));
+const AccessCodeManagement = lazyTab(() => import("./components/AccessCodeManagement"));
+const LessonExpirationManagement = lazyTab(() => import("./components/LessonExpirationManagement"));
+const AIChat = lazyTab(() => import("../components/AIChat"));
+const AdminStudentLessonsPage = lazyTab(() => import("./components/AdminStudentLessonsPage"));
+const AuditLogsPage = lazyTab(() => import("./components/AuditLogsPage"));
+const WalletManagement = lazyTab(() => import("./components/WalletManagement"));
+const BundleCouponPage = lazyTab(() => import("./components/BundleCouponPage"));
+const AdminEarningsPage = lazyTab(() => import("./components/AdminEarningsPage"));
+const AnalyticsPage = lazyTab(() => import("./components/AnalyticsPage"));
+const PaymentsCenterPage = lazyTab(() => import("./components/PaymentsCenterPage"));
+const StaffPage = lazyTab(() => import("./components/StaffPage"));
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -62,6 +73,14 @@ const AdminDashboard = () => {
 
   // Render main content
   const renderContent = () => {
+    if (!canOpen(user, activeTab)) {
+      return (
+        <div className="py-24 text-center" dir="rtl">
+          <p className="text-lg font-semibold text-slate-800">هذه الصفحة غير متاحة لحسابك</p>
+          <p className="mt-2 text-sm text-slate-500">اطلب الصلاحية من المدير العام.</p>
+        </div>
+      );
+    }
     switch (activeTab) {
       case "dashboard":
         return <DashboardOverview setActiveTab={setActiveTab} />;
@@ -102,13 +121,15 @@ const AdminDashboard = () => {
         return <AnalyticsPage onNavigate={setActiveTab} />;
       case "payments":
         return <PaymentsCenterPage />;
+      case "staff":
+        return <StaffPage />;
       default:
         return <DashboardOverview />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-brand-50/30 to-brand-50/30 flex relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 flex relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-brand-400/5 rounded-full blur-3xl"></div>
@@ -118,14 +139,12 @@ const AdminDashboard = () => {
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Content */}
-      <div className="flex-1 md:mr-80 mr-0 relative">
+      <div className="flex-1 md:mr-64 mr-0 relative">
         <div className="pt-16 md:pt-0">
           <div className="px-4 mx-auto">{renderContent()}</div>
         </div>
       </div>
 
-      {/* Performance Monitor - Only in Admin Dashboard */}
-      <PerformanceMonitor />
     </div>
   );
 };

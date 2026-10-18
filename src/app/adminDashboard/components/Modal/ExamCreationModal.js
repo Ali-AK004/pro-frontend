@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { examAPI } from "../../../services/examAPI";
-import {
-  FiX,
-  FiPlus,
-  FiTrash2,
-  FiSave,
-  FiBook,
-  FiClock,
-  FiAward,
-  FiHelpCircle,
-  FiAlertCircle,
-} from "react-icons/fi";
+import { FiPlus, FiTrash2, FiSave, FiAlertCircle } from "react-icons/fi";
+import { Dialog, Button, IconButton, Field, inputClass, textareaClass, cx } from "../../../components/ui";
+
+const errClass = (bad) => cx(inputClass, bad && "border-red-300 focus:border-red-400 focus:ring-red-100");
 
 const ExamCreationModal = ({
   onClose,
@@ -287,261 +280,177 @@ const ExamCreationModal = ({
     });
   };
 
+  const totalPoints = examData.questions.reduce((sum, q) => sum + (Number(q.points) || 0), 0);
+
   return (
-    <div className="fixed inset-0 bg-black/20 flexCenter z-50">
-      <div className="bg-white rounded-xl w-full max-w-4xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="bold-24 text-gray-900">
-            {isEdit ? "تعديل الامتحان" : "إنشاء امتحان جديد"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
-          >
-            <FiX className="w-6 h-6 text-gray-500" />
-          </button>
+    <Dialog
+      open
+      wide
+      closeOnBackdrop={false}
+      title={isEdit ? "تعديل الامتحان" : "امتحان جديد"}
+      onClose={onClose}
+      footer={
+        <>
+          <Button type="submit" form="exam-form" loading={isLoading}>
+            <FiSave /> {isEdit ? "حفظ التغييرات" : "إنشاء الامتحان"}
+          </Button>
+          <Button variant="secondary" onClick={onClose}>إلغاء</Button>
+          <span className="ms-auto self-center text-xs text-slate-500">
+            {examData.questions.length} سؤال · {totalPoints} درجة
+          </span>
+        </>
+      }
+    >
+      {errors.general && (
+        <div className="mb-3 p-2.5 rounded-lg bg-red-50 text-red-700 text-xs flex items-start gap-2">
+          <FiAlertCircle className="w-4 h-4 mt-px shrink-0" />
+          <span>{errors.general}</span>
         </div>
+      )}
 
-        {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
-          <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
-            {errors.general && (
-              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg flex items-start gap-2">
-                <FiAlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <span>{errors.general}</span>
-              </div>
-            )}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Lesson Selection */}
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  <FiBook className="inline w-4 h-4 ml-1" />
-                  الدرس
-                </label>
-                <select
-                  value={examData.lessonId}
-                  onChange={(e) =>
-                    handleInputChange("lessonId", e.target.value)
-                  }
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.lessonId ? "border-red-300" : "border-gray-300"
-                  }`}
-                  required
-                >
-                  <option value="">اختر الدرس</option>
-                  {renderLessonOptions()}
-                </select>
-                {errors.lessonId && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lessonId}</p>
-                )}
-              </div>
+      <form id="exam-form" onSubmit={handleSubmit} className="space-y-4">
+        {/* Basics */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Field label="الدرس" error={errors.lessonId}>
+            <select
+              value={examData.lessonId}
+              onChange={(e) => handleInputChange("lessonId", e.target.value)}
+              className={errClass(errors.lessonId)}
+              required
+            >
+              <option value="">اختر الدرس</option>
+              {renderLessonOptions()}
+            </select>
+          </Field>
+          <Field label="عنوان الامتحان" error={errors.title}>
+            <input
+              type="text"
+              value={examData.title}
+              onChange={(e) => handleInputChange("title", e.target.value)}
+              className={errClass(errors.title)}
+              placeholder="مثال: امتحان الوحدة الأولى"
+              required
+            />
+          </Field>
+        </section>
 
-              {/* Title */}
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  عنوان الامتحان
-                </label>
-                <input
-                  type="text"
-                  value={examData.title}
-                  onChange={(e) => handleInputChange("title", e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.title ? "border-red-300" : "border-gray-300"
-                  }`}
-                  placeholder="أدخل عنوان الامتحان"
-                  required
-                />
-                {errors.title && (
-                  <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-                )}
-              </div>
+        {/* Settings */}
+        <section className="grid grid-cols-3 gap-3">
+          <Field label="النجاح (%)" error={errors.passingScore}>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="5"
+              value={examData.passingScore}
+              onChange={(e) => {
+                const value = e.target.value;
+                handleInputChange("passingScore", value === "" ? "" : parseFloat(value) || 0);
+              }}
+              className={errClass(errors.passingScore)}
+              required
+            />
+          </Field>
+          <Field label="المدة (دقيقة)" error={errors.timeLimitMinutes}>
+            <input
+              type="number"
+              min="0"
+              step="5"
+              value={examData.timeLimitMinutes}
+              onChange={(e) => {
+                const value = e.target.value;
+                handleInputChange("timeLimitMinutes", value === "" ? "" : parseInt(value) || 1);
+              }}
+              className={errClass(errors.timeLimitMinutes)}
+              required
+            />
+          </Field>
+          <Field label="المحاولات">
+            <input
+              type="number"
+              min="1"
+              max="20"
+              value={examData.maxAttempts ?? 3}
+              onChange={(e) => {
+                const value = parseInt(e.target.value, 10);
+                handleInputChange("maxAttempts", Number.isFinite(value) ? Math.min(20, Math.max(1, value)) : 1);
+              }}
+              className={inputClass}
+            />
+          </Field>
+        </section>
+        <p className="-mt-2 text-[11px] text-slate-400">
+          لا تظهر الإجابات الصحيحة للطالب إلا بعد النجاح أو انتهاء المحاولات.
+        </p>
 
-              {/* Passing Score */}
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  <FiAward className="inline w-4 h-4 ml-1" />
-                  درجة النجاح (%)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="5"
-                  value={examData.passingScore}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    handleInputChange(
-                      "passingScore",
-                      value === "" ? "" : parseFloat(value) || 0
-                    );
-                  }}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.passingScore ? "border-red-300" : "border-gray-300"
-                  }`}
-                  required
-                />
-                {errors.passingScore && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.passingScore}
-                  </p>
-                )}
-              </div>
+        <label className="flex items-start gap-2.5 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
+          <input
+            type="checkbox"
+            checked={examData.shuffleQuestions ?? true}
+            onChange={(e) => handleInputChange("shuffleQuestions", e.target.checked)}
+            className="mt-0.5 w-4 h-4 accent-brand-600"
+          />
+          <span>
+            <span className="block text-xs font-medium text-slate-800">ترتيب عشوائي للأسئلة والاختيارات</span>
+            <span className="block mt-0.5 text-[11px] text-slate-500 leading-relaxed">
+              كل طالب يرى ترتيباً مختلفاً فلا يمكن تبادل الإجابات بالأرقام. أوقفه فقط إذا كانت الأسئلة تعتمد على ترتيبها.
+              اختيارات صح وخطأ تبقى كما هي.
+            </span>
+          </span>
+        </label>
 
-              {/* Time Limit */}
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  <FiClock className="inline w-4 h-4 ml-1" />
-                  مدة الامتحان (دقيقة)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={examData.timeLimitMinutes}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    handleInputChange(
-                      "timeLimitMinutes",
-                      value === "" ? "" : parseInt(value) || 1
-                    );
-                  }}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors.timeLimitMinutes
-                      ? "border-red-300"
-                      : "border-gray-300"
-                  }`}
-                  required
-                  step="5"
-                />
-                {errors.timeLimitMinutes && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.timeLimitMinutes}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block bold-14 text-gray-700 mb-2">
-                  عدد المحاولات المسموح بها
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={examData.maxAttempts ?? 3}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value, 10);
-                    handleInputChange(
-                      "maxAttempts",
-                      Number.isFinite(value) ? Math.min(20, Math.max(1, value)) : 1
-                    );
-                  }}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  لا تظهر الإجابات الصحيحة للطالب إلا بعد النجاح أو انتهاء المحاولات.
-                </p>
-              </div>
-
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={examData.shuffleQuestions ?? true}
-                  onChange={(e) => handleInputChange("shuffleQuestions", e.target.checked)}
-                  className="mt-1 w-5 h-5 accent-brand-600"
-                />
-                <span>
-                  <span className="block bold-14 text-gray-700">ترتيب عشوائي للأسئلة والاختيارات</span>
-                  <span className="block text-xs text-gray-500">
-                    كل طالب يرى الأسئلة والاختيارات بترتيب مختلف، فلا يستطيع الطلاب تبادل الإجابات بالأرقام (مثل &quot;السؤال 3 إجابته ب&quot;).
-                    أوقفه فقط إذا كانت الأسئلة تعتمد على ترتيبها. أسئلة صح وخطأ يبقى ترتيب اختياراتها كما هو.
-                  </span>
-                </span>
-              </label>
-
-              {/* Questions Section */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="bold-18 text-gray-900 flex items-center gap-2">
-                    <FiHelpCircle className="w-5 h-5" />
-                    الأسئلة ({examData.questions.length})
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={addQuestion}
-                    className="bg-accent cursor-pointer text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2"
-                  >
-                    <FiPlus className="w-4 h-4" />
-                    إضافة سؤال
-                  </button>
-                </div>
-
-                {errors.questions && (
-                  <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg">
-                    {errors.questions}
-                  </div>
-                )}
-
-                <div className="space-y-6">
-                  {examData.questions.map((question, questionIndex) => (
-                    <div
-                      key={questionIndex}
-                      className={
-                        errors[`question_${questionIndex}_text`]
-                          ? "border-l-4 border-red-500 pl-3"
-                          : ""
-                      }
-                    >
-                      <QuestionEditor
-                        key={questionIndex}
-                        question={question}
-                        questionIndex={questionIndex}
-                        onQuestionChange={handleQuestionChange}
-                        onAnswerChange={handleAnswerChange}
-                        onQuestionTypeChange={handleQuestionTypeChange}
-                        onAddAnswer={addAnswer}
-                        onRemoveAnswer={removeAnswer}
-                        onRemoveQuestion={removeQuestion}
-                        canRemoveQuestion={examData.questions.length > 1}
-                        errors={errors}
-                        setErrors={setErrors}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </form>
+        {/* Questions */}
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-slate-900">الأسئلة ({examData.questions.length})</h3>
+            <Button size="sm" variant="secondary" onClick={addQuestion}>
+              <FiPlus /> سؤال
+            </Button>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-4 p-6 border-t border-gray-200">
+          {errors.questions && (
+            <div className="mb-2 p-2.5 rounded-lg bg-red-50 text-red-700 text-xs">{errors.questions}</div>
+          )}
+
+          <div className="space-y-3">
+            {examData.questions.map((question, questionIndex) => (
+              <QuestionEditor
+                key={questionIndex}
+                question={question}
+                questionIndex={questionIndex}
+                onQuestionChange={handleQuestionChange}
+                onAnswerChange={handleAnswerChange}
+                onQuestionTypeChange={handleQuestionTypeChange}
+                onAddAnswer={addAnswer}
+                onRemoveAnswer={removeAnswer}
+                onRemoveQuestion={removeQuestion}
+                canRemoveQuestion={examData.questions.length > 1}
+                errors={errors}
+                setErrors={setErrors}
+              />
+            ))}
+          </div>
+
           <button
             type="button"
-            onClick={onClose}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+            onClick={addQuestion}
+            className="mt-3 w-full h-10 rounded-lg border border-dashed border-slate-300 text-xs text-slate-500 hover:border-brand-600 hover:text-brand-700 hover:bg-brand-50/40 transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5"
           >
-            إلغاء
+            <FiPlus className="w-4 h-4" /> إضافة سؤال
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors flexCenter gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            ) : (
-              <FiSave className="w-4 h-4" />
-            )}
-            {isEdit ? "حفظ التغييرات" : "إنشاء الامتحان"}
-          </button>
-        </div>
-      </div>
-    </div>
+        </section>
+      </form>
+    </Dialog>
   );
 };
 
-// Question Editor Component
+const QUESTION_TYPES = [
+  { value: "SINGLE_CHOICE", label: "اختيار واحد" },
+  { value: "MULTIPLE_CHOICE", label: "اختيار متعدد" },
+  { value: "TRUE_FALSE", label: "صح أم خطأ" },
+];
+
+// One question card
 const QuestionEditor = ({
   question,
   questionIndex,
@@ -555,231 +464,140 @@ const QuestionEditor = ({
   errors,
   setErrors = () => {},
 }) => {
-  const questionTypes = [
-    { value: "SINGLE_CHOICE", label: "اختيار واحد" },
-    { value: "MULTIPLE_CHOICE", label: "اختيار متعدد" },
-    { value: "TRUE_FALSE", label: "صح أم خطأ" },
-  ];
+  const k = (suffix) => `question_${questionIndex}_${suffix}`;
+  const isTF = question.questionType === "TRUE_FALSE";
+  const isMulti = question.questionType === "MULTIPLE_CHOICE";
+  const answerError = errors[k("answers")] || errors[k("correct")];
+
+  const clearError = (key) => {
+    if (!errors[key]) return;
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-      <div className="flex items-center justify-between mb-4">
-        <h4 className="bold-16 text-gray-900">السؤال {questionIndex + 1}</h4>
+    <div className={cx("rounded-lg border bg-white", errors[k("text")] ? "border-red-300" : "border-slate-200")}>
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-100 bg-slate-50/60 rounded-t-lg">
+        <span className="w-6 h-6 rounded-md bg-brand-50 text-brand-700 text-xs font-semibold flex items-center justify-center">
+          {questionIndex + 1}
+        </span>
+        <select
+          value={question.questionType}
+          onChange={(e) => onQuestionTypeChange(questionIndex, e.target.value)}
+          className="h-7 px-2 rounded-md border border-slate-200 bg-white text-xs text-slate-700 focus:outline-none focus:border-brand-600"
+          aria-label="نوع السؤال"
+        >
+          {QUESTION_TYPES.map((type) => (
+            <option key={type.value} value={type.value}>{type.label}</option>
+          ))}
+        </select>
+        <label className="flex items-center gap-1 text-xs text-slate-500">
+          الدرجة
+          <input
+            type="number"
+            min="0"
+            step="0.5"
+            value={question.points}
+            onChange={(e) => {
+              const value = e.target.value;
+              onQuestionChange(questionIndex, "points", value === "" ? "" : parseFloat(value) || 0.01);
+            }}
+            className={cx(
+              "h-7 w-16 px-2 rounded-md border bg-white text-xs text-slate-800 focus:outline-none focus:border-brand-600",
+              errors[k("points")] ? "border-red-300" : "border-slate-200"
+            )}
+            required
+          />
+        </label>
         {canRemoveQuestion && (
-          <button
-            type="button"
-            onClick={() => onRemoveQuestion(questionIndex)}
-            className="text-red-500 cursor-pointer hover:text-red-700 transition-colors"
-          >
-            <FiTrash2 className="w-4 h-4" />
-          </button>
+          <IconButton label="حذف السؤال" icon={FiTrash2} tone="danger" className="ms-auto" onClick={() => onRemoveQuestion(questionIndex)} />
         )}
       </div>
 
-      <div className="space-y-4">
-        {/* Question Text */}
+      <div className="p-3 space-y-3">
         <div>
-          <label className="block bold-14 text-gray-700 mb-2">نص السؤال</label>
           <textarea
             value={question.questionText}
-            data-error={`question_${questionIndex}_text`}
-            onChange={(e) =>
-              onQuestionChange(questionIndex, "questionText", e.target.value)
-            }
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent resize-none ${
-              errors[`question_${questionIndex}_text`]
-                ? "border-red-300"
-                : "border-gray-300"
-            }`}
-            rows="2"
-            placeholder="أدخل نص السؤال"
+            data-error={k("text")}
+            onChange={(e) => onQuestionChange(questionIndex, "questionText", e.target.value)}
+            className={cx(textareaClass, "min-h-16 resize-y", errors[k("text")] && "border-red-300")}
+            rows={2}
+            placeholder="نص السؤال"
             required
           />
-          {errors[`question_${questionIndex}_text`] && (
-            <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-              <FiAlertCircle className="w-4 h-4" />
-              {errors[`question_${questionIndex}_text`]}
-            </div>
-          )}
+          {errors[k("text")] && <p className="mt-1 text-[11px] text-red-600">{errors[k("text")]}</p>}
+          {errors[k("points")] && <p className="mt-1 text-[11px] text-red-600">{errors[k("points")]}</p>}
         </div>
 
-        {/* Question Type and Points */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Question Type */}
-          <div>
-            <label className="block bold-14 text-gray-700 mb-2">
-              نوع السؤال
-            </label>
-            <select
-              value={question.questionType}
-              onChange={(e) =>
-                onQuestionTypeChange(questionIndex, e.target.value)
-              }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
-            >
-              {questionTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Points */}
-          <div>
-            <label className="block bold-14 text-gray-700 mb-2">الدرجات</label>
-            <input
-              type="number"
-              min="0"
-              step="5"
-              value={question.points}
-              onChange={(e) => {
-                const value = e.target.value;
-                onQuestionChange(
-                  questionIndex,
-                  "points",
-                  value === "" ? "" : parseFloat(value) || 0.01
-                );
-              }}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                errors[`question_${questionIndex}_points`]
-                  ? "border-red-300"
-                  : "border-gray-300"
-              }`}
-              required
-            />
-            {errors[`question_${questionIndex}_points`] && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors[`question_${questionIndex}_points`]}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Answers */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <label className="block bold-14 text-gray-700">الإجابات</label>
-            {question.questionType !== "TRUE_FALSE" && (
-              <button
-                type="button"
-                onClick={() => onAddAnswer(questionIndex)}
-                className="text-accent px-2 py-1 cursor-pointer border rounded-sm hover:text-accent-dark transition-colors flexCenter gap-1"
-              >
-                <FiPlus className="w-4 h-4" />
-                إضافة إجابة
-              </button>
-            )}
-          </div>
+          <p className="mb-1.5 text-[11px] text-slate-500">
+            {isMulti ? "علّم كل الإجابات الصحيحة" : "علّم الإجابة الصحيحة"}
+          </p>
+          {answerError && <p className="mb-1.5 text-[11px] text-red-600">{answerError}</p>}
 
-          {errors[`question_${questionIndex}_answers`] && (
-            <p className="mb-2 text-sm text-red-600">
-              {errors[`question_${questionIndex}_answers`]}
-            </p>
-          )}
-
-          {errors[`question_${questionIndex}_correct`] && (
-            <p className="mb-2 text-sm text-red-600">
-              {errors[`question_${questionIndex}_correct`]}
-            </p>
-          )}
-
-          <div className="space-y-2">
-            {question.answers.map((answer, answerIndex) => (
-              <div key={answerIndex} className="flex items-center gap-3">
-                <input
-                  type={
-                    question.questionType === "MULTIPLE_CHOICE"
-                      ? "checkbox"
-                      : "radio"
-                  }
-                  name={`question_${questionIndex}_correct`}
-                  checked={answer.correct}
-                  onChange={(e) => {
-                    if (question.questionType === "MULTIPLE_CHOICE") {
-                      onAnswerChange(
-                        questionIndex,
-                        answerIndex,
-                        "correct",
-                        e.target.checked
-                      );
-                    } else {
-                      // For single choice and true/false, uncheck others
-                      question.answers.forEach((_, aIndex) => {
-                        onAnswerChange(
-                          questionIndex,
-                          aIndex,
-                          "correct",
-                          aIndex === answerIndex
-                        );
-                      });
-                    }
-                  }}
-                  className="w-4 h-4 text-accent focus:ring-accent border-gray-300 rounded"
-                />
-
-                <input
-                  type="text"
-                  value={
-                    question.questionType === "TRUE_FALSE"
-                      ? answer.answerText === "true"
-                        ? "صحيح"
-                        : answer.answerText === "false"
-                          ? "خطأ"
-                          : answer.answerText
-                      : answer.answerText
-                  }
-                  onChange={(e) => {
-                    onAnswerChange(
-                      questionIndex,
-                      answerIndex,
-                      "answerText",
-                      e.target.value
-                    );
-                    // Clear error when user starts typing
-                    if (
-                      errors[`question_${questionIndex}_answer_${answerIndex}`]
-                    ) {
-                      setErrors((prev) => {
-                        const newErrors = { ...prev };
-                        delete newErrors[
-                          `question_${questionIndex}_answer_${answerIndex}`
-                        ];
-                        return newErrors;
-                      });
-                    }
-                  }}
-                  className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent ${
-                    errors[`question_${questionIndex}_answer_${answerIndex}`]
-                      ? "border-red-300"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="نص الإجابة"
-                  disabled={question.questionType === "TRUE_FALSE"}
-                  required
-                  data-error={`question_${questionIndex}_answer_${answerIndex}`}
-                />
-
-                {errors[`question_${questionIndex}_answer_${answerIndex}`] && (
-                  <div className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                    <FiAlertCircle className="w-4 h-4" />
-                    {errors[`question_${questionIndex}_answer_${answerIndex}`]}
+          <div className="space-y-1.5">
+            {question.answers.map((answer, answerIndex) => {
+              const errKey = k(`answer_${answerIndex}`);
+              const text = isTF
+                ? answer.answerText === "true" ? "صحيح" : answer.answerText === "false" ? "خطأ" : answer.answerText
+                : answer.answerText;
+              return (
+                <div key={answerIndex}>
+                  <div
+                    className={cx(
+                      "flex items-center gap-2 rounded-lg border px-2 transition-colors",
+                      answer.correct ? "border-emerald-300 bg-emerald-50/50" : "border-slate-200",
+                      errors[errKey] && "border-red-300"
+                    )}
+                  >
+                    <input
+                      type={isMulti ? "checkbox" : "radio"}
+                      name={k("correct")}
+                      checked={answer.correct}
+                      aria-label="إجابة صحيحة"
+                      onChange={(e) => {
+                        if (isMulti) {
+                          onAnswerChange(questionIndex, answerIndex, "correct", e.target.checked);
+                        } else {
+                          question.answers.forEach((_, aIndex) =>
+                            onAnswerChange(questionIndex, aIndex, "correct", aIndex === answerIndex)
+                          );
+                        }
+                        clearError(k("correct"));
+                      }}
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={text}
+                      onChange={(e) => {
+                        onAnswerChange(questionIndex, answerIndex, "answerText", e.target.value);
+                        clearError(errKey);
+                      }}
+                      className="flex-1 h-9 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none disabled:text-slate-600"
+                      placeholder={`الاختيار ${answerIndex + 1}`}
+                      disabled={isTF}
+                      required
+                      data-error={errKey}
+                    />
+                    {!isTF && question.answers.length > 1 && (
+                      <IconButton label="حذف الاختيار" icon={FiTrash2} onClick={() => onRemoveAnswer(questionIndex, answerIndex)} />
+                    )}
                   </div>
-                )}
-
-                {question.questionType !== "TRUE_FALSE" &&
-                  question.answers.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => onRemoveAnswer(questionIndex, answerIndex)}
-                      className="text-red-500 cursor-pointer hover:text-red-700 transition-colors"
-                    >
-                      <FiTrash2 className="w-4 h-4" />
-                    </button>
-                  )}
-              </div>
-            ))}
+                  {errors[errKey] && <p className="mt-1 text-[11px] text-red-600">{errors[errKey]}</p>}
+                </div>
+              );
+            })}
           </div>
+
+          {!isTF && (
+            <Button size="sm" variant="ghost" className="mt-1.5" onClick={() => onAddAnswer(questionIndex)}>
+              <FiPlus /> اختيار
+            </Button>
+          )}
         </div>
       </div>
     </div>

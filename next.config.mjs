@@ -4,10 +4,15 @@ const nextConfig = {
   output: "standalone",
   poweredByHeader: false,
 
+  // Production bundles: no console.log/info/debug (errors and warnings are kept)
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
+  },
+
   // Performance optimizations
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: ["react-icons", "react-toastify"],
+    optimizePackageImports: ["react-icons", "react-icons/fi", "react-icons/fa", "react-icons/md", "react-toastify", "recharts"],
   },
 
   // Image optimization
@@ -31,8 +36,9 @@ const nextConfig = {
         hostname: "academitna.online",
       },
     ],
-    formats: ["image/webp", "image/avif"],
-    minimumCacheTTL: 60,
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 86400,
+    deviceSizes: [360, 640, 768, 1024, 1280, 1536],
   },
 
   // Compression

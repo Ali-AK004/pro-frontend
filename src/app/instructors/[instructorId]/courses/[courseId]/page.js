@@ -131,10 +131,10 @@ const CourseDetails = () => {
       <div className="min-h-screen bg-main flexCenter">
         <div className="text-center">
           <FaBookOpen className="w-24 h-24 text-gray-300 mx-auto mb-4" />
-          <h2 className="bold-24 text-gray-600 mb-4">{error}</h2>
+          <h2 className="text-base font-semibold text-gray-600 mb-4">{error}</h2>
           <button
             onClick={() => router.push("/instructors")}
-            className="bg-accent text-white px-6 py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-colors flexCenter gap-2"
+            className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors flexCenter gap-2"
           >
             <FaArrowLeft className="w-4 h-4" />
             العودة للبحث
@@ -184,24 +184,24 @@ const CourseDetails = () => {
           {/* Back Button */}
           <button
             onClick={() => router.push("/instructors")}
-            className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-brand-50 border border-gray-200 hover:border-brand-300 rounded-xl transition-all duration-300 text-gray-700 hover:text-brand-600 shadow-sm hover:shadow-md group cursor-pointer"
+            className="inline-flex items-center gap-3 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-brand-50 border border-gray-200 hover:border-brand-300 rounded-xl transition-all duration-150 text-gray-700 hover:text-brand-600 group cursor-pointer"
           >
-            <FaArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <FaArrowLeft className="w-4 h-4 transition-transform" />
             <span className="font-medium">العودة للمعلمين</span>
           </button>
         </div>
 
         {/* Enhanced Course Header */}
-        <div className="bg-white/90 backdrop-blur-md rounded-2xl lg:rounded-3xl shadow-2xl border border-white/30 p-4 md:p-8 lg:p-12 mb-6 lg:mb-8 relative overflow-hidden group hover:shadow-3xl transition-all duration-500">
+        <div className="bg-white/90 backdrop-blur-md rounded-2xl lg:rounded-2xl shadow-2xl border border-white/30 p-4 md:p-8 lg:p-12 mb-6 lg:mb-8 relative overflow-hidden group hover:shadow-3xl transition-all duration-150">
           {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-brand-500/5"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-2xl"></div>
+          <div className="absolute inset-0 bg-brand-500/5"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-400/10 rounded-full blur-2xl"></div>
 
           <div className="relative flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
             {/* Enhanced Course Image */}
             <div className="relative group/image mx-auto lg:mx-0">
-              <div className="absolute inset-0 bg-gradient-to-r from-brand-500 to-brand-500 rounded-xl lg:rounded-2xl blur-lg opacity-30 group-hover/image:opacity-50 transition-opacity"></div>
-              <div className="relative w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-xl lg:rounded-2xl overflow-hidden bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center border-4 border-white shadow-xl flex-shrink-0">
+              <div className="absolute inset-0 bg-brand-500 rounded-xl lg:rounded-2xl blur-lg opacity-30 group-hover/image:opacity-50 transition-opacity"></div>
+              <div className="relative w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-xl lg:rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center border-4 border-white shadow-xl flex-shrink-0">
                 {course.photoUrl ? (
                   <img
                     src={course.photoUrl}
@@ -226,7 +226,7 @@ const CourseDetails = () => {
             {/* Enhanced Course Info */}
             <div className="flex-1 flex-col md:flex-row w-full lg:w-auto text-center items-center justify-between flex lg:text-right space-y-4">
               <div>
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-brand-100 to-brand-100 text-brand-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <div className="inline-flex items-center gap-2 bg-brand-100 text-brand-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
                   <FaBookOpen className="w-4 h-4" />
                   كورس متاح
                 </div>
@@ -242,8 +242,8 @@ const CourseDetails = () => {
 
               {/* Enhanced Course Stats */}
               <div className="flex flex-col w-full gap-2 md:gap-4 md:w-[250px]">
-                <div className="group bg-gradient-to-r from-brand-500 to-brand-600 text-white p-4 md:p-6 rounded-xl md:rounded-2xl text-center hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="group bg-brand-500 text-white p-4 md:p-6 rounded-xl md:rounded-2xl text-center transition-all duration-150 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-150"></div>
                   <div className="relative flexCenter gap-4">
                     <FaPlay className="w-6 h-6 opacity-80" />
                     <p className="regular-16">
@@ -255,8 +255,8 @@ const CourseDetails = () => {
                   </div>
                 </div>
 
-                <div className="group bg-gradient-to-r from-brand-500 to-brand-600 text-white p-4 md:p-6 rounded-xl md:rounded-2xl text-center hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="group bg-brand-500 text-white p-4 md:p-6 rounded-xl md:rounded-2xl text-center transition-all duration-150 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-150"></div>
                   <div className="relative flexCenter gap-4">
                     <FaChalkboardTeacher className="w-6 h-6 md:w-8 md:h-8 opacity-80" />
                     <div>
@@ -276,7 +276,7 @@ const CourseDetails = () => {
         <BundlesSection courseId={courseId} refreshKey={refreshTrigger} onBuy={handleBuyBundle} />
 
         {/* Lessons List */}
-        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6">
+        <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
           <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
             دروس الكورس
           </h2>

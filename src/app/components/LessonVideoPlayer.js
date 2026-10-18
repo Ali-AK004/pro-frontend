@@ -11,7 +11,7 @@ const LessonVideoPlayer = ({
 }) => {
   if (!lesson) {
     return (
-      <div className={`bg-gray-100 rounded-lg p-8 text-center ${className}`}>
+      <div className={`bg-gray-100 rounded-lg p-8 text-center   ${className}`}>
         <FiAlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-600">No lesson data available</p>
       </div>
@@ -20,7 +20,7 @@ const LessonVideoPlayer = ({
 
   if (!lesson.hasVideo || !lesson.videoUrl) {
     return (
-      <div className={`bg-gray-100 rounded-lg p-8 text-center ${className}`}>
+      <div className={`bg-gray-100 rounded-lg p-8 text-center   ${className}`}>
         <FiVideo className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <p className="text-gray-600">لا يتوفر فيديو لهذا الدرس</p>
       </div>
@@ -32,7 +32,7 @@ const LessonVideoPlayer = ({
   };
 
   return (
-    <div className={`w-full ${className}`}>
+    <div className={`w-full   ${className}`}>
       {/* Video Info Header - Hidden on mobile */}
       {showVideoInfo && (
         <div className="mb-4 px-4 hidden lg:block">
