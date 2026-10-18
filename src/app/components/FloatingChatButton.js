@@ -62,15 +62,15 @@ const FloatingChatButton = () => {
         <div className="fixed bottom-6 left-6 z-40">
           <button
             onClick={toggleChat}
-            className="group relative bg-gradient-to-r from-blue-500 to-purple-600 text-white w-13 h-13 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 flex items-center justify-center cursor-pointer border-4 border-white/20 backdrop-blur-sm"
+            className="group relative bg-gradient-to-r from-brand-500 to-brand-600 text-white w-13 h-13 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 flex items-center justify-center cursor-pointer border-4 border-white/20 backdrop-blur-sm"
             title="فتح المساعد الذكي"
           >
             <FiMessageCircle className="w-7 h-7 group-hover:scale-110 transition-transform" />
 
             {/* Multiple Pulse Animations */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 animate-ping opacity-20"></div>
-            <div className="absolute inset-2 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 animate-ping opacity-15 animation-delay-150"></div>
-            <div className="absolute inset-4 rounded-full bg-gradient-to-r from-blue-300 to-purple-400 animate-ping opacity-10 animation-delay-300"></div>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 animate-ping opacity-20"></div>
+            <div className="absolute inset-2 rounded-full bg-gradient-to-r from-brand-400 to-brand-500 animate-ping opacity-15 animation-delay-150"></div>
+            <div className="absolute inset-4 rounded-full bg-gradient-to-r from-brand-300 to-brand-400 animate-ping opacity-10 animation-delay-300"></div>
 
             {/* Notification Badge */}
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">

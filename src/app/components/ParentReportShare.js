@@ -54,7 +54,7 @@ export default function ParentReportShare() {
             href={whatsapp}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-green-600 text-white px-5 py-2 rounded-lg bold-14"
+            className="bg-emerald-600 text-white px-5 py-2 rounded-lg bold-14"
           >
             إرسال على واتساب
           </a>

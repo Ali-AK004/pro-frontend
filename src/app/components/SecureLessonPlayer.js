@@ -173,7 +173,7 @@ export default function SecureLessonPlayer({ lessonId, remainingViews, onViewsCh
         <button
           onClick={start}
           disabled={loading || remainingViews === 0}
-          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-6 py-3 rounded-lg font-bold"
+          className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 px-6 py-3 rounded-lg font-bold"
         >
           {loading ? "جاري التحميل..." : "تشغيل الفيديو"}
         </button>
@@ -249,7 +249,7 @@ export default function SecureLessonPlayer({ lessonId, remainingViews, onViewsCh
             <p className="font-bold">تم إيقاف العرض مؤقتًا لحماية المحتوى</p>
             <button
               onClick={() => setShielded(false)}
-              className="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg"
+              className="bg-brand-600 hover:bg-brand-700 px-5 py-2 rounded-lg"
             >
               متابعة المشاهدة
             </button>

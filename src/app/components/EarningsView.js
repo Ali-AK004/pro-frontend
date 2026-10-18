@@ -19,7 +19,7 @@ const METHODS = {
 };
 const money = (v) => `${Number(v || 0).toLocaleString("ar-EG", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} جنيه`;
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString("ar-EG") : "—");
-const input = "px-3 py-2 border border-gray-300 rounded-lg focus:border-[#088395] bg-white";
+const input = "px-3 py-2 border border-gray-300 rounded-lg focus:border-brand-600 bg-white";
 
 const csvCell = (value) => {
   let v = value == null ? "" : String(value);
@@ -30,8 +30,8 @@ const csvCell = (value) => {
 function Card({ title, value, hint, tone = "gray" }) {
   const tones = {
     gray: "bg-white",
-    green: "bg-green-50 border-green-200",
-    blue: "bg-blue-50 border-blue-200",
+    green: "bg-emerald-50 border-emerald-200",
+    blue: "bg-brand-50 border-brand-200",
     amber: "bg-amber-50 border-amber-200",
   };
   return (

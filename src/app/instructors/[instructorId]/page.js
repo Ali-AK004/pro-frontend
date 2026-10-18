@@ -53,18 +53,18 @@ const InstructorProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50 flex items-center justify-center relative overflow-hidden">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative text-center">
-          <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+          <div className="w-20 h-20 bg-gradient-to-r from-brand-600 to-brand-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
             <FaChalkboardTeacher className="w-10 h-10 text-white" />
           </div>
-          <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-4 border-brand-200 border-t-brand-600 mx-auto mb-4"></div>
           <p className="text-lg font-medium text-gray-700">
             جاري تحميل بيانات المدرس...
           </p>
@@ -75,16 +75,16 @@ const InstructorProfile = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50 flex items-center justify-center relative overflow-hidden">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative text-center max-w-md mx-auto p-8">
-          <div className="w-24 h-24 bg-gradient-to-r from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-6">
-            <FaChalkboardTeacher className="w-12 h-12 text-red-500" />
+          <div className="w-24 h-24 bg-gradient-to-r from-brand-100 to-brand-200 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FaChalkboardTeacher className="w-12 h-12 text-brand-600" />
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">{error}</h2>
           <p className="text-gray-600 mb-8">
@@ -92,7 +92,7 @@ const InstructorProfile = () => {
           </p>
           <button
             onClick={() => router.push("/instructors")}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-3 mx-auto shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            className="bg-gradient-to-r from-brand-600 to-brand-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-brand-700 hover:to-brand-700 transition-all duration-300 flex items-center justify-center gap-3 mx-auto shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
             <FaArrowLeft className="w-4 h-4" />
             العودة للبحث
@@ -107,12 +107,12 @@ const InstructorProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-3xl"></div>
       </div>
 
       <NavBar />
@@ -121,7 +121,7 @@ const InstructorProfile = () => {
         <div className="mb-8">
           <Link
             href={"/instructors"}
-            className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-xl transition-all duration-300 text-gray-700 hover:text-blue-600 shadow-sm hover:shadow-md"
+            className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-brand-50 border border-gray-200 hover:border-brand-300 rounded-xl transition-all duration-300 text-gray-700 hover:text-brand-600 shadow-sm hover:shadow-md"
           >
             <FaArrowLeft className="w-4 h-4" />
             <span className="font-medium">العودة للبحث</span>
@@ -131,13 +131,13 @@ const InstructorProfile = () => {
         {/* Instructor Header */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl lg:rounded-3xl shadow-2xl border border-white/20 p-6 md:p-8 lg:p-12 mb-6 lg:mb-8 relative overflow-hidden">
           {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-2xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-brand-500/5"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-2xl"></div>
 
           <div className="relative flex flex-col md:flex-row items-center gap-8 lg:gap-12">
             {/* Avatar */}
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-brand-500 to-brand-500 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
               <div className="relative w-32 h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center border-4 border-white shadow-xl">
                 {instructor.photoUrl ? (
                   <Image
@@ -154,18 +154,18 @@ const InstructorProfile = () => {
                 ) : null}
                 <FaChalkboardTeacher className="w-16 h-16 lg:w-20 lg:h-20 text-gray-400" />
               </div>
-              <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-3 shadow-lg">
+              <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-400 to-amber-500 rounded-full p-3 shadow-lg">
                 <FaStar className="w-4 h-4 text-white" />
               </div>
               {/* Pulse rings */}
-              <div className="absolute inset-0 rounded-full border-4 border-blue-400/30 animate-ping"></div>
-              <div className="absolute inset-2 rounded-full border-4 border-purple-400/20 animate-ping animation-delay-75"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-brand-400/30 animate-ping"></div>
+              <div className="absolute inset-2 rounded-full border-4 border-brand-400/20 animate-ping animation-delay-75"></div>
             </div>
 
             {/* Info */}
             <div className="flex-1 flex items-center md:justify-between flex-col md:flex-row w-full lg:w-auto text-center lg:text-right space-y-6">
               <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <div className="inline-flex items-center gap-2 bg-brand-100 text-brand-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
                   <FaAward className="w-4 h-4" />
                   مدرس معتمد
                 </div>
@@ -182,13 +182,13 @@ const InstructorProfile = () => {
 
               {/* Stats */}
               <div className="flex flex-col md:w-[250px] w-full gap-2 md:gap-4">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 md:p-4 rounded-xl md:rounded-xl text-center">
+                <div className="bg-gradient-to-r from-brand-500 to-brand-600 text-white p-3 md:p-4 rounded-xl md:rounded-xl text-center">
                   <div className="text-xl md:text-2xl font-bold">
                     {instructor.courses?.length || 0}
                   </div>
                   <div className="text-xs md:text-sm opacity-90">كورس</div>
                 </div>
-                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-3 md:p-4 rounded-xl md:rounded-2xl text-center">
+                <div className="bg-gradient-to-r from-brand-500 to-brand-600 text-white p-3 md:p-4 rounded-xl md:rounded-2xl text-center">
                   <div className="text-xl md:text-2xl font-bold">
                     {instructor.courses?.reduce(
                       (total, course) => total + (course.lessons?.length || 0),
@@ -252,7 +252,7 @@ const InstructorProfile = () => {
                               <h3 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">
                                 {course.name}
                               </h3>
-                              <div className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium self-start sm:self-center">
+                              <div className="flex items-center gap-2 bg-brand-100 text-brand-800 px-3 py-1 rounded-full text-sm font-medium self-start sm:self-center">
                                 <FaBookOpen className="w-4 h-4" />
                                 <span>{course.lessons?.length || 0} درس</span>
                               </div>
@@ -268,7 +268,7 @@ const InstructorProfile = () => {
                           <div className="flex items-center justify-center md:justify-end pt-2">
                             <Link
                               href={`/instructors/${instructor.id}/courses/${course.id}`}
-                              className="w-full md:w-auto bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                              className="w-full md:w-auto bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-3 rounded-xl font-medium hover:from-brand-600 hover:to-brand-700 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                             >
                               <FaPlay className="w-4 h-4" />
                               عرض التفاصيل
@@ -298,7 +298,7 @@ const InstructorProfile = () => {
             {/* Instructor Info */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <FaChalkboardTeacher className="w-5 h-5 text-blue-600" />
+                <FaChalkboardTeacher className="w-5 h-5 text-brand-600" />
                 معلومات المدرس
               </h2>
 
@@ -326,7 +326,7 @@ const InstructorProfile = () => {
             {/* Course Summary */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <FaBookOpen className="w-5 h-5 text-green-600" />
+                <FaBookOpen className="w-5 h-5 text-emerald-600" />
                 ملخص الكورسات
               </h2>
 
@@ -335,7 +335,7 @@ const InstructorProfile = () => {
                   instructor.courses.map((course, index) => (
                     <div
                       key={course.id}
-                      className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-blue-50 hover:to-purple-50 transition-all duration-300"
+                      className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-brand-50 hover:to-brand-50 transition-all duration-300"
                     >
                       <div className="flex-1">
                         <p className="font-semibold text-gray-900 mb-1">
@@ -346,7 +346,7 @@ const InstructorProfile = () => {
                           {course.lessons?.length || 0} درس
                         </p>
                       </div>
-                      <span className="text-xs bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-full font-medium">
+                      <span className="text-xs bg-gradient-to-r from-brand-500 to-brand-600 text-white px-3 py-1 rounded-full font-medium">
                         #{index + 1}
                       </span>
                     </div>

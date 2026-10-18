@@ -10,7 +10,7 @@ import { commerceAPI, apiMessage } from "@/app/services/commerceAPI";
  * Admins pick the instructor; `instructors` is the list to choose from.
  */
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString("ar-EG") : "—");
-const input = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#088395] bg-white";
+const input = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-brand-600 bg-white";
 const label = "block bold-14 text-gray-800 mb-1";
 const btn = "px-4 py-2 rounded-lg bold-14 cursor-pointer disabled:opacity-50";
 
@@ -92,7 +92,7 @@ export default function BundleCouponManager({ role, instructors = [] }) {
             key={id}
             onClick={() => setTab(id)}
             className={`px-4 py-2 bold-14 cursor-pointer border-b-2 -mb-px ${
-              tab === id ? "border-[#088395] text-[#088395]" : "border-transparent text-gray-500"
+              tab === id ? "border-brand-600 text-brand-600" : "border-transparent text-gray-500"
             }`}
           >
             {text}
@@ -364,12 +364,12 @@ function BundlesTab({ isAdmin, instructors, bundles, reload, busy, setBusy }) {
                   <td className="p-3">{b.lessons.length}</td>
                   <td className="p-3">{b.accessUntil ? `حتى ${fmtDate(b.accessUntil)}` : `${b.accessDays || "افتراضي"} يوم`}</td>
                   <td className="p-3">
-                    <span className={`px-2 py-1 rounded-full regular-12 ${b.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                    <span className={`px-2 py-1 rounded-full regular-12 ${b.active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
                       {b.active ? "متاحة" : "موقوفة"}
                     </span>
                   </td>
                   <td className="p-3 whitespace-nowrap space-x-2 space-x-reverse">
-                    <button onClick={() => edit(b)} className="text-[#088395] underline cursor-pointer">تعديل</button>
+                    <button onClick={() => edit(b)} className="text-brand-600 underline cursor-pointer">تعديل</button>
                     <button onClick={() => toggleActive(b)} disabled={busy} className="text-gray-600 underline cursor-pointer">
                       {b.active ? "إيقاف" : "تفعيل"}
                     </button>
@@ -599,12 +599,12 @@ function CouponsTab({ isAdmin, instructors, coupons, bundles, reload, busy, setB
                     {c.validUntil ? `حتى ${fmtDate(c.validUntil)}` : c.validFrom ? "" : "دائم"}
                   </td>
                   <td className="p-3">
-                    <span className={`px-2 py-1 rounded-full regular-12 ${c.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                    <span className={`px-2 py-1 rounded-full regular-12 ${c.active ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
                       {c.active ? "مفعل" : "موقوف"}
                     </span>
                   </td>
                   <td className="p-3">
-                    <button onClick={() => toggle(c)} disabled={busy} className="text-[#088395] underline cursor-pointer">
+                    <button onClick={() => toggle(c)} disabled={busy} className="text-brand-600 underline cursor-pointer">
                       {c.active ? "إيقاف" : "تفعيل"}
                     </button>
                   </td>

@@ -125,7 +125,7 @@ const PerformanceMonitor = ({
 
       {metrics.slowQueries.length > 0 && (
         <div className="mt-3 pt-2 border-t border-gray-700">
-          <div className="text-yellow-300 mb-1">
+          <div className="text-amber-300 mb-1">
             Slow Queries ({metrics.slowQueries.length})
           </div>
           <div className="space-y-1 max-h-40 overflow-y-auto">

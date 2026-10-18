@@ -121,7 +121,7 @@ const InstructorProfileManagement = () => {
           </button>
         )}
         {isAssistant && (
-          <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg">
+          <div className="flex items-center gap-2 bg-brand-50 text-brand-600 px-4 py-2 rounded-lg">
             <FiEye className="w-5 h-5" />
             <span className="bold-14">وضع العرض فقط</span>
           </div>
@@ -251,7 +251,7 @@ const InstructorProfileManagement = () => {
                     الدور
                   </label>
                   <div className="px-4 py-3 bg-gray-50 rounded-lg">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800">
                       {instructorData?.role === "INSTRUCTOR"
                         ? "مدرس"
                         : instructorData?.role === "ASSISTANT"

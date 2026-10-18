@@ -139,7 +139,7 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
     <div
       className={`flex flex-col h-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 rounded-lg shadow-lg ${className}`}
     >
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg relative overflow-hidden">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-t-lg relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
         <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
@@ -149,14 +149,14 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
             <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
               <FiCpu className="w-5 h-5" />
             </div>
-            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white animate-pulse"></div>
             {/* Pulse rings */}
             <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-ping"></div>
           </div>
           <div>
             <h3 className="text-lg font-bold">المساعد الذكي</h3>
             <div className="text-sm opacity-90 flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
               {isTyping ? "يكتب..." : "متصل ومستعد للمساعدة"}
             </div>
           </div>
@@ -182,12 +182,12 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
 
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-transparent"
+        className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800 scrollbar-thin scrollbar-thumb-brand-300 scrollbar-track-transparent"
         style={{ maxHeight: "calc(100dvh - 200px)" }}
       >
         {isLoading && !sessionId ? (
           <div className="flex items-center justify-center py-8">
-            <FiLoader className="w-6 h-6 animate-spin text-blue-500" />
+            <FiLoader className="w-6 h-6 animate-spin text-brand-500" />
             <span className="mr-2 text-gray-600">جاري تحميل المحادثة...</span>
           </div>
         ) : error ? (
@@ -198,7 +198,7 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
             </div>
             <button
               onClick={resetChat}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors cursor-pointer"
+              className="bg-brand-500 text-white px-4 py-2 rounded-lg hover:bg-brand-600 transition-colors cursor-pointer"
             >
               إعادة المحاولة
             </button>
@@ -241,7 +241,7 @@ const AIChat = ({ isOpen, onClose, className = "" }) => {
           <button
             type="submit"
             disabled={!inputMessage.trim() || isLoading || !sessionId}
-            className="bg-blue-600 text-white p-3 mb-2 rounded-xl hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
+            className="bg-brand-600 text-white p-3 mb-2 rounded-xl hover:bg-brand-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
             aria-label="إرسال الرسالة"
           >
             {isLoading ? (
@@ -269,7 +269,7 @@ const MessageBubble = ({ message }) => {
         <div
           className={`w-8 h-8 rounded-full flexCenter flex-shrink-0 ${
             isUser
-              ? "bg-blue-500 text-white"
+              ? "bg-brand-500 text-white"
               : isError
                 ? "bg-red-500 text-white"
                 : "bg-gray-200 text-gray-600"
@@ -284,7 +284,7 @@ const MessageBubble = ({ message }) => {
         <div
           className={`rounded-sm px-4 py-3 ${
             isUser
-              ? "bg-blue-500 text-white"
+              ? "bg-brand-500 text-white"
               : isError
                 ? "bg-red-50 border border-red-200 text-red-700"
                 : "bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-100"

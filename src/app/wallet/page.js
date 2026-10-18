@@ -126,7 +126,7 @@ export default function WalletPage() {
                       {t.lessonName || t.note || ""} — {new Date(t.createdAt).toLocaleString("ar-EG")}
                     </p>
                   </div>
-                  <span className={`bold-16 ${Number(t.amount) < 0 ? "text-red-600" : "text-green-600"}`} dir="ltr">
+                  <span className={`bold-16 ${Number(t.amount) < 0 ? "text-red-600" : "text-emerald-600"}`} dir="ltr">
                     {Number(t.amount) > 0 ? "+" : ""}
                     {t.amount}
                   </span>

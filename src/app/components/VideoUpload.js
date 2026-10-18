@@ -173,8 +173,8 @@ const VideoUpload = ({
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <FiVideo className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <FiVideo className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
                 <p className="bold-14 text-gray-900">فيديو محمل</p>
@@ -185,7 +185,7 @@ const VideoUpload = ({
               <button
                 type="button"
                 onClick={() => window.open(currentVideoUrl, "_blank")}
-                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                className="p-2 text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
                 title="معاينة الفيديو"
               >
                 <FiPlay className="w-4 h-4" />
@@ -244,11 +244,11 @@ const VideoUpload = ({
 
       {/* Selected File Info */}
       {selectedFile && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FiVideo className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-brand-100 rounded-lg">
+                <FiVideo className="w-5 h-5 text-brand-600" />
               </div>
               <div>
                 <p className="bold-14 text-gray-900">{selectedFile.name}</p>
@@ -278,7 +278,7 @@ const VideoUpload = ({
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-brand-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
                 ></div>
               </div>
@@ -291,7 +291,7 @@ const VideoUpload = ({
               <button
                 type="button"
                 onClick={handleUpload}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg bold-14 hover:bg-blue-700 transition-colors flexCenter gap-2"
+                className="flex-1 bg-brand-600 text-white py-2 px-4 rounded-lg bold-14 hover:bg-brand-700 transition-colors flexCenter gap-2"
               >
                 <FiUpload className="w-4 h-4" />
                 رفع الفيديو

@@ -81,7 +81,7 @@ export default function ParentReportPage() {
                     <p className="regular-12 text-gray-500">{l.courseName}</p>
                   </td>
                   <td className="py-2">{l.progress}</td>
-                  <td className={`py-2 ${l.examPassed === false ? "text-red-600" : l.examPassed ? "text-green-600" : ""}`}>
+                  <td className={`py-2 ${l.examPassed === false ? "text-red-600" : l.examPassed ? "text-emerald-600" : ""}`}>
                     {l.examScore != null ? `${l.examScore}% (${l.examAttempts} محاولة)` : "—"}
                   </td>
                   <td className="py-2">

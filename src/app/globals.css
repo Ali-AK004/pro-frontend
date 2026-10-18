@@ -1,6 +1,30 @@
 @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap");
 @import "tailwindcss";
 
+/*
+ * One palette for the whole site.
+ * brand (teal #088395) = everything decorative: headers, active items, buttons, links, charts.
+ * Status colours have one meaning each: emerald = success, amber = warning, red = error/delete only.
+ */
+@theme {
+  --color-brand-50: #ecf8fa;
+  --color-brand-100: #cfeef3;
+  --color-brand-200: #a3dde7;
+  --color-brand-300: #6ac5d5;
+  --color-brand-400: #2fa8bd;
+  --color-brand-500: #0b96aa;
+  --color-brand-600: #088395;
+  --color-brand-700: #06707f;
+  --color-brand-800: #0a5b67;
+  --color-brand-900: #0d4b55;
+  --color-brand-950: #052f36;
+
+  --color-primary: #088395;
+  --color-secondary: #0b96aa;
+  --color-accent: #088395;
+  --color-main: #f8fafc;
+}
+
 body {
   direction: rtl;
 }
@@ -16,7 +40,7 @@ html {
 /* Custom Scrollbar Styles */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: #d1d5db transparent;
+  scrollbar-color: #cbd5e1 transparent;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -124,30 +148,6 @@ html {
 
   .bold-14 {
     @apply text-[14px] font-[700];
-  }
-
-  .bg-main {
-    @apply bg-[#f8f9fa];
-  }
-
-  .bg-secondary {
-    @apply bg-[#87ceeb];
-  }
-
-  .bg-accent {
-    @apply bg-[#088395];
-  }
-  
-  .text-secondary {
-    @apply text-[#87ceeb];
-  }
-
-  .text-accent {
-    @apply text-[#088395];
-  }
-
-  .border-secondary {
-    @apply border-[#87ceeb];
   }
 
   .font-main {

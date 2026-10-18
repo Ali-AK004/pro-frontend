@@ -517,7 +517,7 @@ const InstructorLessonManagement = () => {
               className="bg-white rounded-lg flex flex-col shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
             >
               {/* Lesson Image/Video Thumbnail */}
-              <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-500 relative">
+              <div className="h-48 bg-gradient-to-br from-brand-500 to-brand-500 relative">
                 {lesson.photoUrl ? (
                   <>
                     {/* Price Tag - Absolute positioned on top-left */}
@@ -572,14 +572,14 @@ const InstructorLessonManagement = () => {
                       setShowViewModal(true);
                       fetchLessonStatus(lesson.id);
                     }}
-                    className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
+                    className="cursor-pointer flex-1 bg-brand-50 text-brand-600 border border-brand-300 py-2 px-4 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-2"
                   >
                     <FiEye className="w-4 h-4" />
                     عرض
                   </button>
                   <button
                     onClick={() => openEditModal(lesson)}
-                    className="cursor-pointer flex-1 bg-green-50 text-green-600 border border-green-300 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2"
+                    className="cursor-pointer flex-1 bg-emerald-50 text-emerald-600 border border-emerald-300 py-2 px-4 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-2"
                   >
                     <FiEdit className="w-4 h-4" />
                     تعديل
@@ -738,22 +738,22 @@ const InstructorLessonManagement = () => {
 
               {/* Upload Progress */}
               {isLoading && selectedVideoFile && uploadProgress > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-blue-700">
+                    <span className="text-sm font-medium text-brand-700">
                       جاري رفع الفيديو...
                     </span>
-                    <span className="text-sm font-medium text-blue-700">
+                    <span className="text-sm font-medium text-brand-700">
                       {uploadProgress}%
                     </span>
                   </div>
-                  <div className="w-full bg-blue-200 rounded-full h-2">
+                  <div className="w-full bg-brand-200 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-brand-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
                     ></div>
                   </div>
-                  <p className="text-xs text-blue-600 mt-2">
+                  <p className="text-xs text-brand-600 mt-2">
                     يرجى عدم إغلاق النافذة أثناء رفع الفيديو
                   </p>
                 </div>
@@ -909,7 +909,7 @@ const InstructorLessonManagement = () => {
 
             <div className="space-y-6">
               {/* Lesson Image/Video */}
-              <div className="h-48 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg overflow-hidden">
+              <div className="h-48 bg-gradient-to-br from-brand-500 to-brand-500 rounded-lg overflow-hidden">
                 {selectedLesson.photoUrl ? (
                   <img
                     src={selectedLesson.photoUrl}
@@ -956,17 +956,17 @@ const InstructorLessonManagement = () => {
                       lessonStatus.isLoading
                         ? "bg-gray-50 border-gray-200"
                         : lessonStatus.hasExam
-                          ? "bg-blue-50 border-blue-200"
+                          ? "bg-brand-50 border-brand-200"
                           : "bg-gray-50 border-gray-200"
                     }`}
                   >
                     <div className="flex items-center flex-col md:flex-row gap-2 mb-2">
-                      <FiFileText className="w-4 h-4 text-blue-500" />
+                      <FiFileText className="w-4 h-4 text-brand-500" />
                       <span className="regular-12 text-gray-500">الامتحان</span>
                     </div>
                     {lessonStatus.isLoading ? (
                       <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
                         <span className="regular-12 text-gray-500">
                           جاري التحميل...
                         </span>
@@ -975,7 +975,7 @@ const InstructorLessonManagement = () => {
                       <p
                         className={`bold-14 text-center md:text-right ${
                           lessonStatus.hasExam
-                            ? "text-blue-700"
+                            ? "text-brand-700"
                             : "text-gray-500"
                         }`}
                       >
@@ -988,17 +988,17 @@ const InstructorLessonManagement = () => {
                       lessonStatus.isLoading
                         ? "bg-gray-50 border-gray-200"
                         : lessonStatus.hasAssignment
-                          ? "bg-purple-50 border-purple-200"
+                          ? "bg-brand-50 border-brand-200"
                           : "bg-gray-50 border-gray-200"
                     }`}
                   >
                     <div className="flex items-center flex-col md:flex-row gap-2 mb-2">
-                      <FiFileText className="w-4 h-4 text-purple-500" />
+                      <FiFileText className="w-4 h-4 text-brand-500" />
                       <span className="regular-12 text-gray-500">الواجب</span>
                     </div>
                     {lessonStatus.isLoading ? (
                       <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
                         <span className="regular-12 text-gray-500">
                           جاري التحميل...
                         </span>
@@ -1007,7 +1007,7 @@ const InstructorLessonManagement = () => {
                       <p
                         className={`bold-14 text-center md:text-right ${
                           lessonStatus.hasAssignment
-                            ? "text-purple-700"
+                            ? "text-brand-700"
                             : "text-gray-500"
                         }`}
                       >

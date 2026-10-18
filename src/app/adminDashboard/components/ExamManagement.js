@@ -366,19 +366,19 @@ const ExamManagement = () => {
                 {/* Exam Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
                   <div className="flex items-center gap-2">
-                    <FiClock className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+                    <FiClock className="w-3 h-3 sm:w-4 sm:h-4 text-brand-500" />
                     <span className="regular-10 sm:regular-12 text-gray-600">
                       {exam.timeLimitMinutes} دقيقة
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <FiAward className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
+                    <FiAward className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-500" />
                     <span className="regular-10 sm:regular-12 text-gray-600">
                       {exam.passingScore}% للنجاح
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <FiBook className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500" />
+                    <FiBook className="w-3 h-3 sm:w-4 sm:h-4 text-brand-500" />
                     <span className="regular-10 sm:regular-12 text-gray-600">
                       {exam.questions?.length || 0} سؤال
                     </span>
@@ -389,7 +389,7 @@ const ExamManagement = () => {
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     onClick={() => handleViewResults(exam)}
-                    className="flex-1 bg-blue-50 text-blue-600 py-3 border border-blue-600 px-2 sm:px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
+                    className="flex-1 bg-brand-50 text-brand-600 py-3 border border-brand-600 px-2 sm:px-4 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
                   >
                     <FiBarChart className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">النتائج</span>
@@ -399,7 +399,7 @@ const ExamManagement = () => {
                       setSelectedExam(exam);
                       setShowEditModal(true);
                     }}
-                    className="flex-1 bg-green-50 text-green-600 py-3 border border-green-600 px-2 sm:px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
+                    className="flex-1 bg-emerald-50 text-emerald-600 py-3 border border-emerald-600 px-2 sm:px-4 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
                   >
                     <FiEdit className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">تعديل</span>
@@ -409,7 +409,7 @@ const ExamManagement = () => {
                       setCopyExamData({ examId: exam.id, targetLessonId: '' });
                       setShowCopyModal(true);
                     }}
-                    className="flex-1 bg-purple-50 text-purple-600 py-3 border border-purple-600 px-2 sm:px-4 rounded-lg hover:bg-purple-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
+                    className="flex-1 bg-brand-50 text-brand-600 py-3 border border-brand-600 px-2 sm:px-4 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-1 sm:gap-2 cursor-pointer text-sm"
                   >
                     <FiCopy className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">نسخ</span>
@@ -617,29 +617,29 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results, page, totalPages, on
         <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
           {/* Summary Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-blue-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-blue-600 mb-1">
+            <div className="bg-brand-50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-brand-600 mb-1">
                 {results.totalSubmissions || 0}
               </div>
-              <div className="text-sm text-blue-600">إجمالي المحاولات</div>
+              <div className="text-sm text-brand-600">إجمالي المحاولات</div>
             </div>
-            <div className="bg-green-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-green-600 mb-1">
+            <div className="bg-emerald-50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-emerald-600 mb-1">
                 {results.passedCount || 0}
               </div>
-              <div className="text-sm text-green-600">عدد الناجحين</div>
+              <div className="text-sm text-emerald-600">عدد الناجحين</div>
             </div>
-            <div className="bg-purple-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-purple-600 mb-1">
+            <div className="bg-brand-50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-brand-600 mb-1">
                 {results.passRate?.toFixed(1) || 0}%
               </div>
-              <div className="text-sm text-purple-600">معدل النجاح</div>
+              <div className="text-sm text-brand-600">معدل النجاح</div>
             </div>
-            <div className="bg-orange-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-orange-600 mb-1">
+            <div className="bg-amber-50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-amber-600 mb-1">
                 {results.averageScore?.toFixed(1) || 0}%
               </div>
-              <div className="text-sm text-orange-600">المتوسط العام</div>
+              <div className="text-sm text-amber-600">المتوسط العام</div>
             </div>
           </div>
 
@@ -667,7 +667,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results, page, totalPages, on
                         <td className="px-6 py-4 whitespace-nowrap">{submission.studentFullname || submission.studentUsername}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{submission.totalScore}%</td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 rounded-full text-xs ${submission.passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          <span className={`px-2 py-1 rounded-full text-xs ${submission.passed ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
                             {submission.passed ? 'ناجح' : 'راسب'}
                           </span>
                         </td>
@@ -721,7 +721,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results, page, totalPages, on
                     <div className="flex items-center gap-4">
                       <div className="flex-1 bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-green-500 h-2 rounded-full"
+                          className="bg-emerald-500 h-2 rounded-full"
                           style={{
                             width: `${(questionStat.correctCount / (questionStat.totalAttempts || 1)) * 100}%`,
                           }}

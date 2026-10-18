@@ -153,13 +153,13 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   const getProgressIcon = (status) => {
     switch (status) {
       case LessonProgressStatus.PURCHASED:
-        return <FaClock className="w-4 h-4 text-orange-500" />;
+        return <FaClock className="w-4 h-4 text-amber-500" />;
       case LessonProgressStatus.EXAM_PASSED:
-        return <FaQuestionCircle className="w-4 h-4 text-blue-500" />;
+        return <FaQuestionCircle className="w-4 h-4 text-brand-500" />;
       case LessonProgressStatus.VIDEO_WATCHED:
-        return <FaPlay className="w-4 h-4 text-green-500" />;
+        return <FaPlay className="w-4 h-4 text-emerald-500" />;
       case LessonProgressStatus.ASSIGNMENT_DONE:
-        return <FaCheck className="w-4 h-4 text-green-600" />;
+        return <FaCheck className="w-4 h-4 text-emerald-600" />;
       default:
         return <FaLock className="w-4 h-4 text-gray-400" />;
     }
@@ -196,18 +196,18 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   const getProgressColor = (status) => {
     // For enhanced access users, use special styling
     if (accessStatus?.isEnhancedAccess) {
-      return "text-purple-700 bg-purple-100 border-purple-300";
+      return "text-brand-700 bg-brand-100 border-brand-300";
     }
 
     switch (status) {
       case LessonProgressStatus.PURCHASED:
-        return "text-orange-600 bg-orange-50 border-orange-200";
+        return "text-amber-600 bg-amber-50 border-amber-200";
       case LessonProgressStatus.EXAM_PASSED:
-        return "text-blue-600 bg-blue-50 border-blue-200";
+        return "text-brand-600 bg-brand-50 border-brand-200";
       case LessonProgressStatus.VIDEO_WATCHED:
-        return "text-green-600 bg-green-50 border-green-200";
+        return "text-emerald-600 bg-emerald-50 border-emerald-200";
       case LessonProgressStatus.ASSIGNMENT_DONE:
-        return "text-green-700 bg-green-100 border-green-300";
+        return "text-emerald-700 bg-emerald-100 border-emerald-300";
       default:
         return "text-gray-600 bg-gray-50 border-gray-200";
     }
@@ -278,8 +278,8 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
   return (
     <div className="group bg-white/95 backdrop-blur-md border border-white/40 w-full rounded-2xl lg:rounded-3xl p-4 md:p-6 lg:p-8 hover:shadow-3xl transition-all duration-500 relative overflow-hidden shadow-xl">
       {/* Background decorations */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-50/30 to-brand-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-xl"></div>
 
       {/* Enhanced Lesson Header */}
       <div className="relative flex flex-col md:flex-row items-start gap-4 md:gap-6 mb-4 md:mb-6">
@@ -310,7 +310,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
         </div>
 
         <div className="flex-1 min-w-0 text-center mx-auto md:text-right">
-          <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 mb-2 md:mb-3 flex items-center justify-center md:justify-start gap-2 md:gap-3 group-hover:text-blue-600 transition-colors duration-300">
+          <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 mb-2 md:mb-3 flex items-center justify-center md:justify-start gap-2 md:gap-3 group-hover:text-brand-600 transition-colors duration-300">
             {lesson.name}
             {accessStatus?.hasAccess &&
               getProgressIcon(lessonProgress?.progressStatus)}
@@ -326,7 +326,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
           {user?.role === "STUDENT" && (
             <>
               {(lesson.price !== undefined || lesson.free) && (
-                <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full bold-10">
+                <div className="absolute top-2 left-2 bg-emerald-500 text-white px-2 py-1 rounded-full bold-10">
                   {lesson.free ? "مجاني" : `${lesson.price} جنيه`}
                 </div>
               )}
@@ -335,7 +335,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
           {/* Enhanced Role Badge for non-students */}
           {user?.role !== "STUDENT" && accessStatus?.isEnhancedAccess && (
-            <div className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-sm md:text-base">
+            <div className="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-4 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-sm md:text-base">
               <FaEye className="w-3 h-3 md:w-4 md:h-4" />
               {user?.role === "ADMIN"
                 ? "مدير"
@@ -372,7 +372,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
               ? "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 animate-pulse"
               : hasExam
                 ? canAccessPart("exam")
-                  ? "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:border-blue-300 shadow-md"
+                  ? "bg-gradient-to-br from-brand-50 to-brand-100 border-brand-200 hover:border-brand-300 shadow-md"
                   : "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200"
                 : "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300"
           }`}
@@ -385,7 +385,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
                 className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-300 ${
                   hasExam
                     ? canAccessPart("exam")
-                      ? "text-blue-500 group-hover/exam:text-blue-600 group-hover/exam:scale-110"
+                      ? "text-brand-500 group-hover/exam:text-brand-600 group-hover/exam:scale-110"
                       : "text-gray-400"
                     : "text-gray-300"
                 }`}
@@ -405,7 +405,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
         <div
           className={`group/video p-3 md:p-4 lg:p-5 rounded-xl md:rounded-2xl border-2 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
             canAccessPart("video")
-              ? "bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:border-green-300 shadow-md"
+              ? "bg-gradient-to-br from-brand-50 to-brand-100 border-emerald-200 hover:border-emerald-300 shadow-md"
               : "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200"
           }`}
         >
@@ -413,7 +413,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
             <FaPlay
               className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-300 ${
                 canAccessPart("video")
-                  ? "text-green-500 group-hover/video:text-green-600 group-hover/video:scale-110"
+                  ? "text-emerald-500 group-hover/video:text-emerald-600 group-hover/video:scale-110"
                   : "text-gray-400"
               }`}
             />
@@ -430,7 +430,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
               ? "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 animate-pulse"
               : hasAssignment
                 ? canAccessPart("assignment")
-                  ? "bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:border-purple-300 shadow-md"
+                  ? "bg-gradient-to-br from-brand-50 to-brand-100 border-brand-200 hover:border-brand-300 shadow-md"
                   : "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200"
                 : "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300"
           }`}
@@ -443,7 +443,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
                 className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-300 ${
                   hasAssignment
                     ? canAccessPart("assignment")
-                      ? "text-purple-500 group-hover/assignment:text-purple-600 group-hover/assignment:scale-110"
+                      ? "text-brand-500 group-hover/assignment:text-brand-600 group-hover/assignment:scale-110"
                       : "text-gray-400"
                     : "text-gray-300"
                 }`}
@@ -467,8 +467,8 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
             onClick={() => onPurchase(lesson)}
             className={`cursor-pointer text-white py-3 md:py-4 px-6 md:px-8 rounded-xl md:rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm md:text-base ${
               lesson.free
-                ? "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
-                : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                ? "bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700"
+                : "bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700"
             }`}
           >
             {lesson.free ? (
@@ -490,7 +490,7 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
             onClick={() => {
               onViewLesson(lesson);
             }}
-            className="w-full md:flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 md:py-4 px-6 rounded-xl md:rounded-2xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer text-sm md:text-base"
+            className="w-full md:flex-1 bg-gradient-to-r from-brand-500 to-brand-600 text-white py-3 md:py-4 px-6 rounded-xl md:rounded-2xl font-bold hover:from-brand-600 hover:to-brand-700 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer text-sm md:text-base"
           >
             <FaEye className="w-4 h-4 md:w-5 md:h-5" />
             {accessStatus?.isEnhancedAccess ? "إدارة الدرس" : "عرض الدرس"}
@@ -517,8 +517,8 @@ const LessonCard = ({ lesson, onPurchase, onViewLesson, instructorId }) => {
 
       {/* Access Expiry Info */}
       {accessStatus?.hasAccess && accessStatus?.expiryDate && (
-        <div className="mt-3 p-2 md:p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-          <p className="text-xs md:text-sm text-yellow-700">
+        <div className="mt-3 p-2 md:p-3 bg-amber-50 border border-amber-200 rounded-lg text-center">
+          <p className="text-xs md:text-sm text-amber-700">
             ينتهي الوصول في:{" "}
             {new Date(accessStatus.expiryDate).toLocaleDateString("ar-EG")}
           </p>

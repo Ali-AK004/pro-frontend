@@ -558,20 +558,20 @@ const UserManagement = () => {
                         {user.government || '-'}
                       </td>
                       <td className="px-3 py-3 text-center">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.enabled ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
                           }`}>
                           {user.enabled ? 'نشط' : 'معطل'}
                         </span>
                       </td>
                       <td className="px-3 py-3">
                         <div className="flex items-center justify-center gap-1">
-                          <button onClick={() => handleToggleUserStatus(user)} className={`p-1 rounded hover:bg-gray-100 ${user.enabled ? 'text-orange-600' : 'text-green-600'}`} title={user.enabled ? 'تعطيل' : 'تفعيل'}>
+                          <button onClick={() => handleToggleUserStatus(user)} className={`p-1 rounded hover:bg-gray-100 ${user.enabled ? 'text-amber-600' : 'text-emerald-600'}`} title={user.enabled ? 'تعطيل' : 'تفعيل'}>
                             {user.enabled ? <FiToggleRight className="w-4 h-4 rotate-180" /> : <FiToggleLeft className="w-4 h-4" />}
                           </button>
-                          <button onClick={() => { setSelectedUser(user); setShowViewModal(true); }} className="p-1 text-blue-600 hover:bg-blue-50 rounded" title="عرض">
+                          <button onClick={() => { setSelectedUser(user); setShowViewModal(true); }} className="p-1 text-brand-600 hover:bg-brand-50 rounded" title="عرض">
                             <FiEye className="w-4 h-4" />
                           </button>
-                          <button onClick={() => handleEditUser(user)} className="p-1 text-green-600 hover:bg-green-50 rounded" title="تعديل">
+                          <button onClick={() => handleEditUser(user)} className="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="تعديل">
                             <FiEdit className="w-4 h-4" />
                           </button>
                           <button onClick={() => handleDeleteClick(user.id)} className="p-1 text-red-600 hover:bg-red-50 rounded" title="حذف">
@@ -653,8 +653,8 @@ const UserManagement = () => {
                         <button
                           onClick={() => handleToggleUserStatus(user)}
                           className={`p-2 rounded-sm transition-colors ${user.enabled
-                            ? 'text-orange-600 border bg-orange-600/20 border-orange-600'
-                            : 'text-green-600 border bg-green-600/20 border-green-600'
+                            ? 'text-amber-600 border bg-amber-600/20 border-amber-600'
+                            : 'text-emerald-600 border bg-emerald-600/20 border-emerald-600'
                             }`}
                           title={user.enabled ? 'تعطيل المستخدم' : 'تفعيل المستخدم'}
                         >
@@ -669,14 +669,14 @@ const UserManagement = () => {
                             setSelectedUser(user);
                             setShowViewModal(true);
                           }}
-                          className="p-2 text-blue-600 border bg-blue-600/20 border-blue-600 cursor-pointer hover:bg-blue-50 rounded-sm transition-colors"
+                          className="p-2 text-brand-600 border bg-brand-600/20 border-brand-600 cursor-pointer hover:bg-brand-50 rounded-sm transition-colors"
                           title="عرض التفاصيل"
                         >
                           <FiEye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleEditUser(user)}
-                          className="p-2 text-green-600 border bg-green-600/20 border-green-600 hover:bg-green-50 cursor-pointer rounded-sm transition-colors"
+                          className="p-2 text-emerald-600 border bg-emerald-600/20 border-emerald-600 hover:bg-emerald-50 cursor-pointer rounded-sm transition-colors"
                           title="تعديل البيانات"
                         >
                           <FiEdit className="w-4 h-4" />
@@ -1227,13 +1227,13 @@ const UserManagement = () => {
                 )}
                 <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
                   {selectedUser.enabled ? (
-                    <FiToggleRight className="w-4 h-4 md:w-5 md:h-5 text-green-600 rotate-180" />
+                    <FiToggleRight className="w-4 h-4 md:w-5 md:h-5 text-emerald-600 rotate-180" />
                   ) : (
                     <FiToggleLeft className="w-4 h-4 md:w-5 md:h-5 text-red-600" />
                   )}
                   <div>
                     <p className="regular-12 text-gray-500">الحالة</p>
-                    <p className={`bold-14 ${selectedUser.enabled ? 'text-green-600' : 'text-red-600'}`}>
+                    <p className={`bold-14 ${selectedUser.enabled ? 'text-emerald-600' : 'text-red-600'}`}>
                       {selectedUser.enabled ? 'نشط' : 'معطل'}
                     </p>
                   </div>

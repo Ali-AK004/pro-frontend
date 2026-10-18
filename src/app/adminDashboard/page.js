@@ -22,6 +22,8 @@ import AuditLogsPage from "./components/AuditLogsPage";
 import WalletManagement from "./components/WalletManagement";
 import BundleCouponPage from "./components/BundleCouponPage";
 import AdminEarningsPage from "./components/AdminEarningsPage";
+import AnalyticsPage from "./components/AnalyticsPage";
+import PaymentsCenterPage from "./components/PaymentsCenterPage";
 
 const AdminDashboard = () => {
   const router = useRouter();
@@ -97,18 +99,20 @@ const AdminDashboard = () => {
       case "audit-logs":
         return <AuditLogsPage />;
       case "analytics":
-        return <DashboardOverview />; // For now, use the same component
+        return <AnalyticsPage onNavigate={setActiveTab} />;
+      case "payments":
+        return <PaymentsCenterPage />;
       default:
         return <DashboardOverview />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 flex relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-brand-50/30 to-brand-50/30 flex relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-400/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-purple-400/5 rounded-full blur-3xl"></div>
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-brand-400/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-brand-400/5 rounded-full blur-3xl"></div>
 
       {/* Sidebar */}
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />

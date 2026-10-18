@@ -56,12 +56,12 @@ export default function Home() {
       <div className="min-h-screen bg-main">
         <NavBar />
         {/* Hero Section */}
-        <section className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden">
+        <section className="relative min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50 overflow-hidden">
           {/* Background decorations */}
           <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+            <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-3xl"></div>
           </div>
 
           <div className="relative max-container padding-container py-20 lg:py-32">
@@ -69,8 +69,8 @@ export default function Home() {
               {/* Content */}
               <div className="text-center lg:text-right space-y-8">
                 <div className="space-y-6">
-                  <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-blue-200/50 shadow-sm">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-brand-200/50 shadow-sm">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                     <span className="text-sm font-medium text-gray-700">
                       منصة التعليم الذكي الأولى
                     </span>
@@ -78,7 +78,7 @@ export default function Home() {
 
                   <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                     تعلم بذكاء واحصل على
-                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block mt-2">
+                    <span className="bg-gradient-to-r from-brand-600 to-brand-600 bg-clip-text text-transparent block mt-2">
                       درجات أعلى!
                     </span>
                   </h1>
@@ -95,7 +95,7 @@ export default function Home() {
                   <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <Link
                       href="/instructors"
-                      className="group bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                      className="group bg-gradient-to-r from-brand-600 to-brand-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-brand-700 hover:to-brand-700 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                     >
                       ابدأ التعلم الآن
                       <FaArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -105,17 +105,17 @@ export default function Home() {
                   <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <Link
                       href="/signup"
-                      className="group bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                      className="group bg-gradient-to-r from-brand-600 to-brand-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-brand-700 hover:to-brand-700 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                     >
                       ابدأ التعلم الآن
                       <FaArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
                     <Link
                       href="/login"
-                      className="group border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-sm bg-white/50"
+                      className="group border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold hover:border-brand-500 hover:text-brand-600 hover:bg-brand-50 transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-sm bg-white/50"
                     >
                       تسجيل الدخول
-                      <FaPlay className="w-3 h-3 group-hover:text-blue-600 transition-colors" />
+                      <FaPlay className="w-3 h-3 group-hover:text-brand-600 transition-colors" />
                     </Link>
                   </div>
                 )}
@@ -128,16 +128,16 @@ export default function Home() {
                   <div className="text-center space-y-6">
                     {/* Icon with animation */}
                     <div className="relative inline-block">
-                      <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                      <div className="w-32 h-32 bg-gradient-to-br from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-lg">
                         <FaGraduationCap className="w-16 h-16 text-white" />
                       </div>
                       {/* AI Badge */}
-                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full p-3 shadow-lg animate-bounce">
+                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-brand-500 to-brand-500 rounded-full p-3 shadow-lg animate-bounce">
                         <FaRobot className="w-5 h-5 text-white" />
                       </div>
                       {/* Pulse rings */}
-                      <div className="absolute inset-0 rounded-full border-4 border-blue-400/30 animate-ping"></div>
-                      <div className="absolute inset-2 rounded-full border-4 border-purple-400/20 animate-ping animation-delay-75"></div>
+                      <div className="absolute inset-0 rounded-full border-4 border-brand-400/30 animate-ping"></div>
+                      <div className="absolute inset-2 rounded-full border-4 border-brand-400/20 animate-ping animation-delay-75"></div>
                     </div>
 
                     <div className="space-y-3">
@@ -151,7 +151,7 @@ export default function Home() {
 
                     {/* Progress indicator */}
                     <div className="bg-gray-100 rounded-full h-2 overflow-hidden">
-                      <div className="bg-gradient-to-r from-green-500 to-blue-500 h-full rounded-full w-[95%] animate-pulse"></div>
+                      <div className="bg-gradient-to-r from-brand-500 to-brand-500 h-full rounded-full w-[95%] animate-pulse"></div>
                     </div>
                   </div>
                 </div>
@@ -159,7 +159,7 @@ export default function Home() {
                 {/* Floating Stats Cards */}
                 <div className="absolute -top-6 -left-6 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-white/20 transform hover:scale-105 transition-transform">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-r from-brand-500 to-brand-500 rounded-xl flex items-center justify-center">
                       <FaChartLine className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -171,7 +171,7 @@ export default function Home() {
 
                 <div className="absolute -bottom-6 -right-6 bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-white/20 transform hover:scale-105 transition-transform">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-r from-brand-500 to-brand-500 rounded-xl flex items-center justify-center">
                       <FaRobot className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -183,7 +183,7 @@ export default function Home() {
 
                 <div className="absolute top-1/2 -left-12 bg-white/90 backdrop-blur-sm rounded-2xl p-3 shadow-xl border border-white/20 transform hover:scale-105 transition-transform hidden lg:block">
                   <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-r from-brand-500 to-brand-500 rounded-lg flex items-center justify-center">
                       <FaCertificate className="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -194,30 +194,30 @@ export default function Home() {
                 </div>
 
                 {/* Decorative elements */}
-                <div className="absolute top-8 right-8 w-4 h-4 bg-yellow-400 rounded-full animate-pulse"></div>
-                <div className="absolute bottom-12 left-12 w-3 h-3 bg-pink-400 rounded-full animate-pulse animation-delay-150"></div>
-                <div className="absolute top-1/3 right-4 w-2 h-2 bg-blue-400 rounded-full animate-pulse animation-delay-300"></div>
+                <div className="absolute top-8 right-8 w-4 h-4 bg-amber-400 rounded-full animate-pulse"></div>
+                <div className="absolute bottom-12 left-12 w-3 h-3 bg-brand-400 rounded-full animate-pulse animation-delay-150"></div>
+                <div className="absolute top-1/3 right-4 w-2 h-2 bg-brand-400 rounded-full animate-pulse animation-delay-300"></div>
               </div>
             </div>
           </div>
         </section>
 
         {/* Student Success Stats Section */}
-        <section className="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
+        <section className="py-20 bg-gradient-to-br from-slate-50 via-brand-50 to-brand-100 relative overflow-hidden">
           {/* Background decoration */}
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-          <div className="absolute top-0 left-1/4 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-purple-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-0 left-1/4 w-72 h-72 bg-brand-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-brand-400/10 rounded-full blur-3xl"></div>
 
           <div className="relative max-container padding-container">
             <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+              <div className="inline-flex items-center gap-2 bg-brand-100 text-brand-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
                 <FaChartLine className="w-4 h-4" />
                 إحصائيات مذهلة
               </div>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
                 طلابنا يحققون نتائج
-                <span className="bg-gradient-to-r from-green-600 to-blue-600 py-2 bg-clip-text text-transparent block">
+                <span className="bg-gradient-to-r from-brand-600 to-brand-600 py-2 bg-clip-text text-transparent block">
                   استثنائية!
                 </span>
               </h2>
@@ -231,11 +231,11 @@ export default function Home() {
               <div className="group">
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/20 group-hover:transform group-hover:-translate-y-2">
                   <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <div className="w-16 h-16 bg-gradient-to-r from-brand-500 to-brand-500 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                       <FaChartLine className="w-8 h-8 text-white" />
                     </div>
                     <div className="space-y-2">
-                      <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                      <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-brand-600 to-brand-600 bg-clip-text text-transparent">
                         95%
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900">
@@ -253,11 +253,11 @@ export default function Home() {
               <div className="group">
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/20 group-hover:transform group-hover:-translate-y-2">
                   <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <div className="w-16 h-16 bg-gradient-to-r from-brand-500 to-brand-500 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                       <FaRobot className="w-8 h-8 text-white" />
                     </div>
                     <div className="space-y-2">
-                      <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-brand-600 to-brand-600 bg-clip-text text-transparent">
                         Soo
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900">
@@ -275,11 +275,11 @@ export default function Home() {
               <div className="group">
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/20 group-hover:transform group-hover:-translate-y-2">
                   <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <div className="w-16 h-16 bg-gradient-to-r from-brand-500 to-brand-500 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                       <FaCertificate className="w-8 h-8 text-white" />
                     </div>
                     <div className="space-y-2">
-                      <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                      <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-brand-600 to-brand-600 bg-clip-text text-transparent">
                         Free
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900">
@@ -297,11 +297,11 @@ export default function Home() {
               <div className="group">
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-white/20 group-hover:transform group-hover:-translate-y-2">
                   <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-brand-500 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                       <FaClipboardList className="w-8 h-8 text-white" />
                     </div>
                     <div className="space-y-2">
-                      <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                      <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-600 to-brand-600 bg-clip-text text-transparent">
                         ∞
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900">
@@ -333,8 +333,8 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {/* Feature 1 - Personal AI Tutor */}
-              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-transparent hover:border-blue-200">
-                <div className="bg-gradient-to-r from-blue-500 to-purple-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
+              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-brand-50 to-brand-50 p-6 rounded-xl border-2 border-transparent hover:border-brand-200">
+                <div className="bg-gradient-to-r from-brand-500 to-brand-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
                   <FaRobot className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="bold-20 text-gray-900 mb-3">
@@ -344,14 +344,14 @@ export default function Home() {
                   احصل على إجابات فورية لأسئلتك، شرح مبسط للمفاهيم الصعبة،
                   ونصائح للمذاكرة - متاح Sooمجاناً!
                 </p>
-                <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                <div className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-semibold">
                   مجاني تماماً
                 </div>
               </div>
 
               {/* Feature 2 - Practice Tests */}
-              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-transparent hover:border-green-200">
-                <div className="bg-gradient-to-r from-green-500 to-emerald-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
+              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-brand-50 to-brand-50 p-6 rounded-xl border-2 border-transparent hover:border-emerald-200">
+                <div className="bg-gradient-to-r from-brand-500 to-brand-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
                   <FaClipboardList className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="bold-20 text-gray-900 mb-3">
@@ -361,14 +361,14 @@ export default function Home() {
                   امتحانات تجريبية مشابهة للامتحانات الحقيقية مع تصحيح فوري
                   وتحليل نقاط ضعفك لتحسين أدائك
                 </p>
-                <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                <div className="bg-brand-100 text-brand-800 px-3 py-1 rounded-full text-sm font-semibold">
                   تحسن مضمون
                 </div>
               </div>
 
               {/* Feature 3 - Progress Tracking */}
-              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-orange-50 to-red-50 p-6 rounded-xl border-2 border-transparent hover:border-orange-200">
-                <div className="bg-gradient-to-r from-orange-500 to-red-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
+              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-amber-50 to-brand-50 p-6 rounded-xl border-2 border-transparent hover:border-amber-200">
+                <div className="bg-gradient-to-r from-amber-500 to-brand-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
                   <FaChartLine className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="bold-20 text-gray-900 mb-3">تتبع تقدمك بذكاء</h3>
@@ -376,14 +376,14 @@ export default function Home() {
                   شاهد تحسن درجاتك، اكتشف نقاط قوتك وضعفك، واحصل على خطة شخصية
                   للوصول لأهدافك
                 </p>
-                <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold">
+                <div className="bg-brand-100 text-brand-800 px-3 py-1 rounded-full text-sm font-semibold">
                   تحليل ذكي
                 </div>
               </div>
 
               {/* Feature 4 - Easy Access */}
-              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-xl border-2 border-transparent hover:border-indigo-200">
-                <div className="bg-gradient-to-r from-indigo-500 to-blue-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
+              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-brand-50 to-brand-50 p-6 rounded-xl border-2 border-transparent hover:border-brand-200">
+                <div className="bg-gradient-to-r from-brand-500 to-brand-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
                   <FaCode className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="bold-20 text-gray-900 mb-3">وصول سهل وآمن</h3>
@@ -391,14 +391,14 @@ export default function Home() {
                   ادخل بكود بسيط واحصل على وصول فوري لجميع الدروس والامتحانات -
                   بدون تعقيدات!
                 </p>
-                <div className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-semibold">
+                <div className="bg-brand-100 text-brand-800 px-3 py-1 rounded-full text-sm font-semibold">
                   سهل وسريع
                 </div>
               </div>
 
               {/* Feature 5 - Expert Teachers */}
-              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-teal-50 to-cyan-50 p-6 rounded-xl border-2 border-transparent hover:border-teal-200">
-                <div className="bg-gradient-to-r from-teal-500 to-cyan-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
+              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-brand-50 to-brand-50 p-6 rounded-xl border-2 border-transparent hover:border-brand-200">
+                <div className="bg-gradient-to-r from-brand-500 to-brand-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
                   <FaUserGraduate className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="bold-20 text-gray-900 mb-3">
@@ -408,14 +408,14 @@ export default function Home() {
                   تعلم من نخبة المدرسين المتخصصين الذين ساعدوا آلاف الطلاب على
                   التفوق والنجاح
                 </p>
-                <div className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-semibold">
+                <div className="bg-brand-100 text-brand-800 px-3 py-1 rounded-full text-sm font-semibold">
                   خبرة مثبتة
                 </div>
               </div>
 
               {/* Feature 6 - Flexible Learning */}
-              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-pink-50 to-rose-50 p-6 rounded-xl border-2 border-transparent hover:border-pink-200">
-                <div className="bg-gradient-to-r from-pink-500 to-rose-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
+              <div className="text-center group hover:transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-brand-50 to-red-50 p-6 rounded-xl border-2 border-transparent hover:border-brand-200">
+                <div className="bg-gradient-to-r from-brand-500 to-red-600 w-20 h-20 rounded-full flexCenter mx-auto mb-6 group-hover:shadow-lg transition-all">
                   <FaGraduationCap className="w-10 h-10 text-white" />
                 </div>
                 <h3 className="bold-20 text-gray-900 mb-3">
@@ -425,7 +425,7 @@ export default function Home() {
                   ادرس من البيت، المدرسة، أو أي مكان تريده. منصتنا متاحة Soo على
                   جميع الأجهزة
                 </p>
-                <div className="bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-sm font-semibold">
+                <div className="bg-brand-100 text-brand-800 px-3 py-1 rounded-full text-sm font-semibold">
                   مرونة كاملة
                 </div>
               </div>
@@ -435,7 +435,7 @@ export default function Home() {
 
         {/* CTA Section */}
         {user ? (
-          <section className="py-20 bg-gradient-to-r from-[#088395] to-[#87ceeb]">
+          <section className="py-20 bg-gradient-to-r from-brand-600 to-brand-400">
             <div className="max-container padding-container">
               <div className="text-center text-white">
                 <h2 className="bold-48 mb-4">جاهز لتحسين درجاتك؟</h2>
@@ -466,7 +466,7 @@ export default function Home() {
             </div>
           </section>
         ) : (
-          <section className="py-20 bg-gradient-to-r from-[#088395] to-[#87ceeb]">
+          <section className="py-20 bg-gradient-to-r from-brand-600 to-brand-400">
             <div className="max-container padding-container">
               <div className="text-center text-white">
                 <h2 className="bold-48 mb-4">احصل على درجات أعلى مجاناً!</h2>

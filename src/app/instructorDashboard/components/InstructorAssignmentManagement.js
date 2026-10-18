@@ -436,11 +436,11 @@ const InstructorAssignmentManagement = React.memo(() => {
       {showSubmissionsModal && selectedAssignment && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+            <div className="bg-gradient-to-r from-brand-600 to-brand-600 text-white p-6">
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="text-xl font-bold">تسليمات الواجب</h3>
-                  <p className="text-blue-100 mt-1">
+                  <p className="text-brand-100 mt-1">
                     {selectedAssignment.title}
                   </p>
                 </div>
@@ -500,11 +500,11 @@ const InstructorAssignmentManagement = React.memo(() => {
                         </div>
                         <div className="flex items-center gap-2">
                           {submission.grade ? (
-                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">
+                            <span className="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-sm font-medium">
                               الدرجة: {submission.grade}
                             </span>
                           ) : (
-                            <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-medium">
+                            <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-sm font-medium">
                               لم يتم التقييم
                             </span>
                           )}
@@ -523,11 +523,11 @@ const InstructorAssignmentManagement = React.memo(() => {
                       </div>
 
                       {submission.feedback && (
-                        <div className="bg-blue-50 rounded-lg p-3 mb-3">
-                          <h6 className="font-medium text-blue-700 mb-2">
+                        <div className="bg-brand-50 rounded-lg p-3 mb-3">
+                          <h6 className="font-medium text-brand-700 mb-2">
                             التعليق:
                           </h6>
-                          <p className="text-blue-600">{submission.feedback}</p>
+                          <p className="text-brand-600">{submission.feedback}</p>
                         </div>
                       )}
 
@@ -536,7 +536,7 @@ const InstructorAssignmentManagement = React.memo(() => {
                           <input
                             type="number"
                             placeholder="الدرجة"
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                             min="0"
                             max="100"
                             id={`grade-${submission.submissionId || submission.id}`}
@@ -544,7 +544,7 @@ const InstructorAssignmentManagement = React.memo(() => {
                           <input
                             type="text"
                             placeholder="تعليق (اختياري)"
-                            className="flex-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="flex-2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                             id={`feedback-${submission.submissionId || submission.id}`}
                           />
                           <button
@@ -565,7 +565,7 @@ const InstructorAssignmentManagement = React.memo(() => {
                                 );
                               }
                             }}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                           >
                             تقييم
                           </button>
@@ -616,26 +616,26 @@ const AssignmentCard = ({
         {/* Assignment Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="flex items-center gap-2">
-            <FiCalendar className="w-4 h-4 text-blue-500" />
+            <FiCalendar className="w-4 h-4 text-brand-500" />
             <span className="regular-12 text-gray-600">
               {assignmentAPI.validation.formatDate(assignment.dueDate)}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <FiAward className="w-4 h-4 text-green-500" />
+            <FiAward className="w-4 h-4 text-emerald-500" />
             <span className="regular-12 text-gray-600">
               {assignment.maxPoints} نقطة
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <FiUsers className="w-4 h-4 text-purple-500" />
+            <FiUsers className="w-4 h-4 text-brand-500" />
             <span className="regular-12 text-gray-600">
               {assignment.submissionCount || 0} تسليم
             </span>
           </div>
           <div className="flex items-center gap-2">
             <FiClock
-              className={`w-4 h-4 ${isOverdue ? "text-red-500" : "text-orange-500"}`}
+              className={`w-4 h-4 ${isOverdue ? "text-red-500" : "text-amber-500"}`}
             />
             <span
               className={`regular-12 ${isOverdue ? "text-red-600" : "text-gray-600"}`}
@@ -649,14 +649,14 @@ const AssignmentCard = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <button
             onClick={() => onViewSubmissions(assignment)}
-            className="flex-1 bg-blue-50 text-blue-600 py-2 px-4 rounded-lg border border-blue-600 hover:bg-blue-100 transition-colors flexCenter gap-2 cursor-pointer"
+            className="flex-1 bg-brand-50 text-brand-600 py-2 px-4 rounded-lg border border-brand-600 hover:bg-brand-100 transition-colors flexCenter gap-2 cursor-pointer"
           >
             <FiEye className="w-4 h-4" />
             التسليمات
           </button>
           <button
             onClick={() => onEdit(assignment)}
-            className="flex-1 bg-green-50 text-green-600 py-2 px-4 border border-green-600 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2 cursor-pointer"
+            className="flex-1 bg-emerald-50 text-emerald-600 py-2 px-4 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-2 cursor-pointer"
           >
             <FiEdit className="w-4 h-4" />
             تعديل

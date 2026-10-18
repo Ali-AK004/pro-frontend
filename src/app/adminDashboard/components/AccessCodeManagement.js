@@ -239,14 +239,14 @@ const AccessCodeManagement = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 w-full md:w-auto gap-2 md:gap-3">
           <button
             onClick={handleCopyAllCodes}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-300 flexCenter gap-1 md:gap-2 cursor-pointer text-sm md:text-base"
+            className="bg-brand-500 text-white px-4 py-2 rounded-lg hover:bg-brand-600 transition-all duration-300 flexCenter gap-1 md:gap-2 cursor-pointer text-sm md:text-base"
           >
             <FiCopy className="w-3 h-3 md:w-4 md:h-4" />
             <span>نسخ الكل</span>
           </button>
           <button
             onClick={handleDownloadCodes}
-            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-300 flexCenter gap-1 md:gap-2 cursor-pointer text-sm md:text-base"
+            className="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-all duration-300 flexCenter gap-1 md:gap-2 cursor-pointer text-sm md:text-base"
           >
             <FiDownload className="w-3 h-3 md:w-4 md:h-4" />
             <span>تحميل</span>
@@ -386,7 +386,7 @@ const AccessCodeManagement = () => {
                         <span
                           className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm whitespace-nowrap ${item.used
                               ? "bg-red-100 text-red-800"
-                              : "bg-green-100 text-green-800"
+                              : "bg-emerald-100 text-emerald-800"
                             }`}
                         >
                           {item.used ? (
@@ -435,7 +435,7 @@ const AccessCodeManagement = () => {
                                   .catch(err => toast.error(handleAPIError(err)));
                               }
                             }}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
+                            className="p-2 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
                             title="إرسال بالبريد"
                           >
                             <FiMail className="w-4 h-4" />
@@ -454,7 +454,7 @@ const AccessCodeManagement = () => {
                 <button
                   onClick={() => fetchAccessCodes(true)}
                   disabled={isLoadingMore}
-                  className="bg-white text-accent px-6 py-2 rounded-lg border border-accent hover:bg-[#088395] hover:text-white transition-all duration-300 flex items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed hover:border hover:border-[#088395]"
+                  className="bg-white text-accent px-6 py-2 rounded-lg border border-accent hover:bg-brand-600 hover:text-white transition-all duration-300 flex items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed hover:border hover:border-brand-600"
                 >
                   {isLoadingMore ? (
                     <>
@@ -506,13 +506,13 @@ const AccessCodeManagement = () => {
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${item.used ? "bg-red-100" : "bg-green-100"
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${item.used ? "bg-red-100" : "bg-emerald-100"
                           }`}
                       >
                         {item.used ? (
                           <FiX className="w-5 h-5 text-red-600" />
                         ) : (
-                          <FiCheck className="w-5 h-5 text-green-600" />
+                          <FiCheck className="w-5 h-5 text-emerald-600" />
                         )}
                       </div>
                     </div>
@@ -568,7 +568,7 @@ const AccessCodeManagement = () => {
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${item.used
                               ? "bg-red-100 text-red-800"
-                              : "bg-green-100 text-green-800"
+                              : "bg-emerald-100 text-emerald-800"
                             }`}
                         >
                           {item.used ? (
@@ -605,7 +605,7 @@ const AccessCodeManagement = () => {
                 <button
                   onClick={() => fetchAccessCodes(true)}
                   disabled={isLoadingMore}
-                  className="bg-white text-accent px-6 py-2 rounded-lg border border-accent hover:bg-[#088395] hover:text-white transition-all duration-300 flex items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed hover:border hover:border-[#088395]"
+                  className="bg-white text-accent px-6 py-2 rounded-lg border border-accent hover:bg-brand-600 hover:text-white transition-all duration-300 flex items-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed hover:border hover:border-brand-600"
                 >
                   {isLoadingMore ? (
                     <>

@@ -377,18 +377,18 @@ const OverviewTab = ({ lesson, lessonProgress }) => (
         <h3 className="bold-18 text-gray-900 mb-3">مكونات الدرس</h3>
         <div className="space-y-3">
           {lesson.exam && (
-            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-              <FaQuestionCircle className="w-5 h-5 text-blue-500" />
+            <div className="flex items-center gap-3 p-3 bg-brand-50 rounded-lg">
+              <FaQuestionCircle className="w-5 h-5 text-brand-500" />
               <span className="regular-14 text-gray-700">امتحان</span>
             </div>
           )}
-          <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-            <FaPlay className="w-5 h-5 text-green-500" />
+          <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
+            <FaPlay className="w-5 h-5 text-emerald-500" />
             <span className="regular-14 text-gray-700">فيديو تعليمي</span>
           </div>
           {lesson.assignment && (
-            <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-              <FaFileAlt className="w-5 h-5 text-purple-500" />
+            <div className="flex items-center gap-3 p-3 bg-brand-50 rounded-lg">
+              <FaFileAlt className="w-5 h-5 text-brand-500" />
               <span className="regular-14 text-gray-700">واجب</span>
             </div>
           )}
@@ -452,7 +452,7 @@ const ExamTab = ({
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="text-center">
           {examResult.passed ? (
-            <FaCheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <FaCheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
           ) : (
             <FaExclamationTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           )}
@@ -463,7 +463,7 @@ const ExamTab = ({
             درجتك: {examResult.score}% من {examData.passingScore}% مطلوبة للنجاح
           </p>
           {examResult.passed && (
-            <p className="regular-14 text-green-600">
+            <p className="regular-14 text-emerald-600">
               يمكنك الآن مشاهدة الفيديو
             </p>
           )}
@@ -477,12 +477,12 @@ const ExamTab = ({
                   ([questionId, result], index) => (
                     <div
                       key={questionId}
-                      className={`p-3 rounded-lg ${result.correct ? "bg-green-50" : "bg-red-50"}`}
+                      className={`p-3 rounded-lg ${result.correct ? "bg-emerald-50" : "bg-red-50"}`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="regular-14">السؤال {index + 1}</span>
                         <span
-                          className={`bold-14 ${result.correct ? "text-green-600" : "text-red-600"}`}
+                          className={`bold-14 ${result.correct ? "text-emerald-600" : "text-red-600"}`}
                         >
                           {result.correct ? "صحيح" : "خطأ"} ({result.score}/
                           {result.maxScore})
@@ -548,7 +548,7 @@ const ExamTab = ({
             className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
               timeLeft < 300
                 ? "bg-red-50 text-red-600"
-                : "bg-blue-50 text-blue-600"
+                : "bg-brand-50 text-brand-600"
             }`}
           >
             <FaClock className="w-4 h-4" />
@@ -681,13 +681,13 @@ const VideoTab = ({ lesson, onVideoEnd, videoWatched }) => (
       />
     </div>
 
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <FaEye className="w-5 h-5 text-blue-500" />
+          <FaEye className="w-5 h-5 text-brand-500" />
           <div>
-            <h4 className="bold-14 text-blue-800">تتبع المشاهدة</h4>
-            <p className="regular-12 text-blue-600">
+            <h4 className="bold-14 text-brand-800">تتبع المشاهدة</h4>
+            <p className="regular-12 text-brand-600">
               اضغط على الزر بعد مشاهدة الفيديو لفتح الواجب
             </p>
           </div>
@@ -697,8 +697,8 @@ const VideoTab = ({ lesson, onVideoEnd, videoWatched }) => (
           disabled={videoWatched}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
             videoWatched
-              ? "bg-green-100 text-green-700 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700"
+              ? "bg-emerald-100 text-emerald-700 cursor-not-allowed"
+              : "bg-brand-600 text-white hover:bg-brand-700"
           }`}
         >
           {videoWatched ? "✓ تم المشاهدة" : "تم المشاهدة"}
@@ -707,9 +707,9 @@ const VideoTab = ({ lesson, onVideoEnd, videoWatched }) => (
     </div>
 
     {videoWatched && (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center mt-4">
-        <FaCheckCircle className="w-6 h-6 text-green-500 mx-auto mb-2" />
-        <p className="bold-14 text-green-700">تم تسجيل مشاهدة الفيديو بنجاح</p>
+      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-center mt-4">
+        <FaCheckCircle className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
+        <p className="bold-14 text-emerald-700">تم تسجيل مشاهدة الفيديو بنجاح</p>
       </div>
     )}
   </div>
@@ -777,7 +777,7 @@ const AssignmentTab = ({
     return (
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="text-center mb-6">
-          <FaClipboardCheck className="w-16 h-16 text-green-500 mx-auto mb-4" />
+          <FaClipboardCheck className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
           <h2 className="bold-24 text-gray-900 mb-2">تم تقديم الواجب</h2>
           <p className="regular-16 text-gray-600">
             تم تقديم واجبك بنجاح في {formatDate(assignmentData.submissionDate)}
@@ -789,19 +789,19 @@ const AssignmentTab = ({
           <h3 className="bold-18 text-gray-900 mb-3">{assignmentData.title}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="flex items-center gap-2">
-              <FaCalendarAlt className="w-4 h-4 text-blue-500" />
+              <FaCalendarAlt className="w-4 h-4 text-brand-500" />
               <span className="regular-12 text-gray-600">
                 موعد التسليم: {formatDate(assignmentData.dueDate)}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <FaAward className="w-4 h-4 text-green-500" />
+              <FaAward className="w-4 h-4 text-emerald-500" />
               <span className="regular-12 text-gray-600">
                 النقاط القصوى: {assignmentData.maxPoints}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <FaClipboardCheck className="w-4 h-4 text-purple-500" />
+              <FaClipboardCheck className="w-4 h-4 text-brand-500" />
               <span className="regular-12 text-gray-600">
                 الحالة: {isGraded ? "تم التقييم" : "في انتظار التقييم"}
               </span>
@@ -817,7 +817,7 @@ const AssignmentTab = ({
         {/* Submitted Answer */}
         <div className="mb-6">
           <h4 className="bold-16 text-gray-900 mb-3">إجابتك المقدمة:</h4>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
             <p className="regular-14 text-gray-700 whitespace-pre-wrap">
               {assignmentData.submissionText}
             </p>
@@ -826,17 +826,17 @@ const AssignmentTab = ({
 
         {/* Grade and Feedback */}
         {isGraded && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="bold-16 text-green-900">النتيجة</h4>
-              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full bold-14">
+              <h4 className="bold-16 text-emerald-900">النتيجة</h4>
+              <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full bold-14">
                 {assignmentData.grade} / {assignmentData.maxPoints}
               </span>
             </div>
             {assignmentData.feedback && (
               <div>
-                <h5 className="bold-14 text-green-900 mb-2">تعليق المدرس:</h5>
-                <p className="regular-14 text-green-700">
+                <h5 className="bold-14 text-emerald-900 mb-2">تعليق المدرس:</h5>
+                <p className="regular-14 text-emerald-700">
                   {assignmentData.feedback}
                 </p>
               </div>
@@ -863,7 +863,7 @@ const AssignmentTab = ({
       <div className="bg-gray-50 rounded-lg p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center gap-2">
-            <FaCalendarAlt className="w-4 h-4 text-blue-500" />
+            <FaCalendarAlt className="w-4 h-4 text-brand-500" />
             <div>
               <div className="regular-12 text-gray-600">موعد التسليم</div>
               <div className="bold-12 text-gray-900">
@@ -873,7 +873,7 @@ const AssignmentTab = ({
           </div>
           <div className="flex items-center gap-2">
             <FaClock
-              className={`w-4 h-4 ${isOverdue ? "text-red-500" : "text-orange-500"}`}
+              className={`w-4 h-4 ${isOverdue ? "text-red-500" : "text-amber-500"}`}
             />
             <div>
               <div className="regular-12 text-gray-600">الوقت المتبقي</div>
@@ -885,7 +885,7 @@ const AssignmentTab = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <FaAward className="w-4 h-4 text-green-500" />
+            <FaAward className="w-4 h-4 text-emerald-500" />
             <div>
               <div className="regular-12 text-gray-600">النقاط القصوى</div>
               <div className="bold-12 text-gray-900">
@@ -900,7 +900,7 @@ const AssignmentTab = ({
       {assignmentData.description && (
         <div className="mb-6">
           <h3 className="bold-18 text-gray-900 mb-3">تعليمات الواجب</h3>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
             <p className="regular-16 text-gray-700 whitespace-pre-wrap">
               {assignmentData.description}
             </p>

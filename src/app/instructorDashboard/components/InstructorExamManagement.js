@@ -378,25 +378,25 @@ const InstructorExamManagement = () => {
                 {/* Exam Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                   <div className="flex items-center gap-2">
-                    <FiClock className="w-4 h-4 text-blue-500" />
+                    <FiClock className="w-4 h-4 text-brand-500" />
                     <span className="regular-12 text-gray-600">
                       {exam.timeLimitMinutes} دقيقة
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <FiAward className="w-4 h-4 text-green-500" />
+                    <FiAward className="w-4 h-4 text-emerald-500" />
                     <span className="regular-12 text-gray-600">
                       {exam.passingScore}% للنجاح
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <FiBook className="w-4 h-4 text-purple-500" />
+                    <FiBook className="w-4 h-4 text-brand-500" />
                     <span className="regular-12 text-gray-600">
                       {exam.questions?.length || 0} سؤال
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <FiUsers className="w-4 h-4 text-orange-500" />
+                    <FiUsers className="w-4 h-4 text-amber-500" />
                     <span className="regular-12 text-gray-600">
                       {exam.submissionCount || 0} محاولة
                     </span>
@@ -407,7 +407,7 @@ const InstructorExamManagement = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <button
                     onClick={() => handleViewResults(exam)}
-                    className=" bg-blue-50 text-blue-600 py-2 px-4 border border-blue-600 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2 cursor-pointer"
+                    className=" bg-brand-50 text-brand-600 py-2 px-4 border border-brand-600 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-2 cursor-pointer"
                   >
                     <FiBarChart className="w-4 h-4" />
                     النتائج
@@ -417,7 +417,7 @@ const InstructorExamManagement = () => {
                       setSelectedExam(exam);
                       setShowEditModal(true);
                     }}
-                    className=" bg-green-50 text-green-600 py-2 px-4 border border-green-600 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2 cursor-pointer"
+                    className=" bg-emerald-50 text-emerald-600 py-2 px-4 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-2 cursor-pointer"
                   >
                     <FiEdit className="w-4 h-4" />
                     تعديل
@@ -558,29 +558,29 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results }) => {
         <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
           {/* Summary Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-blue-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-blue-600 mb-1">
+            <div className="bg-brand-50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-brand-600 mb-1">
                 {results.totalSubmissions}
               </div>
-              <div className="text-sm text-blue-600">إجمالي المحاولات</div>
+              <div className="text-sm text-brand-600">إجمالي المحاولات</div>
             </div>
-            <div className="bg-green-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-green-600 mb-1">
+            <div className="bg-emerald-50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-emerald-600 mb-1">
                 {results.passedCount}
               </div>
-              <div className="text-sm text-green-600">عدد الناجحين</div>
+              <div className="text-sm text-emerald-600">عدد الناجحين</div>
             </div>
-            <div className="bg-purple-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-purple-600 mb-1">
+            <div className="bg-brand-50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-brand-600 mb-1">
                 {results.passRate?.toFixed(1)}%
               </div>
-              <div className="text-sm text-purple-600">معدل النجاح</div>
+              <div className="text-sm text-brand-600">معدل النجاح</div>
             </div>
-            <div className="bg-orange-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-orange-600 mb-1">
+            <div className="bg-amber-50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-amber-600 mb-1">
                 {results.averageScore?.toFixed(1)}%
               </div>
-              <div className="text-sm text-orange-600">المتوسط العام</div>
+              <div className="text-sm text-amber-600">المتوسط العام</div>
             </div>
           </div>
 
@@ -609,7 +609,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam, results }) => {
                     <div className="flex items-center gap-4">
                       <div className="flex-1 bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-green-500 h-2 rounded-full"
+                          className="bg-emerald-500 h-2 rounded-full"
                           style={{
                             width: `${(questionStat.correctCount / questionStat.totalAttempts) * 100}%`,
                           }}

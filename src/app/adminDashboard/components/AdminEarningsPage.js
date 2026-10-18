@@ -78,10 +78,10 @@ export default function AdminEarningsPage() {
                   <td className="p-3">{r.sales}</td>
                   <td className="p-3">{money(r.totalNet)}</td>
                   <td className="p-3">{money(r.totalPaid)}</td>
-                  <td className={`p-3 bold-14 ${Number(r.balanceDue) > 0 ? "text-green-700" : ""}`}>{money(r.balanceDue)}</td>
+                  <td className={`p-3 bold-14 ${Number(r.balanceDue) > 0 ? "text-emerald-700" : ""}`}>{money(r.balanceDue)}</td>
                   <td className="p-3">{r.lastSaleAt ? new Date(r.lastSaleAt).toLocaleDateString("ar-EG") : "—"}</td>
                   <td className="p-3">
-                    <button onClick={() => setSelected(r)} className="text-[#088395] underline cursor-pointer">التفاصيل</button>
+                    <button onClick={() => setSelected(r)} className="text-brand-600 underline cursor-pointer">التفاصيل</button>
                   </td>
                 </tr>
               ))}

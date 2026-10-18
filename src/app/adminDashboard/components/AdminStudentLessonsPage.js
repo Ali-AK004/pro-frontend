@@ -154,9 +154,9 @@ const AdminStudentLessonsPage = () => {
     // Helper to get status badge color
     const getStatusBadge = (status) => {
         const colors = {
-            PURCHASED: "bg-blue-100 text-blue-800",
-            EXAM_PASSED: "bg-green-100 text-green-800",
-            VIDEO_WATCHED: "bg-purple-100 text-purple-800",
+            PURCHASED: "bg-brand-100 text-brand-800",
+            EXAM_PASSED: "bg-emerald-100 text-emerald-800",
+            VIDEO_WATCHED: "bg-brand-100 text-brand-800",
             ASSIGNMENT_DONE: "bg-emerald-100 text-emerald-800",
         };
         return colors[status] || "bg-gray-100 text-gray-800";
@@ -168,7 +168,7 @@ const AdminStudentLessonsPage = () => {
                 <h1 className="text-2xl font-bold text-gray-900">إدارة تقدم الطلاب</h1>
                 <button
                     onClick={handleGrant}
-                    className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition"
+                    className="flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition"
                 >
                     <FiPlus /> منح وصول جديد
                 </button>
@@ -184,7 +184,7 @@ const AdminStudentLessonsPage = () => {
                         value={filters.studentId}
                         onChange={handleFilterChange}
                         placeholder="أدخل معرف الطالب"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500"
                     />
                 </div>
                 <div>
@@ -195,7 +195,7 @@ const AdminStudentLessonsPage = () => {
                         value={filters.lessonId}
                         onChange={handleFilterChange}
                         placeholder="أدخل معرف الدرس"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500"
                     />
                 </div>
                 <div>
@@ -204,7 +204,7 @@ const AdminStudentLessonsPage = () => {
                         name="status"
                         value={filters.status}
                         onChange={handleFilterChange}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500"
                     >
                         <option value="">الكل</option>
                         <option value="PURCHASED">تم الشراء</option>
@@ -267,21 +267,21 @@ const AdminStudentLessonsPage = () => {
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={() => handleEdit(record)}
-                                                    className="text-blue-600 hover:text-blue-900"
+                                                    className="text-brand-600 hover:text-brand-900"
                                                     title="تعديل"
                                                 >
                                                     <FiEdit2 />
                                                 </button>
                                                 <button
                                                     onClick={() => handleReset(record)}
-                                                    className="text-orange-600 hover:text-orange-900"
+                                                    className="text-amber-600 hover:text-amber-900"
                                                     title="إعادة ضبط"
                                                 >
                                                     <FiRefreshCw />
                                                 </button>
                                                 <button
                                                     onClick={() => handleExtend(record)}
-                                                    className="text-green-600 hover:text-green-900"
+                                                    className="text-emerald-600 hover:text-emerald-900"
                                                     title="تمديد الوصول"
                                                 >
                                                     <FiClock />
@@ -315,7 +315,7 @@ const AdminStudentLessonsPage = () => {
                                 <button
                                     key={i}
                                     onClick={() => setPage(i)}
-                                    className={`px-3 py-1 rounded ${page === i ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}
+                                    className={`px-3 py-1 rounded ${page === i ? "bg-brand-600 text-white" : "bg-gray-200 text-gray-700"}`}
                                 >
                                     {i + 1}
                                 </button>
@@ -467,7 +467,7 @@ const EditModal = ({ record, onClose, onSave }) => {
                     <div className="flex gap-3 pt-4">
                         <button
                             type="submit"
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex-1"
+                            className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 flex-1"
                         >
                             حفظ
                         </button>
@@ -487,9 +487,9 @@ const EditModal = ({ record, onClose, onSave }) => {
 
 const ConfirmModal = ({ title, message, onConfirm, onClose, confirmText = "تأكيد", cancelText = "إلغاء", type = "warning" }) => {
     const colors = {
-        warning: "bg-orange-100 text-orange-800 border-orange-200",
+        warning: "bg-amber-100 text-amber-800 border-amber-200",
         danger: "bg-red-100 text-red-800 border-red-200",
-        info: "bg-blue-100 text-blue-800 border-blue-200",
+        info: "bg-brand-100 text-brand-800 border-brand-200",
     };
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -537,7 +537,7 @@ const ExtendModal = ({ record, days, setDays, onConfirm, onClose }) => {
                 <div className="flex gap-3">
                     <button
                         onClick={onConfirm}
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex-1"
+                        className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 flex-1"
                     >
                         تمديد
                     </button>
@@ -624,7 +624,7 @@ const GrantModal = ({ onConfirm, onClose }) => {
                     <div className="flex gap-3 pt-4">
                         <button
                             type="submit"
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex-1"
+                            className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 flex-1"
                         >
                             منح الوصول
                         </button>

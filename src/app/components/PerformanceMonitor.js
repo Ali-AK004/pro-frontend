@@ -107,15 +107,15 @@ const PerformanceMonitor = ({ user }) => {
     >
       <button
         onClick={() => setShowMetrics(!showMetrics)}
-        className={`group cursor-pointer bg-gradient-to-r from-blue-500 to-purple-600 text-white ${
+        className={`group cursor-pointer bg-gradient-to-r from-brand-500 to-brand-600 text-white ${
           isMobile
             ? "px-3 py-2 rounded-xl text-xs"
             : "px-4 py-3 rounded-2xl text-sm"
-        } font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2`}
+        } font-medium hover:from-brand-600 hover:to-brand-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center gap-2`}
       >
         <span className={isMobile ? "text-sm" : "text-lg"}>📊</span>
         {!isMobile && <span>Performance</span>}
-        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+        <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
       </button>
 
       {showMetrics && (
@@ -128,7 +128,7 @@ const PerformanceMonitor = ({ user }) => {
         >
           <div className="flex items-center gap-3 mb-4">
             <div
-              className={`${isMobile ? "w-6 h-6" : "w-8 h-8"} bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center`}
+              className={`${isMobile ? "w-6 h-6" : "w-8 h-8"} bg-gradient-to-r from-brand-500 to-brand-600 rounded-lg flex items-center justify-center`}
             >
               <span className="text-white text-sm">📊</span>
             </div>
@@ -153,8 +153,8 @@ const PerformanceMonitor = ({ user }) => {
                     metrics.loadTime > 3000
                       ? "text-red-600 bg-red-100"
                       : metrics.loadTime > 1000
-                        ? "text-yellow-600 bg-yellow-100"
-                        : "text-green-600 bg-green-100"
+                        ? "text-amber-600 bg-amber-100"
+                        : "text-emerald-600 bg-emerald-100"
                   }`}
                 >
                   {metrics.loadTime.toFixed(0)}ms
@@ -166,8 +166,8 @@ const PerformanceMonitor = ({ user }) => {
                     metrics.loadTime > 3000
                       ? "bg-red-500"
                       : metrics.loadTime > 1000
-                        ? "bg-yellow-500"
-                        : "bg-green-500"
+                        ? "bg-amber-500"
+                        : "bg-emerald-500"
                   }`}
                   style={{
                     width: `${Math.min((metrics.loadTime / 5000) * 100, 100)}%`,
@@ -189,8 +189,8 @@ const PerformanceMonitor = ({ user }) => {
                     metrics.renderTime > 16
                       ? "text-red-600 bg-red-100"
                       : metrics.renderTime > 8
-                        ? "text-yellow-600 bg-yellow-100"
-                        : "text-green-600 bg-green-100"
+                        ? "text-amber-600 bg-amber-100"
+                        : "text-emerald-600 bg-emerald-100"
                   }`}
                 >
                   {metrics.renderTime.toFixed(2)}ms
@@ -202,8 +202,8 @@ const PerformanceMonitor = ({ user }) => {
                     metrics.renderTime > 16
                       ? "bg-red-500"
                       : metrics.renderTime > 8
-                        ? "bg-yellow-500"
-                        : "bg-green-500"
+                        ? "bg-amber-500"
+                        : "bg-emerald-500"
                   }`}
                   style={{
                     width: `${Math.min((metrics.renderTime / 32) * 100, 100)}%`,
@@ -227,7 +227,7 @@ const PerformanceMonitor = ({ user }) => {
                 className={
                   metrics.slowQueries.length > 0
                     ? "text-red-500"
-                    : "text-green-500"
+                    : "text-emerald-500"
                 }
               >
                 {metrics.slowQueries.length}

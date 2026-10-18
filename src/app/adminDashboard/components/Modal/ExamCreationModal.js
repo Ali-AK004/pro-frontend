@@ -448,7 +448,7 @@ const ExamCreationModal = ({
                   type="checkbox"
                   checked={examData.shuffleQuestions ?? true}
                   onChange={(e) => handleInputChange("shuffleQuestions", e.target.checked)}
-                  className="mt-1 w-5 h-5 accent-[#088395]"
+                  className="mt-1 w-5 h-5 accent-brand-600"
                 />
                 <span>
                   <span className="block bold-14 text-gray-700">ترتيب عشوائي للأسئلة والاختيارات</span>

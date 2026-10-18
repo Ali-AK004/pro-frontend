@@ -248,9 +248,9 @@ const AssignmentCreationModal = ({
             </div>
 
             {/* Instructions */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="bold-14 text-blue-900 mb-2">تعليمات:</h4>
-              <ul className="regular-12 text-blue-800 space-y-1">
+            <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
+              <h4 className="bold-14 text-brand-900 mb-2">تعليمات:</h4>
+              <ul className="regular-12 text-brand-800 space-y-1">
                 <li>• تأكد من وضوح عنوان الواجب ووصفه</li>
                 <li>• حدد تاريخ التسليم بدقة</li>
                 <li>• النقاط القصوى ستستخدم في حساب الدرجات</li>

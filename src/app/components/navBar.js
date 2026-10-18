@@ -78,7 +78,7 @@ const NavBar = () => {
             <div className="w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
               <Image src={"/logo.png"} width={225} height={206} alt="logo" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">
               أكاديميتنا
             </span>
           </Link>
@@ -89,17 +89,17 @@ const NavBar = () => {
             <div className="flex items-center gap-8">
               <Link
                 href="/instructors"
-                className="relative text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 group"
+                className="relative text-gray-700 hover:text-brand-600 font-medium transition-all duration-300 group"
               >
                 المعلمين
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-brand-600 to-brand-500 group-hover:w-full transition-all duration-300"></span>
               </Link>
               <a
                 href="/#footer"
-                className="relative text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 group"
+                className="relative text-gray-700 hover:text-brand-600 font-medium transition-all duration-300 group"
               >
                 تواصل معنا
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-brand-600 to-brand-500 group-hover:w-full transition-all duration-300"></span>
               </a>
             </div>
 
@@ -108,7 +108,7 @@ const NavBar = () => {
               {user && user.role === "ADMIN" && (
                 <Link
                   href="/adminDashboard"
-                  className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-brand-600 hover:to-brand-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   لوحة الإدارة
                 </Link>
@@ -117,7 +117,7 @@ const NavBar = () => {
                 (user.role === "INSTRUCTOR" || user.role === "ASSISTANT") && (
                   <Link
                     href="/instructorDashboard"
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-brand-600 hover:to-brand-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     لوحة المدرس
                   </Link>
@@ -134,7 +134,7 @@ const NavBar = () => {
                   onClick={toggleUserMenu}
                   className="flex items-center cursor-pointer gap-3 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-xl transition-all duration-300 border border-gray-200 hover:border-gray-300"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center">
                     <FaUser className="w-4 h-4 text-white" />
                   </div>
                   <div className="text-right">
@@ -178,11 +178,11 @@ const NavBar = () => {
 
                     <Link
                       href="/profile"
-                      className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
+                      className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-brand-50 hover:text-brand-600 transition-all duration-200"
                       onClick={closeMenus}
                     >
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <FaUser className="w-4 h-4 text-blue-600" />
+                      <div className="w-8 h-8 bg-brand-100 rounded-lg flex items-center justify-center">
+                        <FaUser className="w-4 h-4 text-brand-600" />
                       </div>
                       <span className="font-medium">الملف الشخصي</span>
                     </Link>
@@ -190,11 +190,11 @@ const NavBar = () => {
                     {user.role === "STUDENT" ? (
                       <Link
                         href="/wallet"
-                        className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
+                        className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-brand-50 hover:text-brand-600 transition-all duration-200"
                         onClick={closeMenus}
                       >
-                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                          <FaWallet className="w-4 h-4 text-green-600" />
+                        <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                          <FaWallet className="w-4 h-4 text-emerald-600" />
                         </div>
                         <span className="font-medium">المحفظة</span>
                       </Link>
@@ -219,13 +219,13 @@ const NavBar = () => {
               <div className="flex items-center gap-3">
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 border border-gray-300 hover:border-blue-500 rounded-xl hover:bg-blue-50"
+                  className="px-4 py-2 text-gray-700 hover:text-brand-600 font-medium transition-all duration-300 border border-gray-300 hover:border-brand-500 rounded-xl hover:bg-brand-50"
                 >
                   تسجيل الدخول
                 </Link>
                 <Link
                   href="/signup"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-6 py-2 rounded-xl font-semibold hover:from-brand-700 hover:to-brand-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   إنشاء حساب
                 </Link>
@@ -269,7 +269,7 @@ const NavBar = () => {
               {user && user.role === "ADMIN" && (
                 <Link
                   href="/adminDashboard"
-                  className="text-center py-3 bg-red-600 text-white rounded-lg bold-16 hover:bg-red-700 transition-all duration-300 cursor-pointer"
+                  className="text-center py-3 bg-brand-600 text-white rounded-lg bold-16 hover:bg-brand-700 transition-all duration-300 cursor-pointer"
                   onClick={closeMenus}
                 >
                   ADMIN
@@ -279,7 +279,7 @@ const NavBar = () => {
                 (user.role === "INSTRUCTOR" || user.role === "ASSISTANT") && (
                   <Link
                     href="/instructorDashboard"
-                    className="text-center py-3 bg-green-600 text-white rounded-lg bold-16 hover:bg-green-700 transition-all duration-300 cursor-pointer"
+                    className="text-center py-3 bg-emerald-600 text-white rounded-lg bold-16 hover:bg-emerald-700 transition-all duration-300 cursor-pointer"
                     onClick={closeMenus}
                   >
                     Instructor
@@ -332,7 +332,7 @@ const NavBar = () => {
                 <div className="flex flex-col space-y-3">
                   <Link
                     href="/login"
-                    className="text-center py-3 border border-red-500 text-accent rounded-lg regular-16 hover:bg-accent hover:text-white transition-all duration-300 cursor-pointer"
+                    className="text-center py-3 border border-brand-600 text-accent rounded-lg regular-16 hover:bg-accent hover:text-white transition-all duration-300 cursor-pointer"
                     onClick={closeMenus}
                   >
                     تسجيل الدخول

@@ -215,7 +215,7 @@ export default function WalletManagement() {
                   <td>{o.purpose === "WALLET_TOPUP" ? "شحن محفظة" : "شراء درس"}</td>
                   <td>{o.lessonName || "—"}</td>
                   <td>{o.amount} {o.currency}</td>
-                  <td className={o.status === "PAID" ? "text-green-600" : o.status === "PENDING" ? "" : "text-red-600"}>
+                  <td className={o.status === "PAID" ? "text-emerald-600" : o.status === "PENDING" ? "" : "text-red-600"}>
                     {o.status}
                   </td>
                 </tr>

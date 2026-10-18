@@ -9,7 +9,7 @@ const LoadingSpinner = ({ size = "medium", color = "accent", fullScreen = false 
 
   const colorClasses = {
     accent: "border-accent",
-    blue: "border-blue-600",
+    blue: "border-brand-600",
     white: "border-white",
     gray: "border-gray-600",
   };

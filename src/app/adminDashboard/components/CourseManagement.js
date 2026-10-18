@@ -364,14 +364,14 @@ const CourseManagement = () => {
                       setSelectedCourse(course);
                       setShowViewModal(true);
                     }}
-                    className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
+                    className="cursor-pointer flex-1 bg-brand-50 text-brand-600 border border-brand-300 py-2 px-4 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-2"
                   >
                     <FiEye className="w-4 h-4" />
                     عرض
                   </button>
                   <button
                     onClick={() => openEditModal(course)}
-                    className="cursor-pointer flex-1 bg-green-50 text-green-600 border border-green-300 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2"
+                    className="cursor-pointer flex-1 bg-emerald-50 text-emerald-600 border border-emerald-300 py-2 px-4 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-2"
                   >
                     <FiEdit className="w-4 h-4" />
                     تعديل

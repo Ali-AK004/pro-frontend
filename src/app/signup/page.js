@@ -235,17 +235,17 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50 py-8 px-4 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative w-full max-w-4xl mx-auto">
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
           {/* Header with gradient */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12 text-center">
+          <div className="bg-gradient-to-r from-brand-600 to-brand-600 px-8 py-12 text-center">
             <div className="inline-block mb-4 bg-white/20 rounded-md px-5 py-2 backdrop-blur-sm">
               <Link href="/" className="flexCenter gap-2">
                 <Image
@@ -263,7 +263,7 @@ const SignUp = () => {
             <h2 className="text-3xl font-bold text-white mb-2">
               انضم إلى عائلة أكادميتنا
             </h2>
-            <p className="text-blue-100">
+            <p className="text-brand-100">
               ابدأ رحلتك التعليمية معنا واحصل على أفضل النتائج
             </p>
           </div>
@@ -290,7 +290,7 @@ const SignUp = () => {
                     className={`w-full px-4 py-4 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 text-right ${
                       errors.fullname
                         ? "border-red-300 focus:ring-red-500 bg-red-50"
-                        : "border-gray-200 focus:ring-blue-500"
+                        : "border-gray-200 focus:ring-brand-500"
                     }`}
                     placeholder="أدخل اسمك الكامل"
                     value={formData.fullname}
@@ -325,7 +325,7 @@ const SignUp = () => {
                     />
                     {isCheckingUsername && (
                       <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-600"></div>
                       </div>
                     )}
                   </div>
@@ -351,7 +351,7 @@ const SignUp = () => {
                     formData.username.length >= 3 &&
                     !errors.username &&
                     !isCheckingUsername && (
-                      <p className="mt-2 regular-14 text-green-600 flex items-center">
+                      <p className="mt-2 regular-14 text-emerald-600 flex items-center">
                         <svg
                           className="h-4 w-4 ml-1"
                           fill="none"
@@ -664,7 +664,7 @@ const SignUp = () => {
                 لديك حساب بالفعل؟{" "}
                 <Link
                   href="/login"
-                  className="font-semibold hover:border-b hover:border-b-blue-700 border-b border-b-transparent text-blue-600 hover:text-blue-700 transition-colors"
+                  className="font-semibold hover:border-b hover:border-b-brand-700 border-b border-b-transparent text-brand-600 hover:text-brand-700 transition-colors"
                 >
                   تسجيل الدخول
                 </Link>

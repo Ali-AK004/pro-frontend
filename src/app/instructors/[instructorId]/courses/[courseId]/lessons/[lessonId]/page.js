@@ -496,7 +496,7 @@ const LessonPage = () => {
               </div>
 
               {hasAccess ? (
-                <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg bold-14 flex items-center gap-2">
+                <div className="bg-emerald-100 text-emerald-800 px-4 py-2 rounded-lg bold-14 flex items-center gap-2">
                   <FaUnlock className="w-4 h-4" />
                   لديك وصول
                 </div>
@@ -562,8 +562,8 @@ const LessonPage = () => {
       <div className="max-container padding-container py-8">
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/30 p-8 relative overflow-hidden">
           {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-2xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-50/30 to-brand-50/30"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-2xl"></div>
 
           <div className="relative">
             {activeTab === "overview" && (
@@ -652,9 +652,9 @@ const TabButton = ({
     <button
       onClick={() => canClick && setActiveTab(id)}
       className={`group relative flex items-center gap-3 px-6 py-4 rounded-t-2xl transition-all duration-300 font-semibold cursor-pointer ${isActive
-        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
+        ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-lg"
         : canClick
-          ? "bg-white/80 backdrop-blur-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 shadow-sm hover:shadow-md border border-gray-200 hover:border-blue-300"
+          ? "bg-white/80 backdrop-blur-sm text-gray-700 hover:text-brand-600 hover:bg-brand-50 shadow-sm hover:shadow-md border border-gray-200 hover:border-brand-300"
           : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-300"
         }`}
       disabled={!canClick}
@@ -663,7 +663,7 @@ const TabButton = ({
         className={`p-2 rounded-lg transition-all duration-300 ${isActive
           ? "bg-white/20"
           : canClick
-            ? "bg-gray-100 group-hover:bg-blue-100"
+            ? "bg-gray-100 group-hover:bg-brand-100"
             : "bg-gray-200"
           }`}
       >
@@ -671,7 +671,7 @@ const TabButton = ({
           className={`w-5 h-5 transition-all duration-300 ${isActive
             ? "text-white"
             : canClick
-              ? "text-gray-600 group-hover:text-blue-600"
+              ? "text-gray-600 group-hover:text-brand-600"
               : "text-gray-400"
             }`}
         />
@@ -752,11 +752,11 @@ const OverviewTab = ({
         )}
 
         {/* Enhanced Lesson Description */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-lg border border-blue-200/50 p-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl"></div>
+        <div className="bg-gradient-to-r from-brand-50 to-brand-50 rounded-2xl shadow-lg border border-brand-200/50 p-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-xl"></div>
           <div className="relative">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl">
+              <div className="p-3 bg-gradient-to-r from-brand-500 to-brand-600 rounded-xl">
                 <FaBook className="w-6 h-6 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900">وصف الدرس</h2>
@@ -806,8 +806,8 @@ const OverviewTab = ({
           <h3 className="bold-18 text-gray-900 mb-4">مكونات الدرس</h3>
           <div className="space-y-3">
             {exam && (
-              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                <FaQuestionCircle className="w-5 h-5 text-blue-500" />
+              <div className="flex items-center gap-3 p-3 bg-brand-50 rounded-lg">
+                <FaQuestionCircle className="w-5 h-5 text-brand-500" />
                 <div className="flex-1">
                   <span className="regular-14 text-gray-700 block">
                     {exam.title}
@@ -819,14 +819,14 @@ const OverviewTab = ({
               </div>
             )}
 
-            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-              <FaPlay className="w-5 h-5 text-green-500" />
+            <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg">
+              <FaPlay className="w-5 h-5 text-emerald-500" />
               <span className="regular-14 text-gray-700">فيديو تعليمي</span>
             </div>
 
             {assignment && (
-              <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-                <FaFileAlt className="w-5 h-5 text-purple-500" />
+              <div className="flex items-center gap-3 p-3 bg-brand-50 rounded-lg">
+                <FaFileAlt className="w-5 h-5 text-brand-500" />
                 <div className="flex-1">
                   <span className="regular-14 text-gray-700 block">
                     {assignment.title}
@@ -856,12 +856,12 @@ const OverviewTab = ({
 
           {/* Progress Status */}
           {hasAccess && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div className="bg-brand-50 border border-brand-200 rounded-lg p-6">
               <div className="flex items-center flex-col gap-3 mb-3">
-                <FaGraduationCap className="w-5 h-5 text-blue-500" />
-                <h3 className="bold-18 text-blue-800">حالة التقدم</h3>
+                <FaGraduationCap className="w-5 h-5 text-brand-500" />
+                <h3 className="bold-18 text-brand-800">حالة التقدم</h3>
               </div>
-              <p className="regular-14 text-blue-700">
+              <p className="regular-14 text-brand-700">
                 {getProgressStatusText(progressStatus)}
               </p>
             </div>
@@ -891,10 +891,10 @@ const ExamTab = ({
   console.log(examResult)
   if (!canAccess) {
     return (
-      <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-3xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-400/20 to-orange-400/20 rounded-full blur-2xl"></div>
+      <div className="bg-gradient-to-r from-brand-50 to-amber-50 rounded-3xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/20 to-amber-400/20 rounded-full blur-2xl"></div>
         <div className="relative text-center">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-red-500 to-orange-600 rounded-full mb-6 shadow-lg">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-brand-500 to-amber-600 rounded-full mb-6 shadow-lg">
             <FaLock className="w-12 h-12 text-white" />
           </div>
           <h3 className="text-3xl font-bold text-gray-900 mb-4">
@@ -906,7 +906,7 @@ const ExamTab = ({
           </p>
           <div className="mt-8">
             <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-2xl border border-red-200">
-              <FaExclamationTriangle className="w-5 h-5 text-orange-500" />
+              <FaExclamationTriangle className="w-5 h-5 text-amber-500" />
               <span className="font-semibold text-gray-700">
                 مطلوب شراء الدرس
               </span>
@@ -935,7 +935,7 @@ const ExamTab = ({
         <div className="text-center mb-8">
           <div
             className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-6 ${examResult.passed
-              ? "bg-green-100 text-green-600"
+              ? "bg-emerald-100 text-emerald-600"
               : "bg-red-100 text-red-600"
               }`}
           >
@@ -1001,7 +1001,7 @@ const ExamTab = ({
               <div>
                 <p className="text-sm text-gray-500">درجتك</p>
                 <p
-                  className={`text-2xl font-bold ${examResult.passed ? "text-green-600" : "text-red-600"
+                  className={`text-2xl font-bold ${examResult.passed ? "text-emerald-600" : "text-red-600"
                     }`}
                 >
                   {studentTotalPoints} / {totalPossiblePoints}
@@ -1026,7 +1026,7 @@ const ExamTab = ({
                 <div
                   key={questionId}
                   className={`p-4 border rounded-lg ${result.correct
-                    ? "bg-green-50 border-green-200"
+                    ? "bg-emerald-50 border-emerald-200"
                     : "bg-red-50 border-red-200"
                     }`}
                 >
@@ -1047,7 +1047,7 @@ const ExamTab = ({
                     </div>
                     <span
                       className={`p-3 rounded-full flexCenter text-sm ${result.correct
-                        ? "bg-green-100 text-green-800"
+                        ? "bg-emerald-100 text-emerald-800"
                         : "bg-red-100 text-red-800"
                         }`}
                     >
@@ -1070,7 +1070,7 @@ const ExamTab = ({
           <div className="text-center">
             <button
               onClick={onRetry}
-              className="bg-blue-600 text-white px-6 py-3 cursor-pointer rounded-lg hover:bg-blue-700 transition-colors"
+              className="bg-brand-600 text-white px-6 py-3 cursor-pointer rounded-lg hover:bg-brand-700 transition-colors"
             >
               إعادة المحاولة
             </button>
@@ -1124,11 +1124,11 @@ const ExamTab = ({
   // Show exam start confirmation if exam hasn't started yet
   if (!examStarted) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl shadow-2xl border border-blue-200/50 p-12 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-2xl"></div>
+      <div className="bg-gradient-to-br from-brand-50 to-brand-50 rounded-3xl shadow-2xl border border-brand-200/50 p-12 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-2xl"></div>
 
         <div className="relative text-center">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-8 shadow-lg">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-brand-500 to-brand-600 rounded-2xl mb-8 shadow-lg">
             <FaQuestionCircle className="w-12 h-12 text-white" />
           </div>
 
@@ -1143,33 +1143,33 @@ const ExamTab = ({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">
+                <div className="text-3xl font-bold text-brand-600 mb-2">
                   {exam.questionCount ?? exam.questions?.length ?? 0}
                 </div>
                 <p className="text-gray-600 font-medium">عدد الأسئلة</p>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-2">
+                <div className="text-3xl font-bold text-brand-600 mb-2">
                   %{exam.passingScore}
                 </div>
                 <p className="text-gray-600 font-medium">درجة النجاح</p>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">
+                <div className="text-3xl font-bold text-emerald-600 mb-2">
                   {exam.timeLimitMinutes || "غير محدد"}
                 </div>
                 <p className="text-gray-600 font-medium">دقيقة</p>
               </div>
             </div>
 
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8">
               <div className="flex items-start gap-3">
-                <FaExclamationTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-1" />
+                <FaExclamationTriangle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
                 <div>
-                  <h4 className="font-bold text-yellow-800 mb-2">
+                  <h4 className="font-bold text-amber-800 mb-2">
                     تعليمات مهمة:
                   </h4>
-                  <ul className="text-yellow-700 space-y-2 text-right">
+                  <ul className="text-amber-700 space-y-2 text-right">
                     <li>
                       • لديك {exam.timeLimitMinutes || "غير محدد"} دقيقة لإكمال
                       الامتحان
@@ -1190,7 +1190,7 @@ const ExamTab = ({
 
             <button
               onClick={() => startExamTimer()}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 px-8 rounded-2xl font-bold text-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
+              className="w-full bg-gradient-to-r from-brand-500 to-brand-600 text-white py-4 px-8 rounded-2xl font-bold text-xl hover:from-brand-600 hover:to-brand-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
             >
               <FaPlay className="w-6 h-6 inline-block ml-3" />
               بدء الامتحان
@@ -1202,12 +1202,12 @@ const ExamTab = ({
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-3xl shadow-2xl border border-blue-200/50 p-8 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-2xl"></div>
+    <div className="bg-gradient-to-br from-brand-50 to-brand-50 rounded-3xl shadow-2xl border border-brand-200/50 p-8 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-2xl"></div>
 
       {/* Enhanced Exam Header with Timer */}
-      <div className="relative text-center mb-8 pb-6 border-b border-blue-200/50">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-6 shadow-lg">
+      <div className="relative text-center mb-8 pb-6 border-b border-brand-200/50">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-brand-500 to-brand-600 rounded-2xl mb-6 shadow-lg">
           <FaQuestionCircle className="w-10 h-10 text-white" />
         </div>
         <h2 className="text-4xl font-bold text-gray-900 mb-4">{exam.title}</h2>
@@ -1226,10 +1226,10 @@ const ExamTab = ({
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-4">
-          <div className="bg-white/80 backdrop-blur-sm text-blue-700 px-6 py-3 rounded-2xl border border-blue-200 shadow-sm">
+          <div className="bg-white/80 backdrop-blur-sm text-brand-700 px-6 py-3 rounded-2xl border border-brand-200 shadow-sm">
             <span className="font-bold">درجة النجاح: {exam.passingScore}%</span>
           </div>
-          <div className="bg-white/80 backdrop-blur-sm text-purple-700 px-6 py-3 rounded-2xl border border-purple-200 shadow-sm">
+          <div className="bg-white/80 backdrop-blur-sm text-brand-700 px-6 py-3 rounded-2xl border border-brand-200 shadow-sm">
             <span className="font-bold">
               عدد الأسئلة: {exam.questionCount ?? exam.questions?.length ?? 0}
             </span>
@@ -1244,11 +1244,11 @@ const ExamTab = ({
             className="group bg-white/90 backdrop-blur-sm border border-white/50 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
           >
             {/* Question background decoration */}
-            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-600"></div>
+            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-brand-500 to-brand-600"></div>
 
             <div className="flex items-start gap-6 mb-6">
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-r from-brand-500 to-brand-600 rounded-2xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-lg">
                     {index + 1}
                   </span>
@@ -1259,11 +1259,11 @@ const ExamTab = ({
                   {question.questionText}
                 </h3>
                 <div className="flex flex-wrap gap-3">
-                  <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-xl text-sm font-semibold">
+                  <div className="inline-flex items-center gap-2 bg-brand-100 text-brand-700 px-4 py-2 rounded-xl text-sm font-semibold">
                     <FaStar className="w-4 h-4" />
                     النقاط: {question.points}
                   </div>
-                  <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-xl text-sm font-semibold">
+                  <div className="inline-flex items-center gap-2 bg-brand-100 text-brand-700 px-4 py-2 rounded-xl text-sm font-semibold">
                     <FaQuestionCircle className="w-4 h-4" />
                     {question.questionType === "SINGLE_CHOICE"
                       ? "اختيار واحد"
@@ -1280,14 +1280,14 @@ const ExamTab = ({
                 <label
                   key={answer.id}
                   className={`group/answer flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md ${isAnswerSelected(question.id, answer.id)
-                    ? "border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 shadow-lg"
-                    : "border-gray-200 hover:border-blue-300 bg-white/50 hover:bg-blue-50/50"
+                    ? "border-brand-500 bg-gradient-to-r from-brand-50 to-brand-50 shadow-lg"
+                    : "border-gray-200 hover:border-brand-300 bg-white/50 hover:bg-brand-50/50"
                     }`}
                 >
                   <div
                     className={`relative flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300 ${isAnswerSelected(question.id, answer.id)
-                      ? "border-blue-500 bg-blue-500"
-                      : "border-gray-300 group-hover/answer:border-blue-400"
+                      ? "border-brand-500 bg-brand-500"
+                      : "border-gray-300 group-hover/answer:border-brand-400"
                       }`}
                   >
                     <input
@@ -1315,16 +1315,16 @@ const ExamTab = ({
                   <div className="flex items-center gap-3 flex-1">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${isAnswerSelected(question.id, answer.id)
-                        ? "bg-white/20 text-blue-700"
-                        : "bg-gray-100 text-gray-600 group-hover/answer:bg-blue-100 group-hover/answer:text-blue-600"
+                        ? "bg-white/20 text-brand-700"
+                        : "bg-gray-100 text-gray-600 group-hover/answer:bg-brand-100 group-hover/answer:text-brand-600"
                         }`}
                     >
                       {String.fromCharCode(65 + answerIndex)}
                     </div>
                     <span
                       className={`text-lg font-medium transition-colors duration-300 ${isAnswerSelected(question.id, answer.id)
-                        ? "text-blue-900"
-                        : "text-gray-700 group-hover/answer:text-blue-700"
+                        ? "text-brand-900"
+                        : "text-gray-700 group-hover/answer:text-brand-700"
                         }`}
                     >
                       {answer.answerText}
@@ -1338,16 +1338,16 @@ const ExamTab = ({
       </div>
 
       {/* Enhanced Submit Section */}
-      <div className="relative mt-12 pt-8 border-t border-blue-200/50">
+      <div className="relative mt-12 pt-8 border-t border-brand-200/50">
         <div className="text-center">
           {/* Progress indicator */}
           <div className="mb-6">
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-2xl border border-blue-200 shadow-sm">
+            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-2xl border border-brand-200 shadow-sm">
               <FaCheckCircle
-                className={`w-5 h-5 ${allQuestionsAnswered ? "text-green-500" : "text-gray-400"}`}
+                className={`w-5 h-5 ${allQuestionsAnswered ? "text-emerald-500" : "text-gray-400"}`}
               />
               <span
-                className={`font-semibold ${allQuestionsAnswered ? "text-green-700" : "text-gray-600"}`}
+                className={`font-semibold ${allQuestionsAnswered ? "text-emerald-700" : "text-gray-600"}`}
               >
                 تم الإجابة على {Object.keys(examAnswers).length} من{" "}
                 {exam.questionCount ?? exam.questions?.length ?? 0} أسئلة
@@ -1359,7 +1359,7 @@ const ExamTab = ({
             onClick={handleManualSubmit}
             disabled={!allQuestionsAnswered || isSubmitting}
             className={`group relative inline-flex items-center gap-3 px-12 py-4 rounded-2xl font-bold text-lg transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${allQuestionsAnswered && !isSubmitting
-              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700"
+              ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white hover:from-brand-600 hover:to-brand-700"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
           >
@@ -1438,20 +1438,20 @@ const VideoTab = ({
           />
         )}
       </div>
-      <div className="bg-blue-50 border mt-5 border-blue-200 rounded-lg p-4">
+      <div className="bg-brand-50 border mt-5 border-brand-200 rounded-lg p-4">
         <div className="flex items-center flex-col md:flex-row gap-6 justify-between">
           <div className="flex items-center gap-3">
-            <FaEye className="w-5 h-5 text-blue-500" />
+            <FaEye className="w-5 h-5 text-brand-500" />
             <div>
-              <h4 className="bold-14 text-blue-800">تتبع المشاهدة</h4>
-              <p className="regular-12 text-blue-600">اضغط على الزر بعد مشاهدة الفيديو لفتح الواجب</p>
+              <h4 className="bold-14 text-brand-800">تتبع المشاهدة</h4>
+              <p className="regular-12 text-brand-600">اضغط على الزر بعد مشاهدة الفيديو لفتح الواجب</p>
             </div>
           </div>
           <button
             onClick={handleMarkAsWatched}
             disabled={watched || isMarking}
             className={`px-4 py-2 rounded-lg cursor-pointer font-medium transition-colors ${
-              watched ? "bg-green-100 text-green-700 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"
+              watched ? "bg-emerald-100 text-emerald-700 cursor-not-allowed" : "bg-brand-600 text-white hover:bg-brand-700"
             }`}
           >
             {isMarking ? "جاري التسجيل..." : watched ? "✓ تم المشاهدة" : "تم المشاهدة"}
@@ -1537,7 +1537,7 @@ const AssignmentTab = ({
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
         <h2 className="bold-24 text-gray-900">{assignment.title}</h2>
         <div className="flex items-center gap-3">
-          <div className="bg-purple-50 text-purple-600 px-4 py-2 rounded-lg">
+          <div className="bg-brand-50 text-brand-600 px-4 py-2 rounded-lg">
             <span className="bold-14">النقاط: {assignment.maxPoints}</span>
           </div>
           {isOverdue && (
@@ -1560,12 +1560,12 @@ const AssignmentTab = ({
 
       {/* Assignment Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-blue-50 rounded-lg p-4">
+        <div className="bg-brand-50 rounded-lg p-4">
           <div className="flex items-center gap-3">
-            <FaCalendarAlt className="w-5 h-5 text-blue-500" />
+            <FaCalendarAlt className="w-5 h-5 text-brand-500" />
             <div>
-              <h4 className="bold-14 text-blue-800">تاريخ التسليم</h4>
-              <p className="regular-12 text-blue-600">
+              <h4 className="bold-14 text-brand-800">تاريخ التسليم</h4>
+              <p className="regular-12 text-brand-600">
                 {formatDate(assignment.dueDate)}
               </p>
             </div>
@@ -1574,12 +1574,12 @@ const AssignmentTab = ({
 
         {assignmentData?.grade !== null &&
           assignmentData?.grade !== undefined && (
-            <div className="bg-green-50 rounded-lg p-4">
+            <div className="bg-emerald-50 rounded-lg p-4">
               <div className="flex items-center gap-3">
-                <FaGraduationCap className="w-5 h-5 text-green-500" />
+                <FaGraduationCap className="w-5 h-5 text-emerald-500" />
                 <div>
-                  <h4 className="bold-14 text-green-800">الدرجة</h4>
-                  <p className="regular-12 text-green-600">
+                  <h4 className="bold-14 text-emerald-800">الدرجة</h4>
+                  <p className="regular-12 text-emerald-600">
                     {assignmentData.grade} من {assignment.maxPoints}
                   </p>
                 </div>
@@ -1590,12 +1590,12 @@ const AssignmentTab = ({
 
       {/* Submission Status */}
       {isSubmitted ? (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-6 mb-6">
           <div className="flex items-center gap-3 mb-3">
-            <FaCheckCircle className="w-5 h-5 text-green-500" />
-            <h3 className="bold-18 text-green-800">تم التسليم</h3>
+            <FaCheckCircle className="w-5 h-5 text-emerald-500" />
+            <h3 className="bold-18 text-emerald-800">تم التسليم</h3>
           </div>
-          <p className="regular-14 text-green-700 mb-3">
+          <p className="regular-14 text-emerald-700 mb-3">
             تم تسليم الواجب في: {formatDate(assignmentData.submissionDate)}
           </p>
           <div className="bg-white rounded-lg p-4">
@@ -1605,9 +1605,9 @@ const AssignmentTab = ({
             </p>
           </div>
           {assignmentData.feedback && (
-            <div className="bg-blue-50 rounded-lg p-4 mt-4">
-              <h4 className="bold-14 text-blue-900 mb-2">تعليق المدرس:</h4>
-              <p className="regular-14 text-blue-700 whitespace-pre-wrap">
+            <div className="bg-brand-50 rounded-lg p-4 mt-4">
+              <h4 className="bold-14 text-brand-900 mb-2">تعليق المدرس:</h4>
+              <p className="regular-14 text-brand-700 whitespace-pre-wrap">
                 {assignmentData.feedback}
               </p>
             </div>
@@ -1653,10 +1653,10 @@ const AssignmentTab = ({
 // Access Denied Component
 const AccessDenied = ({ message }) => {
   return (
-    <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-3xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-400/20 to-orange-400/20 rounded-full blur-2xl"></div>
+    <div className="bg-gradient-to-r from-brand-50 to-amber-50 rounded-3xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/20 to-amber-400/20 rounded-full blur-2xl"></div>
       <div className="relative text-center">
-        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-red-500 to-orange-600 rounded-full mb-6 shadow-lg">
+        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-brand-500 to-amber-600 rounded-full mb-6 shadow-lg">
           <FaLock className="w-12 h-12 text-white" />
         </div>
         <h3 className="text-3xl font-bold text-gray-900 mb-4">الدخول مقيد</h3>

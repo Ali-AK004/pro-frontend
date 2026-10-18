@@ -52,7 +52,7 @@ const formatDate = (dateInput) => {
   });
 };
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+const COLORS = ["#088395", "#2fa8bd", "#6ac5d5", "#a3dde7"];
 
 const DashboardOverview = ({ setActiveTab }) => {
   const [stats, setStats] = useState({
@@ -144,18 +144,18 @@ const DashboardOverview = ({ setActiveTab }) => {
 
   // Color mapping helper to ensure Tailwind classes are correctly picked up
   const colorMap = {
-    blue: { bg: "bg-blue-50", text: "text-blue-600", lightBg: "bg-blue-100" },
-    green: { bg: "bg-green-50", text: "text-green-600", lightBg: "bg-green-100" },
-    orange: { bg: "bg-orange-50", text: "text-orange-600", lightBg: "bg-orange-100" },
-    purple: { bg: "bg-purple-50", text: "text-purple-600", lightBg: "bg-purple-100" },
-    indigo: { bg: "bg-indigo-50", text: "text-indigo-600", lightBg: "bg-indigo-100" },
-    pink: { bg: "bg-pink-50", text: "text-pink-600", lightBg: "bg-pink-100" },
-    teal: { bg: "bg-teal-50", text: "text-teal-600", lightBg: "bg-teal-100" },
-    cyan: { bg: "bg-cyan-50", text: "text-cyan-600", lightBg: "bg-cyan-100" },
+    blue: { bg: "bg-brand-50", text: "text-brand-600", lightBg: "bg-brand-100" },
+    green: { bg: "bg-emerald-50", text: "text-emerald-600", lightBg: "bg-emerald-100" },
+    orange: { bg: "bg-amber-50", text: "text-amber-600", lightBg: "bg-amber-100" },
+    purple: { bg: "bg-brand-50", text: "text-brand-600", lightBg: "bg-brand-100" },
+    indigo: { bg: "bg-brand-50", text: "text-brand-600", lightBg: "bg-brand-100" },
+    pink: { bg: "bg-brand-50", text: "text-brand-600", lightBg: "bg-brand-100" },
+    teal: { bg: "bg-brand-50", text: "text-brand-600", lightBg: "bg-brand-100" },
+    cyan: { bg: "bg-brand-50", text: "text-brand-600", lightBg: "bg-brand-100" },
   };
 
   const StatCard = ({ title, value, icon: Icon, color, subtitle }) => {
-    const theme = colorMap[color] || colorMap.blue;
+    const theme = colorMap.brand || Object.values(colorMap)[0];
     return (
       <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all border border-gray-100">
         <div className="flex items-center justify-between">
@@ -209,7 +209,7 @@ const DashboardOverview = ({ setActiveTab }) => {
         {/* Payment Chart */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <FiDollarSign className="text-green-600" />
+            <FiDollarSign className="text-emerald-600" />
             إحصائيات المدفوعات (المبالغ)
           </h2>
           <ResponsiveContainer width="100%" height={300}>
@@ -221,7 +221,7 @@ const DashboardOverview = ({ setActiveTab }) => {
                 labelLine={false}
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 outerRadius={80}
-                fill="#8884d8"
+                fill="#088395"
                 dataKey="value"
               >
                 {paymentData.map((entry, index) => (
@@ -236,7 +236,7 @@ const DashboardOverview = ({ setActiveTab }) => {
         {/* Access Codes Chart */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <FiCode className="text-blue-600" />
+            <FiCode className="text-brand-600" />
             حالة أكواد الوصول
           </h2>
           <ResponsiveContainer width="100%" height={300}>
@@ -246,7 +246,7 @@ const DashboardOverview = ({ setActiveTab }) => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="value" fill="#8884d8" />
+              <Bar dataKey="value" fill="#088395" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -285,7 +285,7 @@ const DashboardOverview = ({ setActiveTab }) => {
         {/* Expiring Soon */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <FiClock className="text-orange-500" />
+            <FiClock className="text-amber-500" />
             الصلاحيات المنتهية قريباً (خلال 7 أيام)
           </h2>
           <div className="space-y-4 max-h-96 overflow-y-auto pl-2">
@@ -294,8 +294,8 @@ const DashboardOverview = ({ setActiveTab }) => {
             ) : (
               stats.expiringSoon.map((item, idx) => (
                 <div key={idx} className="flex items-start gap-3 border-b border-gray-100 pb-3">
-                  <div className="p-2 rounded-full bg-orange-100">
-                    <FiClock className="w-4 h-4 text-orange-600" />
+                  <div className="p-2 rounded-full bg-amber-100">
+                    <FiClock className="w-4 h-4 text-amber-600" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{item.lessonName || 'درس غير معروف'}</p>
@@ -315,21 +315,21 @@ const DashboardOverview = ({ setActiveTab }) => {
       <div className="bg-white rounded-2xl shadow-lg p-6">
         <h2 className="text-xl font-bold mb-4">إجراءات سريعة</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button onClick={() => setActiveTab('users')} className="p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors text-center group">
-            <FiUsers className="w-6 h-6 mx-auto mb-2 text-blue-600 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-medium text-blue-900">إدارة المستخدمين</span>
+          <button onClick={() => setActiveTab('users')} className="p-4 bg-brand-50 rounded-xl hover:bg-brand-100 transition-colors text-center group">
+            <FiUsers className="w-6 h-6 mx-auto mb-2 text-brand-600 group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-medium text-brand-900">إدارة المستخدمين</span>
           </button>
-          <button onClick={() => setActiveTab('courses')} className="p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors text-center group">
-            <FiBook className="w-6 h-6 mx-auto mb-2 text-green-600 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-medium text-green-900">إدارة الكورسات</span>
+          <button onClick={() => setActiveTab('courses')} className="p-4 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors text-center group">
+            <FiBook className="w-6 h-6 mx-auto mb-2 text-emerald-600 group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-medium text-emerald-900">إدارة الكورسات</span>
           </button>
-          <button onClick={() => setActiveTab('exams')} className="p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors text-center group">
-            <FiFileText className="w-6 h-6 mx-auto mb-2 text-purple-600 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-medium text-purple-900">إدارة الامتحانات</span>
+          <button onClick={() => setActiveTab('exams')} className="p-4 bg-brand-50 rounded-xl hover:bg-brand-100 transition-colors text-center group">
+            <FiFileText className="w-6 h-6 mx-auto mb-2 text-brand-600 group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-medium text-brand-900">إدارة الامتحانات</span>
           </button>
-          <button onClick={() => setActiveTab('access-codes')} className="p-4 bg-orange-50 rounded-xl hover:bg-orange-100 transition-colors text-center group">
-            <FiCode className="w-6 h-6 mx-auto mb-2 text-orange-600 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-medium text-orange-900">إنشاء أكواد</span>
+          <button onClick={() => setActiveTab('access-codes')} className="p-4 bg-amber-50 rounded-xl hover:bg-amber-100 transition-colors text-center group">
+            <FiCode className="w-6 h-6 mx-auto mb-2 text-amber-600 group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-medium text-amber-900">إنشاء أكواد</span>
           </button>
         </div>
       </div>

@@ -145,7 +145,7 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
     <label
       className={`flex items-center gap-3 p-4 border rounded-lg transition-colors ${
         disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-gray-50"
-      } ${paymentMethod === value ? "border-[#088395]" : "border-gray-200"}`}
+      } ${paymentMethod === value ? "border-brand-600" : "border-gray-200"}`}
     >
       <input
         type="radio"
@@ -195,7 +195,7 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
             {quote ? (
               <>
                 <span className="regular-14 text-gray-400 line-through">{price} جنيه</span>
-                <span className="bold-16 text-green-600">السعر بعد الخصم: {toPay} جنيه</span>
+                <span className="bold-16 text-emerald-600">السعر بعد الخصم: {toPay} جنيه</span>
               </>
             ) : (
               <span className="bold-16 text-accent">السعر: {price} جنيه</span>
@@ -211,20 +211,20 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
         {paymentResult && (
           <div
             className={`mb-6 p-4 rounded-lg border ${
-              paymentResult.success ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+              paymentResult.success ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"
             }`}
           >
             <div className="flex items-center gap-3">
               {paymentResult.success ? (
-                <FaCheckCircle className="w-6 h-6 text-green-500" />
+                <FaCheckCircle className="w-6 h-6 text-emerald-500" />
               ) : (
                 <FaExclamationTriangle className="w-6 h-6 text-red-500" />
               )}
               <div>
-                <p className={`bold-14 ${paymentResult.success ? "text-green-700" : "text-red-700"}`}>
+                <p className={`bold-14 ${paymentResult.success ? "text-emerald-700" : "text-red-700"}`}>
                   {paymentResult.success ? "تم بنجاح!" : "فشل الدفع"}
                 </p>
-                <p className={`regular-12 ${paymentResult.success ? "text-green-600" : "text-red-600"}`}>
+                <p className={`regular-12 ${paymentResult.success ? "text-emerald-600" : "text-red-600"}`}>
                   {paymentResult.message}
                 </p>
               </div>
@@ -259,7 +259,7 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
                 />
               </div>
               {walletBalance !== null && !walletEnough ? (
-                <Link href="/wallet" className="inline-block mt-3 regular-14 text-[#088395] underline">
+                <Link href="/wallet" className="inline-block mt-3 regular-14 text-brand-600 underline">
                   اشحن المحفظة
                 </Link>
               ) : null}
@@ -272,8 +272,8 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
                   كود خصم (اختياري)
                 </label>
                 {quote ? (
-                  <div className="flex items-center justify-between gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <span className="regular-14 text-green-700" dir="ltr">
+                  <div className="flex items-center justify-between gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <span className="regular-14 text-emerald-700" dir="ltr">
                       {quote.couponCode} — خصم {quote.discount} جنيه
                     </span>
                     <button onClick={removeCoupon} className="regular-12 text-red-600 underline cursor-pointer">
@@ -294,7 +294,7 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
                       autoComplete="off"
                       dir="ltr"
                       maxLength={32}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-[#088395] uppercase"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-brand-600 uppercase"
                     />
                     <button
                       onClick={applyCoupon}
@@ -319,13 +319,13 @@ const PaymentModal = ({ lesson, bundle, isOpen, onClose, onSuccess }) => {
                   placeholder="أدخل كود الوصول"
                   autoComplete="off"
                   dir="ltr"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border focus:border-[#088395] tracking-widest uppercase"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border focus:border-brand-600 tracking-widest uppercase"
                 />
               </div>
             )}
 
             {paymentMethod === "PAYMOB" && toPay > 0 && (
-              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg regular-12 text-blue-700">
+              <div className="mb-6 p-4 bg-brand-50 border border-brand-200 rounded-lg regular-12 text-brand-700">
                 سيتم توجيهك لصفحة الدفع الآمنة. يتم فتح {isBundle ? "دروس الباقة" : "الدرس"} تلقائيًا بعد تأكيد الدفع.
               </div>
             )}

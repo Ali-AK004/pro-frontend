@@ -149,7 +149,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
         }`}
       >
         {/* Header */}
-        <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-green-500 to-emerald-600 relative overflow-hidden">
+        <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-brand-500 to-brand-600 relative overflow-hidden">
           {/* Background decoration */}
           <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
           <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
@@ -162,7 +162,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
             </div>
             <div className="text-white">
               <h1 className="text-xl font-bold">لوحة المدرس</h1>
-              <p className="text-green-100 text-sm">مرحباً {user?.fullname}</p>
+              <p className="text-brand-100 text-sm">مرحباً {user?.fullname}</p>
             </div>
           </div>
         </div>
@@ -183,8 +183,8 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
                     }}
                     className={`cursor-pointer w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 group relative overflow-hidden ${
                       isActive
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-xl transform scale-[1.02]"
-                        : "hover:bg-white/80 hover:shadow-lg text-gray-700 hover:text-green-600"
+                        ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-xl transform scale-[1.02]"
+                        : "hover:bg-white/80 hover:shadow-lg text-gray-700 hover:text-brand-600"
                     }`}
                   >
                     {/* Background decoration for active state */}
@@ -196,14 +196,14 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
                       className={`relative p-3 rounded-xl transition-all duration-300 ${
                         isActive
                           ? "bg-white/20 backdrop-blur-sm"
-                          : "bg-gray-100 group-hover:bg-green-50 group-hover:scale-110"
+                          : "bg-gray-100 group-hover:bg-brand-50 group-hover:scale-110"
                       }`}
                     >
                       <Icon
                         className={`w-5 h-5 transition-colors ${
                           isActive
                             ? "text-white"
-                            : "text-gray-600 group-hover:text-green-600"
+                            : "text-gray-600 group-hover:text-brand-600"
                         }`}
                       />
                     </div>
@@ -213,7 +213,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
                         className={`text-base font-semibold transition-colors ${
                           isActive
                             ? "text-white"
-                            : "text-gray-900 group-hover:text-green-600"
+                            : "text-gray-900 group-hover:text-brand-600"
                         }`}
                       >
                         {item.label}
@@ -222,7 +222,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
                         className={`text-sm transition-colors ${
                           isActive
                             ? "text-white/80"
-                            : "text-gray-500 group-hover:text-green-500"
+                            : "text-gray-500 group-hover:text-brand-500"
                         }`}
                       >
                         {item.description}
@@ -231,7 +231,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
 
                     {/* Hover effect */}
                     {!isActive && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-emerald-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-brand-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
                     )}
                   </button>
                 </li>
@@ -243,7 +243,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
         {/* User Profile & Logout */}
         <div className="p-4 border-t border-gray-200/50 bg-gradient-to-r from-gray-50 to-gray-100">
           <div className="flex items-center gap-3 p-4 bg-white/80 backdrop-blur-sm rounded-2xl mb-4 shadow-sm border border-white/20">
-            <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full flex items-center justify-center shadow-lg">
               <FiUser className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1 text-right min-w-0">
@@ -251,7 +251,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
                 {user?.fullname || user?.username}
               </div>
               <div className="text-xs text-gray-500 flex items-center gap-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                 {user?.role === "ASSISTANT" ? "مساعد": "معلم"}
               </div>
               <div className="text-xs text-gray-400 mt-1 truncate">
@@ -262,7 +262,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
 
           <button
             onClick={handleLogout}
-            className="cursor-pointer w-full flex items-center justify-center gap-3 p-4 text-red-600 hover:text-white hover:bg-gradient-to-r hover:from-red-500 hover:to-red-600 rounded-2xl transition-all duration-300 group border-2 border-red-200 hover:border-red-500 shadow-sm hover:shadow-lg"
+            className="cursor-pointer w-full flex items-center justify-center gap-3 p-4 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all duration-300 group border border-slate-200 hover:border-red-200 shadow-sm hover:shadow-lg"
           >
             <FiLogOut className="w-5 h-5 group-hover:transform group-hover:translate-x-1 transition-transform" />
             <span className="font-semibold">تسجيل الخروج</span>

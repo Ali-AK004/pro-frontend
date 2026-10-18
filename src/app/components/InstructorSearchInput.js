@@ -63,7 +63,7 @@ const InstructorSearchInput = ({ onSearch, loading = false, error = null }) => {
             value={searchTerm}
             onChange={handleChange}
             maxLength={20}
-            className={`w-full pr-12 pl-4 py-4 border-2 rounded-lg focus:border-blue-500 focus:outline-none transition-colors text-right ${
+            className={`w-full pr-12 pl-4 py-4 border-2 rounded-lg focus:border-brand-500 focus:outline-none transition-colors text-right ${
               inputError || error ? 'border-red-500' : 'border-gray-300'
             }`}
             autoComplete="off"
@@ -81,7 +81,7 @@ const InstructorSearchInput = ({ onSearch, loading = false, error = null }) => {
         <button
           type="submit"
           disabled={loading || !searchTerm.trim()}
-          className={`mt-4 w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-bold hover:opacity-90 disabled:opacity-50 transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg ${
+          className={`mt-4 w-full bg-gradient-to-r from-brand-600 to-brand-600 text-white py-4 rounded-lg font-bold hover:opacity-90 disabled:opacity-50 transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg ${
             loading ? 'cursor-wait' : 'cursor-pointer'
           }`}
           aria-label="تنفيذ البحث عن المدرس"

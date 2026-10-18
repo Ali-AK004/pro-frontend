@@ -471,7 +471,7 @@ const handleUpdateLesson = async (e) => {
               className="bg-white rounded-lg flex flex-col sm:flex-row shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 min-h-[200px]"
             >
               {/* Lesson Image/Video Thumbnail */}
-              <div className="w-full h-48 sm:w-58 sm:h-auto bg-gradient-to-br from-purple-500 to-pink-500 relative flex-shrink-0">
+              <div className="w-full h-48 sm:w-58 sm:h-auto bg-gradient-to-br from-brand-500 to-brand-500 relative flex-shrink-0">
                 {lesson.photoUrl ? (
                   <img
                     src={lesson.photoUrl}
@@ -484,7 +484,7 @@ const handleUpdateLesson = async (e) => {
                   </div>
                 )}
                 {lesson.price && (
-                  <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full bold-10">
+                  <div className="absolute top-2 left-2 bg-emerald-500 text-white px-2 py-1 rounded-full bold-10">
                     {lesson.price} جنيه
                   </div>
                 )}
@@ -526,14 +526,14 @@ const handleUpdateLesson = async (e) => {
                       setShowViewModal(true);
                       fetchLessonStatus(lesson.id);
                     }}
-                    className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-2 sm:px-3 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-1 text-sm"
+                    className="cursor-pointer flex-1 bg-brand-50 text-brand-600 border border-brand-300 py-2 px-2 sm:px-3 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-1 text-sm"
                   >
                     <FiEye className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">عرض</span>
                   </button>
                   <button
                     onClick={() => openEditModal(lesson)}
-                    className="cursor-pointer flex-1 bg-green-50 text-green-600 border border-green-300 py-2 px-2 sm:px-3 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-1 text-sm"
+                    className="cursor-pointer flex-1 bg-emerald-50 text-emerald-600 border border-emerald-300 py-2 px-2 sm:px-3 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-1 text-sm"
                   >
                     <FiEdit className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">تعديل</span>
@@ -699,22 +699,22 @@ const handleUpdateLesson = async (e) => {
 
               {/* Upload Progress */}
               {isLoading && selectedVideoFile && uploadProgress > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-blue-700">
+                    <span className="text-sm font-medium text-brand-700">
                       جاري رفع الفيديو...
                     </span>
-                    <span className="text-sm font-medium text-blue-700">
+                    <span className="text-sm font-medium text-brand-700">
                       {uploadProgress}%
                     </span>
                   </div>
-                  <div className="w-full bg-blue-200 rounded-full h-2">
+                  <div className="w-full bg-brand-200 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-brand-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
                     ></div>
                   </div>
-                  <p className="text-xs text-blue-600 mt-2">
+                  <p className="text-xs text-brand-600 mt-2">
                     يرجى عدم إغلاق النافذة أثناء رفع الفيديو
                   </p>
                 </div>
@@ -897,7 +897,7 @@ const handleUpdateLesson = async (e) => {
                       className="w-full h-64 object-cover rounded-lg"
                     />
                   ) : (
-                    <div className="w-full h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flexCenter">
+                    <div className="w-full h-64 bg-gradient-to-br from-brand-500 to-brand-500 rounded-lg flexCenter">
                       <FiPlay className="w-16 h-16 text-white" />
                     </div>
                   )}
@@ -917,10 +917,10 @@ const handleUpdateLesson = async (e) => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        <FiDollarSign className="w-5 h-5 text-green-500" />
+                        <FiDollarSign className="w-5 h-5 text-emerald-500" />
                         <span className="bold-14 text-gray-700">السعر</span>
                       </div>
-                      <span className="bold-18 text-green-600">
+                      <span className="bold-18 text-emerald-600">
                         {selectedLesson.price
                           ? `${selectedLesson.price} ج.م`
                           : "مجاني"}
@@ -929,7 +929,7 @@ const handleUpdateLesson = async (e) => {
 
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        <FiBook className="w-5 h-5 text-blue-500" />
+                        <FiBook className="w-5 h-5 text-brand-500" />
                         <span className="bold-14 text-gray-700">الكورس</span>
                       </div>
                       <span className="regular-14 text-gray-600">
@@ -945,17 +945,17 @@ const handleUpdateLesson = async (e) => {
                         lessonStatus.isLoading
                           ? "bg-gray-50 border-gray-200"
                           : lessonStatus.hasExam
-                            ? "bg-blue-50 border-blue-200"
+                            ? "bg-brand-50 border-brand-200"
                             : "bg-gray-50 border-gray-200"
                       }`}
                     >
                       <div className="flex items-center flex-col md:flex-row gap-2 mb-2">
-                        <FiFileText className="w-5 h-5 text-blue-500" />
+                        <FiFileText className="w-5 h-5 text-brand-500" />
                         <span className="bold-14 text-gray-700">الامتحان</span>
                       </div>
                       {lessonStatus.isLoading ? (
                         <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
                           <span className="regular-14 text-gray-500">
                             جاري التحميل...
                           </span>
@@ -964,7 +964,7 @@ const handleUpdateLesson = async (e) => {
                         <span
                           className={`bold-14 text-center block md:inline-block md:text-right ${
                             lessonStatus.hasExam
-                              ? "text-blue-700"
+                              ? "text-brand-700"
                               : "text-gray-500"
                           }`}
                         >
@@ -978,17 +978,17 @@ const handleUpdateLesson = async (e) => {
                         lessonStatus.isLoading
                           ? "bg-gray-50 border-gray-200"
                           : lessonStatus.hasAssignment
-                            ? "bg-purple-50 border-purple-200"
+                            ? "bg-brand-50 border-brand-200"
                             : "bg-gray-50 border-gray-200"
                       }`}
                     >
                       <div className="flex items-center flex-col md:flex-row gap-2 mb-2">
-                        <FiFileText className="w-5 h-5 text-purple-500" />
+                        <FiFileText className="w-5 h-5 text-brand-500" />
                         <span className="bold-14 text-gray-700">الواجب</span>
                       </div>
                       {lessonStatus.isLoading ? (
                         <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-500"></div>
                           <span className="regular-14 text-gray-500">
                             جاري التحميل...
                           </span>
@@ -997,7 +997,7 @@ const handleUpdateLesson = async (e) => {
                         <span
                           className={`bold-14 text-center block md:inline-block md:text-right ${
                             lessonStatus.hasAssignment
-                              ? "text-purple-700"
+                              ? "text-brand-700"
                               : "text-gray-500"
                           }`}
                         >

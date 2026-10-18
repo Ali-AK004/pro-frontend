@@ -36,7 +36,7 @@ export default function BundlesSection({ courseId, refreshKey, onBuy }) {
               <div className="flex items-start justify-between gap-3">
                 <h3 className="bold-18 text-gray-900">{b.title}</h3>
                 {saving > 0 ? (
-                  <span className="shrink-0 bg-green-100 text-green-700 regular-12 px-2 py-1 rounded-full">
+                  <span className="shrink-0 bg-emerald-100 text-emerald-700 regular-12 px-2 py-1 rounded-full">
                     وفّر {saving}%
                   </span>
                 ) : null}

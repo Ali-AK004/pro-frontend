@@ -115,11 +115,11 @@ const VideoFileSelector = ({
     <div className={`space-y-4 ${className}`}>
       {/* Selected File Display */}
       {selectedFile && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flexCenter">
-                <FiVideo className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-emerald-100 rounded-lg flexCenter">
+                <FiVideo className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
                 <p className="bold-14 text-gray-900">{selectedFile.name}</p>
@@ -129,7 +129,7 @@ const VideoFileSelector = ({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-green-500 rounded-full flexCenter">
+              <div className="w-6 h-6 bg-emerald-500 rounded-full flexCenter">
                 <FiCheck className="w-4 h-4 text-white" />
               </div>
               <button

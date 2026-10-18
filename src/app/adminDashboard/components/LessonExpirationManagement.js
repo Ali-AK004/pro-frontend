@@ -215,12 +215,12 @@ const LessonExpirationManagement = () => {
                 <p className="regular-12 lg:regular-14 text-gray-600 mb-1">
                   تنتهي خلال 7 أيام
                 </p>
-                <p className="bold-18 lg:bold-24 text-orange-600">
+                <p className="bold-18 lg:bold-24 text-amber-600">
                   {statistics.expiringSoon || 0}
                 </p>
               </div>
-              <div className="p-2 lg:p-3 bg-orange-100 rounded-lg">
-                <FiAlertTriangle className="w-5 lg:w-6 h-5 lg:h-6 text-orange-600" />
+              <div className="p-2 lg:p-3 bg-amber-100 rounded-lg">
+                <FiAlertTriangle className="w-5 lg:w-6 h-5 lg:h-6 text-amber-600" />
               </div>
             </div>
           </div>
@@ -231,12 +231,12 @@ const LessonExpirationManagement = () => {
                 <p className="regular-12 lg:regular-14 text-gray-600 mb-1">
                   الدروس النشطة
                 </p>
-                <p className="bold-18 lg:bold-24 text-green-600">
+                <p className="bold-18 lg:bold-24 text-emerald-600">
                   {statistics.activeLessons || 0}
                 </p>
               </div>
-              <div className="p-2 lg:p-3 bg-green-100 rounded-lg">
-                <FiCheck className="w-5 lg:w-6 h-5 lg:h-6 text-green-600" />
+              <div className="p-2 lg:p-3 bg-emerald-100 rounded-lg">
+                <FiCheck className="w-5 lg:w-6 h-5 lg:h-6 text-emerald-600" />
               </div>
             </div>
           </div>
@@ -247,12 +247,12 @@ const LessonExpirationManagement = () => {
                 <p className="regular-12 lg:regular-14 text-gray-600 mb-1">
                   إجمالي الطلاب المتأثرين
                 </p>
-                <p className="bold-18 lg:bold-24 text-blue-600">
+                <p className="bold-18 lg:bold-24 text-brand-600">
                   {statistics.affectedStudents || 0}
                 </p>
               </div>
-              <div className="p-2 lg:p-3 bg-blue-100 rounded-lg">
-                <FiUser className="w-5 lg:w-6 h-5 lg:h-6 text-blue-600" />
+              <div className="p-2 lg:p-3 bg-brand-100 rounded-lg">
+                <FiUser className="w-5 lg:w-6 h-5 lg:h-6 text-brand-600" />
               </div>
             </div>
           </div>
@@ -263,14 +263,14 @@ const LessonExpirationManagement = () => {
       <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 mb-6 lg:mb-8">
         <button
           onClick={() => setShowExtendModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-blue-700 transition-all duration-300 flexCenter gap-2 w-full sm:w-auto"
+          className="bg-brand-600 text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-brand-700 transition-all duration-300 flexCenter gap-2 w-full sm:w-auto"
         >
           <FiPlus className="w-4 h-4 lg:w-5 lg:h-5" />
           تمديد الوصول
         </button>
         <button
           onClick={() => setShowResetModal(true)}
-          className="bg-orange-600 text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-orange-700 transition-all duration-300 flexCenter gap-2 w-full sm:w-auto"
+          className="bg-amber-600 text-white px-4 py-2 lg:px-6 lg:py-3 rounded-lg bold-14 lg:bold-16 hover:bg-amber-700 transition-all duration-300 flexCenter gap-2 w-full sm:w-auto"
         >
           <FiUserX className="w-4 h-4 lg:w-5 lg:h-5" />
           إعادة تعيين بيانات الطالب
@@ -345,7 +345,7 @@ const LessonExpirationManagement = () => {
                       {formatDate(item[3])}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                         ينتهي قريباً
                       </span>
                     </td>
@@ -424,7 +424,7 @@ const LessonExpirationManagement = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="regular-12 text-gray-500">الحالة:</span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                         ينتهي قريباً
                       </span>
                     </div>
@@ -474,7 +474,7 @@ const LessonExpirationManagement = () => {
             <button
               onClick={checkRepurchaseEligibility}
               disabled={isLoading || !studentId || !lessonId}
-              className="w-full bg-purple-600 text-white px-4 lg:px-6 py-2 rounded-lg bold-14 lg:bold-16 hover:bg-purple-700 transition-all duration-300 disabled:opacity-50"
+              className="w-full bg-brand-600 text-white px-4 lg:px-6 py-2 rounded-lg bold-14 lg:bold-16 hover:bg-brand-700 transition-all duration-300 disabled:opacity-50"
             >
               فحص الأهلية
             </button>
@@ -483,16 +483,16 @@ const LessonExpirationManagement = () => {
 
         {repurchaseCheck && (
           <div
-            className={`p-3 lg:p-4 rounded-lg ${repurchaseCheck.canRepurchase ? "bg-green-100 border border-green-200" : "bg-red-100 border border-red-200"}`}
+            className={`p-3 lg:p-4 rounded-lg ${repurchaseCheck.canRepurchase ? "bg-emerald-100 border border-emerald-200" : "bg-red-100 border border-red-200"}`}
           >
             <div className="flex items-center gap-2 mb-1 lg:mb-2">
               {repurchaseCheck.canRepurchase ? (
-                <FiCheck className="w-4 lg:w-5 h-4 lg:h-5 text-green-600" />
+                <FiCheck className="w-4 lg:w-5 h-4 lg:h-5 text-emerald-600" />
               ) : (
                 <FiAlertTriangle className="w-4 lg:w-5 h-4 lg:h-5 text-red-600" />
               )}
               <span
-                className={`bold-14 lg:bold-16 ${repurchaseCheck.canRepurchase ? "text-green-800" : "text-red-800"}`}
+                className={`bold-14 lg:bold-16 ${repurchaseCheck.canRepurchase ? "text-emerald-800" : "text-red-800"}`}
               >
                 {repurchaseCheck.canRepurchase
                   ? "يمكن إعادة الشراء"
@@ -500,7 +500,7 @@ const LessonExpirationManagement = () => {
               </span>
             </div>
             <p
-              className={`regular-12 lg:regular-14 ${repurchaseCheck.canRepurchase ? "text-green-700" : "text-red-700"}`}
+              className={`regular-12 lg:regular-14 ${repurchaseCheck.canRepurchase ? "text-emerald-700" : "text-red-700"}`}
             >
               الطالب: {repurchaseCheck.studentId} | الدرس:{" "}
               {repurchaseCheck.lessonId}

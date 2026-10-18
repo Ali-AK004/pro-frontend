@@ -86,7 +86,7 @@ const PhotoUpload = ({
       ) : (
         <div
           onClick={triggerFileInput}
-          className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors"
+          className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-brand-500 transition-colors"
         >
           <FiImage className="w-12 h-12 text-gray-400 mb-2" />
           <p className="text-gray-500 text-sm">

@@ -448,26 +448,26 @@ const AssignmentCard = ({
         {/* Assignment Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
           <div className="flex items-center gap-2">
-            <FiCalendar className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+            <FiCalendar className="w-3 h-3 sm:w-4 sm:h-4 text-brand-500" />
             <span className="regular-10 sm:regular-12 text-gray-600 truncate">
               {assignmentAPI.validation.formatDate(assignment.dueDate)}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <FiAward className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
+            <FiAward className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-500" />
             <span className="regular-10 sm:regular-12 text-gray-600">
               {assignment.maxPoints} نقطة
             </span>
           </div>
           {/* <div className="flex items-center gap-2">
-            <FiUsers className="w-3 h-3 sm:w-4 sm:h-4 text-purple-500" />
+            <FiUsers className="w-3 h-3 sm:w-4 sm:h-4 text-brand-500" />
             <span className="regular-10 sm:regular-12 text-gray-600">
               {assignment.submissionCount || 0} تسليم
             </span>
           </div> */}
           <div className="flex items-center gap-2">
             <FiClock
-              className={`w-3 h-3 sm:w-4 sm:h-4 ${isOverdue ? "text-red-500" : "text-orange-500"}`}
+              className={`w-3 h-3 sm:w-4 sm:h-4 ${isOverdue ? "text-red-500" : "text-amber-500"}`}
             />
             <span
               className={`regular-10 sm:regular-12 truncate ${isOverdue ? "text-red-600" : "text-gray-600"}`}
@@ -481,14 +481,14 @@ const AssignmentCard = ({
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => onViewSubmissions(assignment)}
-            className="flex-1/3 bg-blue-50 text-blue-600 py-2 px-2 sm:px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-1 sm:gap-2 text-sm cursor-pointer"
+            className="flex-1/3 bg-brand-50 text-brand-600 py-2 px-2 sm:px-4 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-1 sm:gap-2 text-sm cursor-pointer"
           >
             <FiEye className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">التسليمات</span>
           </button>
           <button
             onClick={() => onEdit(assignment)}
-            className="flex-1/3 bg-green-50 text-green-600 py-2 px-2 sm:px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-1 sm:gap-2 text-sm cursor-pointer"
+            className="flex-1/3 bg-emerald-50 text-emerald-600 py-2 px-2 sm:px-4 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-1 sm:gap-2 text-sm cursor-pointer"
           >
             <FiEdit className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">تعديل</span>
@@ -594,11 +594,11 @@ const SubmissionsModal = ({
                     </div>
                     <div className="flex items-center gap-2">
                       {submission.grade !== null ? (
-                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                        <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm">
                           {submission.grade} / {assignment.maxPoints}
                         </span>
                       ) : (
-                        <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
+                        <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm">
                           غير مقيم
                         </span>
                       )}
@@ -612,7 +612,7 @@ const SubmissionsModal = ({
                   </div>
 
                   {gradingSubmission === submission.submissionId ? (
-                    <div className="bg-blue-50 rounded-lg p-4">
+                    <div className="bg-brand-50 rounded-lg p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                           <label className="block bold-12 text-gray-700 mb-2">
@@ -656,7 +656,7 @@ const SubmissionsModal = ({
                             handleGradeSubmit(submission.submissionId)
                           }
                           disabled={isLoading}
-                          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 cursor-pointer"
+                          className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 cursor-pointer"
                         >
                           {isLoading ? "جاري الحفظ..." : "حفظ التقييم"}
                         </button>
@@ -672,7 +672,7 @@ const SubmissionsModal = ({
                     <div className="flex gap-2">
                       <button
                         onClick={() => startGrading(submission)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                        className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors cursor-pointer"
                       >
                         {submission.grade !== null
                           ? "تعديل التقييم"
@@ -680,7 +680,7 @@ const SubmissionsModal = ({
                       </button>
                       <button
                         onClick={() => onReopen(assignment.id, submission.studentId)}
-                        className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors cursor-pointer"
+                        className="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors cursor-pointer"
                       >
                         إعادة فتح
                       </button>

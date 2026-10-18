@@ -20,8 +20,8 @@ const Footer = ({ id }) => {
     >
       {/* Background decoration */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-      <div className="absolute top-0 left-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
+      <div className="absolute top-0 left-1/4 w-72 h-72 bg-brand-500/10 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-brand-500/10 rounded-full blur-3xl"></div>
 
       <div className="relative max-container padding-container">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -31,7 +31,7 @@ const Footer = ({ id }) => {
               <div className="w-12 h-12 flex items-center justify-center">
                 <Image src={"/logo.png"} width={225} height={206} alt="logo" />
               </div>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-brand-400 to-brand-400 bg-clip-text text-transparent">
                 أكادميتنا
               </h3>
             </div>
@@ -42,7 +42,7 @@ const Footer = ({ id }) => {
             <div className="flex items-center justify-center md:justify-start gap-4">
               <a
                 href="https://www.facebook.com/profile.php?id=61579145144491"
-                className="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                className="w-12 h-12 bg-brand-600 hover:bg-brand-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -58,7 +58,7 @@ const Footer = ({ id }) => {
               </a>
               <a
                 href="https://www.instagram.com/academitna/"
-                className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                className="w-12 h-12 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -82,7 +82,7 @@ const Footer = ({ id }) => {
               <li>
                 <Link
                   href="/instructors"
-                  className="regular-14 text-gray-300 hover:text-[#088395] border-b border-b-red-500/0 hover:border-b-[#088395] transition-colors"
+                  className="regular-14 text-gray-300 hover:text-brand-600 border-b border-b-red-500/0 hover:border-b-brand-600 transition-colors"
                 >
                   المدرسين
                 </Link>

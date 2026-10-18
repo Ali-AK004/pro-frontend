@@ -477,7 +477,7 @@ const InstructorCourseManagement = () => {
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => openViewModal(course)}
-                    className="cursor-pointer flex-1 bg-blue-50 text-blue-600 border border-blue-300 py-2 px-4 rounded-lg hover:bg-blue-100 transition-colors flexCenter gap-2"
+                    className="cursor-pointer flex-1 bg-brand-50 text-brand-600 border border-brand-300 py-2 px-4 rounded-lg hover:bg-brand-100 transition-colors flexCenter gap-2"
                   >
                     <FiEye className="w-4 h-4" />
                     عرض
@@ -485,7 +485,7 @@ const InstructorCourseManagement = () => {
                   {canEditCourse && (
                     <button
                       onClick={() => openEditModal(course)}
-                      className="cursor-pointer flex-1 bg-green-50 text-green-600 border border-green-300 py-2 px-4 rounded-lg hover:bg-green-100 transition-colors flexCenter gap-2"
+                      className="cursor-pointer flex-1 bg-emerald-50 text-emerald-600 border border-emerald-300 py-2 px-4 rounded-lg hover:bg-emerald-100 transition-colors flexCenter gap-2"
                     >
                       <FiEdit className="w-4 h-4" />
                       تعديل
@@ -597,7 +597,7 @@ const InstructorCourseManagement = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="cursor-pointer flex-1 bg-secondary hover:bg-[#6cb3ff] text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
+                  className="cursor-pointer flex-1 bg-secondary hover:bg-brand-700 text-white py-3 rounded-lg bold-16 hover:bg-opacity-90 transition-all duration-300 disabled:opacity-50"
                 >
                   {isLoading ? "جاري الإنشاء..." : "إنشاء الكورس"}
                 </button>
@@ -767,11 +767,11 @@ const InstructorCourseManagement = () => {
 
                   {/* Quick Stats */}
                   <div className="grid grid-cols-1">
-                    <div className="bg-blue-50 p-4 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-blue-600 mb-1">
+                    <div className="bg-brand-50 p-4 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-brand-600 mb-1">
                         {selectedCourse.lessonCount || 0}
                       </div>
-                      <div className="text-sm text-blue-600">درس</div>
+                      <div className="text-sm text-brand-600">درس</div>
                     </div>
                   </div>
                 </div>

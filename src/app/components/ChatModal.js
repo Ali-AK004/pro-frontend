@@ -122,21 +122,21 @@ const ChatModal = ({ isOpen, onClose, initialPosition = "bottom-right" }) => {
       >
         {isMinimized ? (
           // Minimized State
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-300 border-4 border-white/20 backdrop-blur-sm">
+          <div className="w-16 h-16 bg-gradient-to-r from-brand-500 to-brand-600 rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-300 border-4 border-white/20 backdrop-blur-sm">
             <button
               onClick={handleMinimize}
               className="text-white hover:text-gray-200 transition-colors cursor-pointer"
             >
               <FiMessageCircle className="w-8 h-8" />
               {/* Pulse animation for minimized state */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 animate-ping opacity-20"></div>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 animate-ping opacity-20"></div>
             </button>
           </div>
         ) : (
           // Full Chat Interface
           <div className="bg-white/95 backdrop-blur-md rounded-t-2xl shadow-2xl overflow-hidden h-full flex flex-col border border-gray-200/50 relative">
             {/* Background decoration */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-50/50 to-brand-50/50 pointer-events-none"></div>
 
             {/* Chat Content */}
             <div className="relative flex-1 overflow-hidden">

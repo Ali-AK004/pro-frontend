@@ -89,22 +89,22 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
       title: 'إجمالي الكورسات',
       value: stats.courses,
       icon: FiBook,
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-600',
+      bgColor: 'bg-brand-50',
+      textColor: 'text-brand-600',
     },
     {
       title: 'إجمالي الدروس',
       value: stats.lessons,
       icon: FiFileText,
-      bgColor: 'bg-green-50',
-      textColor: 'text-green-600',
+      bgColor: 'bg-brand-50',
+      textColor: 'text-brand-600',
     },
     {
       title: 'إجمالي الطلاب',
       value: stats.students,
       icon: FiUsers,
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-600',
+      bgColor: 'bg-brand-50',
+      textColor: 'text-brand-600',
     },
   ];
 
@@ -142,7 +142,7 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
           </p>
         </div>
         <div className="flex">
-          <Link href={'/'} className="flex items-center border rounded-md px-5 py-2 gap-3 border-secondary text-secondary hover:text-white hover:bg-[#87ceeb] transition duration-300">
+          <Link href={'/'} className="flex items-center border rounded-md px-5 py-2 gap-3 border-secondary text-secondary hover:text-white hover:bg-brand-400 transition duration-300">
             <FaArrowLeftLong /> العودة للرئيسية
           </Link>
         </div>
@@ -178,7 +178,7 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
             <h3 className="bold-20 text-gray-900">كورساتك الأخيرة</h3>
             <button
               onClick={() => setActiveTab('courses')}
-              className="text-secondary hover:border hover:border-[#87ceeb] cursor-pointer border rounded-sm px-3 py-1 hover:text-white hover:bg-[#87ceeb] transition font-semibold text-sm"
+              className="text-secondary hover:border hover:border-brand-400 cursor-pointer border rounded-sm px-3 py-1 hover:text-white hover:bg-brand-400 transition font-semibold text-sm"
             >
               عرض الكل
             </button>
@@ -212,7 +212,7 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
                         setActiveTab('courses');
                         // You might want to open this specific course
                       }}
-                      className="text-secondary hover:border hover:border-[#87ceeb] cursor-pointer border rounded-sm px-3 py-1 hover:text-white hover:bg-[#87ceeb] transition font-semibold text-sm"
+                      className="text-secondary hover:border hover:border-brand-400 cursor-pointer border rounded-sm px-3 py-1 hover:text-white hover:bg-brand-400 transition font-semibold text-sm"
                     >
                       عرض
                     </button>
@@ -237,14 +237,14 @@ const InstructorDashboardOverview = ({ setActiveTab }) => {
           </button>
           <button
             onClick={() => setActiveTab('lessons')}
-            className="cursor-pointer p-4 bg-green-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
+            className="cursor-pointer p-4 bg-brand-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
           >
             <FiFileText className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
             <p className="regular-14 text-white">إدارة الدروس</p>
           </button>
           <button
             onClick={() => setActiveTab('access-codes')}
-            className="cursor-pointer p-4 bg-purple-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
+            className="cursor-pointer p-4 bg-brand-500 bg-opacity-10 hover:bg-opacity-20 rounded-lg transition-all duration-300 text-center group"
           >
             <FiCode className="w-6 h-6 text-white mx-auto mb-2 group-hover:scale-110 transition-transform" />
             <p className="regular-14 text-white">إدارة أكواد الوصول</p>

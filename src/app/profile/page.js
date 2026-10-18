@@ -87,7 +87,7 @@ const Profile = () => {
     const statusConfig = {
       active: {
         text: "نشط",
-        color: "bg-green-100 text-green-800",
+        color: "bg-emerald-100 text-emerald-800",
       },
       expired: {
         text: "منتهي الصلاحية",
@@ -127,19 +127,19 @@ const Profile = () => {
     const roleConfig = {
       STUDENT: {
         text: "طالب",
-        color: "bg-blue-100 text-blue-800",
+        color: "bg-brand-100 text-brand-800",
         icon: FaUserGraduate,
         description: "يمكنك الوصول للكورسات والدروس",
       },
       INSTRUCTOR: {
         text: "مدرس",
-        color: "bg-green-100 text-green-800",
+        color: "bg-emerald-100 text-emerald-800",
         icon: FaUser,
         description: "يمكنك إنشاء وإدارة الكورسات",
       },
       ASSISTANT: {
         text: "مساعد",
-        color: "bg-yellow-100 text-yellow-800",
+        color: "bg-amber-100 text-amber-800",
         icon: FaUser,
         description: "يمكنك مساعدة المدرسين والطلاب",
       },
@@ -208,11 +208,11 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
       </div>
 
       <NavBar />
@@ -220,8 +220,8 @@ const Profile = () => {
         {/* Header */}
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 mb-8 relative overflow-hidden">
           {/* Background decoration */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-2xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-brand-500/5 to-brand-500/5"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-brand-400/10 to-brand-400/10 rounded-full blur-2xl"></div>
 
           <div className="relative flex flex-col lg:flex-row items-center gap-8">
             {/* Profile Image and Basic Info */}
@@ -231,11 +231,11 @@ const Profile = () => {
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${
                     user?.role === "STUDENT"
-                      ? "from-blue-100 to-blue-200"
+                      ? "from-brand-100 to-brand-200"
                       : user?.role === "INSTRUCTOR"
-                        ? "from-green-100 to-green-200"
+                        ? "from-brand-100 to-brand-200"
                         : user?.role === "ADMIN"
-                          ? "from-red-100 to-red-200"
+                          ? "from-brand-100 to-brand-200"
                           : "from-gray-100 to-gray-200"
                   }`}
                 ></div>
@@ -265,9 +265,9 @@ const Profile = () => {
                   }`}
                 >
                   {user?.role === "STUDENT" ? (
-                    <FaUserGraduate className="w-12 h-12 text-blue-600 opacity-80" />
+                    <FaUserGraduate className="w-12 h-12 text-brand-600 opacity-80" />
                   ) : user?.role === "INSTRUCTOR" ? (
-                    <FaChalkboardTeacher className="w-12 h-12 text-green-600 opacity-80" />
+                    <FaChalkboardTeacher className="w-12 h-12 text-emerald-600 opacity-80" />
                   ) : user?.role === "ADMIN" ? (
                     <FaUserShield className="w-12 h-12 text-red-600 opacity-80" />
                   ) : (
@@ -300,11 +300,11 @@ const Profile = () => {
             {/* Quick Stats */}
             <div className="flex-1 w-full md:w-auto lg:mr-8">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-2xl text-center">
+                <div className="bg-gradient-to-r from-brand-500 to-brand-600 text-white p-4 rounded-2xl text-center">
                   <div className="text-2xl font-bold">{userLessons.length}</div>
                   <div className="text-sm opacity-90">إجمالي الحصص</div>
                 </div>
-                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-2xl text-center">
+                <div className="bg-gradient-to-r from-brand-500 to-brand-600 text-white p-4 rounded-2xl text-center">
                   <div className="text-2xl font-bold">
                     {
                       userLessons.filter((lesson) => lesson.expired === false)
@@ -547,7 +547,7 @@ const Profile = () => {
                         <button
                           type="button"
                           onClick={handleShowMore}
-                          className="bg-secondary text-white px-6 py-3 rounded-lg hover:bg-[#87ceeb]/90 transition-colors regular-14 cursor-pointer"
+                          className="bg-secondary text-white px-6 py-3 rounded-lg hover:bg-brand-400/90 transition-colors regular-14 cursor-pointer"
                           style={{ pointerEvents: "auto" }}
                         >
                           عرض المزيد ({userLessons.length - 3} حصة إضافية)
@@ -556,7 +556,7 @@ const Profile = () => {
                         <button
                           type="button"
                           onClick={handleShowLess}
-                          className="border border-secondary text-secondary px-6 py-3 rounded-lg hover:bg-[#87ceeb] hover:text-white transition-colors regular-14 cursor-pointer"
+                          className="border border-secondary text-secondary px-6 py-3 rounded-lg hover:bg-brand-400 hover:text-white transition-colors regular-14 cursor-pointer"
                           style={{ pointerEvents: "auto" }}
                         >
                           عرض أقل

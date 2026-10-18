@@ -77,17 +77,17 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-brand-400/20 to-brand-400/20 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative w-full max-w-2xl">
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
           {/* Header with gradient */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12 text-center">
+          <div className="bg-gradient-to-r from-brand-600 to-brand-600 px-8 py-12 text-center">
             <div className="inline-block mb-4 bg-white/20 rounded-md px-5 py-2 backdrop-blur-sm">
               <Link href="/" className="flexCenter gap-2">
                 <Image
@@ -105,7 +105,7 @@ const Login = () => {
             <h2 className="text-3xl font-bold text-white mb-2">
               مرحباً بك مرة أخرى
             </h2>
-            <p className="text-blue-100">سجل دخولك لمتابعة رحلتك التعليمية</p>
+            <p className="text-brand-100">سجل دخولك لمتابعة رحلتك التعليمية</p>
           </div>
 
           {/* Form Container */}
@@ -130,7 +130,7 @@ const Login = () => {
                     className={`w-full pr-4 pl-9 py-4 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 text-right ${
                       error
                         ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-200 focus:ring-blue-500"
+                        : "border-gray-200 focus:ring-brand-500"
                     }`}
                     placeholder="أدخل بريدك الإلكتروني"
                     value={formData.email}
@@ -172,7 +172,7 @@ const Login = () => {
                     className={`w-full px-4 py-4 pl-9 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 text-right ${
                       error
                         ? "border-red-300 focus:ring-red-500"
-                        : "border-gray-200 focus:ring-blue-500"
+                        : "border-gray-200 focus:ring-brand-500"
                     }`}
                     placeholder="أدخل كلمة المرور"
                     value={formData.password}
@@ -220,7 +220,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer"
+                className="w-full bg-gradient-to-r from-brand-600 to-brand-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-brand-700 hover:to-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
@@ -264,7 +264,7 @@ const Login = () => {
                 ليس لديك حساب؟{" "}
                 <Link
                   href="/signup"
-                  className="font-semibold hover:border-b hover:border-b-blue-700 border-b border-b-transparent text-blue-600 hover:text-blue-700 transition-colors"
+                  className="font-semibold hover:border-b hover:border-b-brand-700 border-b border-b-transparent text-brand-600 hover:text-brand-700 transition-colors"
                 >
                   سجل الآن مجاناً
                 </Link>
