@@ -19,6 +19,7 @@ const InstructorLessonManagement = lazy(
 const InstructorExamManagement = lazy(
   () => import("./components/InstructorExamManagement")
 );
+const InstructorQuestionBank = lazy(() => import("./components/InstructorQuestionBank"));
 const InstructorAssignmentManagement = lazy(
   () => import("./components/InstructorAssignmentManagement")
 );
@@ -96,6 +97,12 @@ const InstructorDashboard = () => {
         return (
           <Suspense fallback={<ComponentLoader />}>
             <InstructorExamManagement />
+          </Suspense>
+        );
+      case "question-bank":
+        return (
+          <Suspense fallback={<ComponentLoader />}>
+            <InstructorQuestionBank />
           </Suspense>
         );
       case "assignments":

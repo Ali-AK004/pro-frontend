@@ -23,6 +23,7 @@ const UserManagement = lazyTab(() => import("./components/UserManagement"));
 const CourseManagement = lazyTab(() => import("./components/CourseManagement"));
 const LessonManagement = lazyTab(() => import("./components/LessonManagement"));
 const ExamManagement = lazyTab(() => import("./components/ExamManagement"));
+const QuestionBankManagement = lazyTab(() => import("./components/QuestionBankManagement"));
 const AssignmentManagement = lazyTab(() => import("./components/AssignmentManagement"));
 const AccessCodeManagement = lazyTab(() => import("./components/AccessCodeManagement"));
 const LessonExpirationManagement = lazyTab(() => import("./components/LessonExpirationManagement"));
@@ -93,6 +94,8 @@ const AdminDashboard = () => {
         return <LessonManagement />;
       case "exams":
         return <ExamManagement />;
+      case "question-bank":
+        return <QuestionBankManagement />;
       case "assignments":
         return <AssignmentManagement />;
       case "ai-chat":

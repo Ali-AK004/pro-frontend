@@ -23,7 +23,8 @@ import {
 import { toast } from "react-toastify";
 import NavBar from "@/app/components/navBar";
 import { studentAPI } from "@/app/services/studentAPI";
-import examAPI, { handleAPIError } from "@/app/services/examAPI";
+import { handleAPIError } from "@/app/services/examAPI";
+import ExamPlayer from "@/app/components/exam/ExamPlayer";
 import assignmentAPI from "@/app/services/assignmentAPI";
 import SecureLessonPlayer from "@/app/components/SecureLessonPlayer";
 import { useUserData } from "../../../../../../../../models/UserContext";
@@ -33,27 +34,17 @@ const LessonPage = () => {
   const router = useRouter();
   const { instructorId, lessonId } = params;
   const { user } = useUserData();
-  const examTimerRef = useRef(null);
-  const autoSubmitGuardRef = useRef(false);
 
   // State management
   const [lessonData, setLessonData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
-  const [examAnswers, setExamAnswers] = useState({});
-  const [examResult, setExamResult] = useState(null);
   const [assignmentSubmission, setAssignmentSubmission] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [instructorData, setInstructorData] = useState(null);
   const [accessExpiry, setAccessExpiry] = useState(null);
 
-  // Exam timer states
-  const [examStarted, setExamStarted] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(0);
-  const [examSubmitted, setExamSubmitted] = useState(false);
-  // Questions arrive only with a started attempt (from POST /exams/{id}/start)
-  const [liveExam, setLiveExam] = useState(null);
 
   // Fetch lesson data
   useEffect(() => {
@@ -93,38 +84,13 @@ const LessonPage = () => {
     }
   }, [activeTab]);
 
-  // Cleanup timer on component unmount
-  useEffect(() => {
-    return () => {
-      if (examTimerRef.current) {
-        clearInterval(examTimerRef.current);
-        examTimerRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (
-      examStarted &&
-      timeRemaining === 0 &&
-      !examSubmitted &&
-      !isSubmitting &&
-      autoSubmitGuardRef.current
-    ) {
-      autoSubmitGuardRef.current = false;
-      // Defer to exit render phase before triggering updates/toasts
-      setTimeout(() => {
-        handleAutoSubmit().catch((e) =>
-          console.error("Auto-submission error")
-        );
-      }, 0);
-    }
-  }, [examStarted, timeRemaining, examSubmitted, isSubmitting]);
-
-  const fetchLessonData = async () => {
+  // silent: refresh after an exam without the full-page spinner and without switching tabs
+  const fetchLessonData = async ({ silent = false } = {}) => {
     try {
-      setIsLoading(true);
-      setError(null);
+      if (!silent) {
+        setIsLoading(true);
+        setError(null);
+      }
 
       const response = await studentAPI.lessons.getLessonDetails(lessonId);
       setLessonData({
@@ -132,31 +98,34 @@ const LessonPage = () => {
         remainingVideoViews: response.data.remainingVideoViews || 0
       });
 
-      // Fetch instructor data using URL parameter (more reliable)
-      try {
-        const instructorResponse =
-          await studentAPI.profile.getInstructorFullProfile(instructorId);
-        setInstructorData(instructorResponse.data);
-      } catch (instructorError) {
-        toast.error("فشل في تحميل بيانات المدرس");
-      }
-
-      try {
-        const accessResponse = await studentAPI.payments.checkAccess(lessonId);
-        if (accessResponse.data.expiryDate) {
-          setAccessExpiry(accessResponse.data.expiryDate);
+      // A silent refresh (after an exam) only needs the lesson itself
+      if (!silent) {
+        // Fetch instructor data using URL parameter (more reliable)
+        try {
+          const instructorResponse =
+            await studentAPI.profile.getInstructorFullProfile(instructorId);
+          setInstructorData(instructorResponse.data);
+        } catch (instructorError) {
+          toast.error("فشل في تحميل بيانات المدرس");
         }
-      } catch (accessError) {
-        toast.error("خطأ في إحضار بيانات الوصول");
+
+        try {
+          const accessResponse = await studentAPI.payments.checkAccess(lessonId);
+          if (accessResponse.data.expiryDate) {
+            setAccessExpiry(accessResponse.data.expiryDate);
+          }
+        } catch (accessError) {
+          toast.error("خطأ في إحضار بيانات الوصول");
+        }
       }
 
       // Set initial tab based on access and progress
-      setInitialTab(response.data);
+      if (!silent) setInitialTab(response.data);
     } catch (error) {
-      setError(handleAPIError(error, "فشل في تحميل بيانات الدرس"));
+      if (!silent) setError(handleAPIError(error, "فشل في تحميل بيانات الدرس"));
       toast.error(handleAPIError(error, "فشل في تحميل بيانات الدرس"));
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 
@@ -178,179 +147,6 @@ const LessonPage = () => {
       setActiveTab("overview");
     }
   };
-
-  // Format time remaining for display
-  const formatTimeRemaining = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-    }
-    return `${minutes}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  // Start (or resume) the attempt on the server; the countdown uses the server deadline
-  const startExamTimer = async () => {
-    let totalSeconds;
-    try {
-      const { data } = await examAPI.exams.start(lessonData.exam.id);
-      setLiveExam(data.exam);
-      setExamAnswers({});
-      totalSeconds = Math.max(0, Number(data.remainingSeconds) || 0);
-    } catch (error) {
-      toast.error(handleAPIError(error, "تعذر بدء الامتحان"));
-      return;
-    }
-    setTimeRemaining(totalSeconds);
-    setExamStarted(true);
-
-    if (examTimerRef.current) clearInterval(examTimerRef.current);
-
-    examTimerRef.current = setInterval(() => {
-      setTimeRemaining((prev) => {
-        const next = prev - 1;
-        if (next <= 0) {
-          if (examTimerRef.current) {
-            clearInterval(examTimerRef.current);
-            examTimerRef.current = null;
-          }
-          // Signal; run auto-submit after render via effect
-          autoSubmitGuardRef.current = true;
-          return 0;
-        }
-        return next;
-      });
-    }, 1000);
-  };
-
-  const handleManualSubmit = async () => {
-    // Define the check here
-    const allAnswered = exam.questions?.every((question) => {
-      const answer = examAnswers[question.id];
-      if (question.questionType === "MULTIPLE_CHOICE") {
-        return answer && answer.length > 0;
-      }
-      return answer !== undefined && answer !== null;
-    });
-
-    if (!allAnswered) {
-      toast.error("يرجى الإجابة على جميع الأسئلة قبل التقديم");
-      return;
-    }
-
-    try {
-      await submitExamAnswers(examAnswers, false);
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تقديم الامتحان"));
-    }
-  };
-
-  const handleAutoSubmit = async () => {
-    try {
-      // Only submit if there are answers
-      if (Object.keys(examAnswers).length > 0) {
-        await submitExamAnswers(examAnswers, true);
-      } else {
-        toast.error("انتهى الوقت ولم يتم تقديم أي إجابات");
-        setExamStarted(false);
-        setTimeRemaining(0);
-      }
-    } catch (error) {
-      toast.error("حدث خطأ أثناء التقديم التلقائي");
-    }
-  };
-
-  const submitExamAnswers = async (answers, isAutoSubmit = false) => {
-    try {
-      setIsSubmitting(true);
-
-      // Convert answers to proper format
-      const formattedAnswers = {};
-      Object.keys(answers).forEach((questionId) => {
-        const answer = answers[questionId];
-        formattedAnswers[questionId] = Array.isArray(answer)
-          ? answer.join(",")
-          : answer;
-      });
-
-      // Submit exam
-      const response = await examAPI.exams.submit(
-        lessonData.exam.id,
-        formattedAnswers
-      );
-
-      // Add delay before fetching results
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Fetch results with retry logic
-      let retries = 3;
-      let submission;
-
-      while (retries > 0) {
-        try {
-          submission = await examAPI.exams.getSubmission(
-            lessonData.exam.id,
-            user.id
-          );
-          break;
-        } catch (error) {
-          retries--;
-          if (retries === 0) throw error;
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-      }
-
-      // Update state
-      setExamResult(submission.data);
-      setExamSubmitted(true);
-      setExamStarted(false);
-      setTimeRemaining(0);
-
-      if (examTimerRef.current) {
-        clearInterval(examTimerRef.current);
-        examTimerRef.current = null;
-      }
-
-      // Show appropriate message
-      if (submission.data.passed) {
-        await fetchLessonData();
-        toast.success(
-          `${isAutoSubmit ? "انتهى وقت الامتحان. " : ""}تهانينا! لقد نجحت - درجتك: ${submission.data.score}%`
-        );
-      } else {
-        toast.error(
-          `${isAutoSubmit ? "انتهى وقت الامتحان. " : ""}لم تجتز الامتحان. الدرجة: ${submission.data.score}%`
-        );
-      }
-
-      return submission;
-    } catch (error) {
-      toast.error(handleAPIError(error, "فشل في تقديم الامتحان"));
-      throw error;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === "exam" && lessonData?.exam?.id) {
-      const fetchData = async () => {
-        try {
-          const submission = await examAPI.exams.getSubmission(
-            lessonData.exam.id,
-            user.id
-          );
-          setExamResult(submission.data);
-        } catch (error) {
-          console.log(handleAPIError(error, "فشل في تحميل نتائج الامتحان"));
-        }
-      };
-
-      fetchData();
-    }
-  }, [activeTab, lessonData?.exam?.id, user?.id]);
 
   // Handle assignment submission
   const handleAssignmentSubmit = async () => {
@@ -460,10 +256,7 @@ const LessonPage = () => {
     progressStatus,
     accessError,
   } = lessonData;
-  const exam =
-    payloadExam && liveExam?.id === payloadExam.id
-      ? { ...payloadExam, questions: liveExam.questions }
-      : payloadExam;
+  const exam = payloadExam;
 
   return (
     <div className="min-h-screen bg-main">
@@ -581,28 +374,11 @@ const LessonPage = () => {
             )}
 
             {activeTab === "exam" && exam && (
-              <ExamTab
-                exam={exam}
-                examAnswers={examAnswers}
-                setExamAnswers={setExamAnswers}
-                examResult={examResult}
-                isSubmitting={isSubmitting}
+              <ExamPlayer
+                key={exam.id}
+                examId={exam.id}
                 canAccess={canAccessExam}
-                examStarted={examStarted}
-                timeRemaining={timeRemaining}
-                startExamTimer={startExamTimer}
-                handleManualSubmit={handleManualSubmit}
-                formatTimeRemaining={formatTimeRemaining}
-                examSubmitted={examSubmitted}
-                onRetry={() => {
-                  setLiveExam(null);
-                  setExamResult(null);
-                  setExamSubmitted(false);
-                  setExamAnswers({});
-                  setExamStarted(false);
-                  setTimeRemaining(0);
-                  setActiveTab("exam");
-                }}
+                onFinished={() => fetchLessonData({ silent: true })}
               />
             )}
 
@@ -864,524 +640,6 @@ const OverviewTab = ({
               <p className="regular-14 text-brand-700">
                 {getProgressStatusText(progressStatus)}
               </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Exam Tab Component
-const ExamTab = ({
-  exam,
-  examAnswers,
-  setExamAnswers,
-  examResult,
-  isSubmitting,
-  canAccess,
-  examStarted,
-  timeRemaining,
-  startExamTimer,
-  handleManualSubmit,
-  formatTimeRemaining,
-  examSubmitted,
-  onRetry
-}) => {
-  console.log(examResult)
-  if (!canAccess) {
-    return (
-      <div className="bg-brand-50 rounded-2xl shadow-xl border border-red-200/50 p-12 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-400/20 rounded-full blur-2xl"></div>
-        <div className="relative text-center">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-brand-500 rounded-full mb-6 shadow-sm">
-            <FaLock className="w-12 h-12 text-white" />
-          </div>
-          <h3 className="text-3xl font-bold text-gray-900 mb-4">
-            الامتحان مقفل
-          </h3>
-          <p className="text-lg text-gray-600 leading-relaxed max-w-md mx-auto">
-            تحتاج إلى شراء الدرس للوصول إلى الامتحان والاستفادة من جميع
-            المحتويات التعليمية
-          </p>
-          <div className="mt-8">
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-2xl border border-red-200">
-              <FaExclamationTriangle className="w-5 h-5 text-amber-500" />
-              <span className="font-semibold text-gray-700">
-                مطلوب شراء الدرس
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (examResult || examSubmitted) {
-    const questionResults = examResult?.questionResults || {};
-    // Calculate student's total points earned
-    const studentTotalPoints = Object.values(
-      examResult.questionResults || {}
-    ).reduce((sum, result) => sum + (result.pointsEarned || 0), 0);
-
-    // Calculate total possible points from exam questions
-    const totalPossiblePoints =
-      exam.questions?.reduce(
-        (sum, question) => sum + (question.points || 0),
-        0
-      ) || 0;
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-8">
-        <div className="text-center mb-8">
-          <div
-            className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-6   ${examResult.passed
- ? "bg-emerald-100 text-emerald-600"
- : "bg-red-100 text-red-600"
- }`}
-          >
-            {examResult.passed ? (
-              <FaCheckCircle className="w-12 h-12" />
-            ) : (
-              <FaExclamationTriangle className="w-12 h-12" />
-            )}
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            {examResult.passed ? "تهانينا! لقد نجحت" : "لم تنجح في الامتحان"}
-          </h2>
-          <p className="text-gray-600">
-            {examResult.lessonName} - {examResult.examTitle}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold mb-4">معلومات التقديم</h3>
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-500">وقت التقديم</p>
-                <p className="font-medium">
-                  {(() => {
-                    try {
-                      const [year, month, day, hours, minutes, seconds] =
-                        examResult.submissionTime;
-                      const date = new Date(
-                        year,
-                        month - 1,
-                        day,
-                        hours,
-                        minutes,
-                        seconds
-                      );
-
-                      return date.toLocaleString("ar-EG", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                        hour12: true,
-                      });
-                    } catch {
-                      return "غير محدد";
-                    }
-                  })()}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">عدد المحاولات</p>
-                <p className="font-medium">{examResult.attemptNumber}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold mb-4">النتيجة</h3>
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-500">درجتك</p>
-                <p
-                  className={`text-2xl font-bold ${examResult.passed ? "text-emerald-600" : "text-red-600"
- }`}
-                >
-                  {studentTotalPoints} / {totalPossiblePoints}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">درجة النجاح</p>
-                <p className="font-medium">{examResult.passingScore}%</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">تفاصيل الإجابات</h3>
-          <div className="space-y-4">
-            {Object.entries(questionResults).map(([questionId, result]) => {
-              const studentAnswer =
-                examResult.studentAnswers?.[questionId] || "لا توجد إجابة";
-
-              return (
-                <div
-                  key={questionId}
-                  className={`p-4 border rounded-lg   ${result.correct
- ? "bg-emerald-50 border-emerald-200"
- : "bg-red-50 border-red-200"
- }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">
-                        {result.questionText || "سؤال بدون نص"}
-                      </p>
-                      <p className="text-sm text-gray-600 mt-1">
-                        إجابتك: {studentAnswer}
-                      </p>
-                      {result.feedback && (
-                        <p className="text-sm text-gray-700 mt-2">
-                          <span className="font-medium">تعليق:</span>{" "}
-                          {result.feedback}
-                        </p>
-                      )}
-                    </div>
-                    <span
-                      className={`p-3 rounded-full flexCenter text-sm ${result.correct
- ? "bg-emerald-100 text-emerald-800"
- : "bg-red-100 text-red-800"
- }`}
-                    >
-                      {result.correct ? "صحيح" : "خطأ"}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {!examResult.passed && examResult.detailsVisible === false && (
-          <p className="text-center text-gray-600 mb-4">
-            ستظهر تفاصيل الإجابات بعد النجاح أو بعد آخر محاولة.
-          </p>
-        )}
-
-        {!examResult.passed && (examResult.attemptsRemaining ?? 1) > 0 && (
-          <div className="text-center">
-            <button
-              onClick={onRetry}
-              className="bg-brand-600 text-white px-4 py-2 cursor-pointer rounded-lg hover:bg-brand-700 transition-colors"
-            >
-              إعادة المحاولة
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  const handleAnswerChange = (questionId, answerId, checked = true) => {
-    const question = exam.questions.find((q) => q.id === questionId);
-
-    if (question.questionType === "MULTIPLE_CHOICE") {
-      const currentAnswers = examAnswers[questionId] || [];
-      if (checked) {
-        setExamAnswers({
-          ...examAnswers,
-          [questionId]: [...currentAnswers, answerId],
-        });
-      } else {
-        setExamAnswers({
-          ...examAnswers,
-          [questionId]: currentAnswers.filter((id) => id !== answerId),
-        });
-      }
-    } else {
-      // SINGLE_CHOICE or TRUE_FALSE
-      setExamAnswers({
-        ...examAnswers,
-        [questionId]: answerId,
-      });
-    }
-  };
-
-  const isAnswerSelected = (questionId, answerId) => {
-    const question = exam.questions.find((q) => q.id === questionId);
-    if (question.questionType === "MULTIPLE_CHOICE") {
-      return (examAnswers[questionId] || []).includes(answerId);
-    }
-    return examAnswers[questionId] === answerId;
-  };
-
-  const allQuestionsAnswered = exam.questions.every((question) => {
-    const answer = examAnswers[question.id];
-    if (question.questionType === "MULTIPLE_CHOICE") {
-      return answer && answer.length > 0;
-    }
-    return answer !== undefined && answer !== null;
-  });
-
-  // Show exam start confirmation if exam hasn't started yet
-  if (!examStarted) {
-    return (
-      <div className="bg-brand-50 rounded-2xl shadow-2xl border border-brand-200/50 p-12 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-400/20 rounded-full blur-2xl"></div>
-
-        <div className="relative text-center">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-brand-500 rounded-2xl mb-8 shadow-sm">
-            <FaQuestionCircle className="w-12 h-12 text-white" />
-          </div>
-
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            {exam.title}
-          </h2>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-white/50 shadow-sm max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              معلومات الامتحان
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-brand-600 mb-2">
-                  {exam.questionCount ?? exam.questions?.length ?? 0}
-                </div>
-                <p className="text-gray-600 font-medium">عدد الأسئلة</p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-brand-600 mb-2">
-                  %{exam.passingScore}
-                </div>
-                <p className="text-gray-600 font-medium">درجة النجاح</p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-emerald-600 mb-2">
-                  {exam.timeLimitMinutes || "غير محدد"}
-                </div>
-                <p className="text-gray-600 font-medium">دقيقة</p>
-              </div>
-            </div>
-
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8">
-              <div className="flex items-start gap-3">
-                <FaExclamationTriangle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
-                <div>
-                  <h4 className="font-bold text-amber-800 mb-2">
-                    تعليمات مهمة:
-                  </h4>
-                  <ul className="text-amber-700 space-y-2 text-right">
-                    <li>
-                      • لديك {exam.timeLimitMinutes || "غير محدد"} دقيقة لإكمال
-                      الامتحان
-                    </li>
-                    <li>• سيتم تقديم الامتحان تلقائياً عند انتهاء الوقت</li>
-                    <li>• لا يمكن إيقاف المؤقت بعد البدء</li>
-                    <li>• تأكد من اتصالك بالإنترنت</li>
-                    <li>• يجب الإجابة على جميع الأسئلة</li>
-                    {exam.maxAttempts ? (
-                      <li>
-                        • المحاولات المتبقية: {Math.max(0, exam.maxAttempts - (exam.attemptsUsed || 0))} من {exam.maxAttempts}
-                      </li>
-                    ) : null}
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => startExamTimer()}
-              className="w-full bg-brand-500 text-white py-2.5 px-5 rounded-2xl font-bold text-xl hover:bg-brand-600 transition-all duration-150 cursor-pointer"
-            >
-              <FaPlay className="w-6 h-6 inline-block ml-3" />
-              بدء الامتحان
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-brand-50 rounded-2xl shadow-2xl border border-brand-200/50 p-8 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-brand-400/20 rounded-full blur-2xl"></div>
-
-      {/* Enhanced Exam Header with Timer */}
-      <div className="relative text-center mb-8 pb-6 border-b border-brand-200/50">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-brand-500 rounded-2xl mb-6 shadow-sm">
-          <FaQuestionCircle className="w-10 h-10 text-white" />
-        </div>
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">{exam.title}</h2>
-
-        {/* Timer Display */}
-        <div className="mb-6">
-          <div
-            className={`inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-2xl shadow-sm   ${timeRemaining <= 300
- ? "bg-red-500 text-white animate-pulse"
- : "bg-white/80 text-gray-800"
- }`}
-          >
-            <FaClock className="w-6 h-6" />
-            <span>الوقت المتبقي: {formatTimeRemaining(timeRemaining)}</span>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <div className="bg-white/80 backdrop-blur-sm text-brand-700 px-6 py-3 rounded-2xl border border-brand-200 shadow-sm">
-            <span className="font-bold">درجة النجاح: {exam.passingScore}%</span>
-          </div>
-          <div className="bg-white/80 backdrop-blur-sm text-brand-700 px-6 py-3 rounded-2xl border border-brand-200 shadow-sm">
-            <span className="font-bold">
-              عدد الأسئلة: {exam.questionCount ?? exam.questions?.length ?? 0}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-8">
-        {exam.questions?.map((question, index) => (
-          <div
-            key={question.id}
-            className="group bg-white/90 backdrop-blur-sm border border-white/50 rounded-2xl p-8 shadow-sm transition-all duration-150 relative overflow-hidden"
-          >
-            {/* Question background decoration */}
-            <div className="absolute top-0 left-0 w-1 h-full bg-brand-500"></div>
-
-            <div className="flex items-start gap-6 mb-6">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-brand-500 rounded-2xl flex items-center justify-center shadow-sm">
-                  <span className="text-white font-bold text-lg">
-                    {index + 1}
-                  </span>
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-xl font-bold text-gray-900 mb-4 leading-relaxed">
-                  {question.questionText}
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  <div className="inline-flex items-center gap-2 bg-brand-100 text-brand-700 px-4 py-2 rounded-xl text-sm font-semibold">
-                    <FaStar className="w-4 h-4" />
-                    النقاط: {question.points}
-                  </div>
-                  <div className="inline-flex items-center gap-2 bg-brand-100 text-brand-700 px-4 py-2 rounded-xl text-sm font-semibold">
-                    <FaQuestionCircle className="w-4 h-4" />
-                    {question.questionType === "SINGLE_CHOICE"
-                      ? "اختيار واحد"
-                      : question.questionType === "MULTIPLE_CHOICE"
-                        ? "اختيار متعدد"
-                        : "صح أم خطأ"}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {question.answers?.map((answer, answerIndex) => (
-                <label
-                  key={answer.id}
-                  className={`group/answer flex items-center gap-4 p-5 rounded-2xl border-2 cursor-pointer transition-all duration-150   ${isAnswerSelected(question.id, answer.id)
- ? "border-brand-500 bg-brand-50 shadow-sm"
- : "border-gray-200 hover:border-brand-300 bg-white/50 hover:bg-brand-50/50"
- }`}
-                >
-                  <div
-                    className={`relative flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-150   ${isAnswerSelected(question.id, answer.id)
- ? "border-brand-500 bg-brand-500"
- : "border-gray-300 group-hover/answer:border-brand-400"
- }`}
-                  >
-                    <input
-                      type={
-                        question.questionType === "MULTIPLE_CHOICE"
-                          ? "checkbox"
-                          : "radio"
-                      }
-                      name={`question-${question.id}`}
-                      checked={isAnswerSelected(question.id, answer.id)}
-                      onChange={(e) =>
-                        handleAnswerChange(
-                          question.id,
-                          answer.id,
-                          e.target.checked
-                        )
-                      }
-                      className="sr-only"
-                    />
-                    {isAnswerSelected(question.id, answer.id) && (
-                      <FaCheck className="w-4 h-4 text-white" />
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-3 flex-1">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-150   ${isAnswerSelected(question.id, answer.id)
- ? "bg-white/20 text-brand-700"
- : "bg-gray-100 text-gray-600 group-hover/answer:bg-brand-100 group-hover/answer:text-brand-600"
- }`}
-                    >
-                      {String.fromCharCode(65 + answerIndex)}
-                    </div>
-                    <span
-                      className={`text-lg font-medium transition-colors duration-150 ${isAnswerSelected(question.id, answer.id)
- ? "text-brand-900"
- : "text-gray-700 group-hover/answer:text-brand-700"
- }`}
-                    >
-                      {answer.answerText}
-                    </span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Enhanced Submit Section */}
-      <div className="relative mt-12 pt-8 border-t border-brand-200/50">
-        <div className="text-center">
-          {/* Progress indicator */}
-          <div className="mb-6">
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-2xl border border-brand-200 shadow-sm">
-              <FaCheckCircle
-                className={`w-5 h-5 ${allQuestionsAnswered ? "text-emerald-500" : "text-gray-400"}`}
-              />
-              <span
-                className={`font-semibold ${allQuestionsAnswered ? "text-emerald-700" : "text-gray-600"}`}
-              >
-                تم الإجابة على {Object.keys(examAnswers).length} من{" "}
-                {exam.questionCount ?? exam.questions?.length ?? 0} أسئلة
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={handleManualSubmit}
-            disabled={!allQuestionsAnswered || isSubmitting}
-            className={`group relative inline-flex items-center gap-3 px-12 py-2.5 rounded-2xl font-bold text-lg transition-all duration-150 cursor-pointer ${allQuestionsAnswered && !isSubmitting
- ? "bg-brand-500 text-white hover:bg-brand-600"
- : "bg-gray-300 text-gray-500 cursor-not-allowed"
- }`}
-          >
-            {isSubmitting ? (
-              <>
-                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                جاري التقديم...
-              </>
-            ) : (
-              <>
-                <FaCheck className="w-6 h-6" />
-                تقديم الامتحان
-              </>
-            )}
-          </button>
-
-          {!allQuestionsAnswered && (
-            <div className="mt-6 flex items-center gap-2 bg-red-50 text-red-700 px-6 py-3 rounded-2xl border border-red-200">
-              <FaExclamationTriangle className="w-5 h-5" />
-              <span className="font-semibold">
-                يرجى الإجابة على جميع الأسئلة قبل التقديم
-              </span>
             </div>
           )}
         </div>

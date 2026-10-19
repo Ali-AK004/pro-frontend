@@ -15,6 +15,7 @@ import {
   FiMenu,
   FiX,
   FiHelpCircle,
+  FiDatabase,
   FiClipboard,
   FiMessageCircle,
 } from "react-icons/fi";
@@ -77,7 +78,13 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
       id: "exams",
       label: "إدارة الامتحانات",
       icon: FiHelpCircle,
-      description: "امتحانات دروسك",
+      description: "امتحانات دروسك ونتائجها وتصحيحها",
+    },
+    {
+      id: "question-bank",
+      label: "بنك الأسئلة",
+      icon: FiDatabase,
+      description: "أسئلتك الجاهزة لكل امتحان",
     },
     {
       id: "assignments",

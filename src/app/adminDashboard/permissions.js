@@ -23,6 +23,7 @@ export const TAB_PERMISSION = {
   courses: "CONTENT",
   lessons: "CONTENT",
   exams: "CONTENT",
+  "question-bank": "CONTENT",
   assignments: "CONTENT",
   bundles: "CONTENT",
   "audit-logs": "AUDIT",

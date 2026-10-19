@@ -18,6 +18,7 @@ import {
   FiUser,
   FiSettings,
   FiHelpCircle,
+  FiDatabase,
   FiClipboard,
   FiMessageCircle,
   FiMenu,
@@ -101,7 +102,13 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       id: "exams",
       label: "إدارة الامتحانات",
       icon: FiHelpCircle,
-      description: "إنشاء وتعديل الامتحانات",
+      description: "إنشاء الامتحانات ونتائجها وتصحيحها",
+    },
+    {
+      id: "question-bank",
+      label: "بنك الأسئلة",
+      icon: FiDatabase,
+      description: "أسئلة جاهزة لكل مدرس",
     },
     {
       id: "assignments",
