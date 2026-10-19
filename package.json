@@ -12,7 +12,7 @@
     "axios": "^1.10.0",
     "critters": "^0.0.23",
     "hls.js": "^1.6.7",
-    "isomorphic-dompurify": "^3.0.0",
+    "isomorphic-dompurify": "^4.5.0",
     "next": "^16.1.6",
     "postcss": "^8.5.6",
     "react": "^19.2.4",
