@@ -29,7 +29,10 @@ const SecureSearchInput = ({
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      onEnterPress();
+      // Check if onEnterPress exists and is a function before calling it
+      if (onEnterPress && typeof onEnterPress === 'function') {
+        onEnterPress();
+      }
     }
   };
 

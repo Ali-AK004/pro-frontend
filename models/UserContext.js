@@ -12,7 +12,6 @@ import {
   cachedRequest,
   handleAPIError,
 } from "../src/app/utils/apiClient";
-import { toast } from "react-toastify";
 
 const UserContext = createContext();
 

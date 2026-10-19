@@ -34,6 +34,8 @@ const LessonPage = () => {
   const router = useRouter();
   const { instructorId, lessonId } = params;
   const { user } = useUserData();
+  // Teachers, assistants and admins preview the lesson: unlimited video, no exam or homework submission
+  const isPrivileged = ["INSTRUCTOR", "ASSISTANT", "ADMIN"].includes(user?.role);
 
   // State management
   const [lessonData, setLessonData] = useState(null);
@@ -373,7 +375,16 @@ const LessonPage = () => {
               />
             )}
 
-            {activeTab === "exam" && exam && (
+            {activeTab === "exam" && exam && isPrivileged && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
+                <p className="bold-16 text-amber-800">المعلمون والمسؤولون لا يمكنهم حل الامتحان</p>
+                <p className="regular-14 text-amber-700 mt-1">
+                  تابع الامتحان ونتائج الطلاب من لوحة التحكم، في قسم الامتحانات.
+                </p>
+              </div>
+            )}
+
+            {activeTab === "exam" && exam && !isPrivileged && (
               <ExamPlayer
                 key={exam.id}
                 examId={exam.id}
@@ -403,6 +414,7 @@ const LessonPage = () => {
                 isSubmitting={isSubmitting}
                 canAccess={canAccessAssignment}
                 loadAssignmentData={loadAssignmentData}
+                readOnly={isPrivileged}
               />
             )}
           </div>
@@ -696,6 +708,11 @@ const VideoTab = ({
           />
         )}
       </div>
+      {remainingVideoViews === -1 ? (
+        <div className="bg-brand-50 border mt-5 border-brand-200 rounded-lg p-4 text-center">
+          <p className="regular-14 text-brand-700">عرض المعلم: يمكنك مشاهدة الفيديو بدون حد للمشاهدات</p>
+        </div>
+      ) : (
       <div className="bg-brand-50 border mt-5 border-brand-200 rounded-lg p-4">
         <div className="flex items-center flex-col md:flex-row gap-6 justify-between">
           <div className="flex items-center gap-3">
@@ -716,6 +733,7 @@ const VideoTab = ({
           </button>
         </div>
       </div>
+      )}
     </>
   );
 };
@@ -729,6 +747,7 @@ const AssignmentTab = ({
   isSubmitting,
   canAccess,
   loadAssignmentData,
+  readOnly = false,
 }) => {
   const [assignmentData, setAssignmentData] = useState(null);
   const [isLoadingAssignment, setIsLoadingAssignment] = useState(false);
@@ -790,6 +809,12 @@ const AssignmentTab = ({
   const isSubmitted =
     assignmentData?.submissionText && assignmentData?.submissionDate;
 
+  // Below half the points
+  const lowGrade =
+    assignmentData?.grade != null && Number(assignmentData.grade) < Number(assignment.maxPoints) * 0.5;
+
+  const locked = isOverdue || readOnly;
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
@@ -824,7 +849,7 @@ const AssignmentTab = ({
             <div>
               <h4 className="bold-14 text-brand-800">تاريخ التسليم</h4>
               <p className="regular-12 text-brand-600">
-                {formatDate(assignment.dueDate)}
+                {formatDate(isSubmitted ? assignmentData.submissionDate : assignment.dueDate)}
               </p>
             </div>
           </div>
@@ -832,12 +857,12 @@ const AssignmentTab = ({
 
         {assignmentData?.grade !== null &&
           assignmentData?.grade !== undefined && (
-            <div className="bg-emerald-50 rounded-lg p-4">
+            <div className={`${lowGrade ? "bg-red-50" : "bg-emerald-50"} rounded-lg p-4`}>
               <div className="flex items-center gap-3">
-                <FaGraduationCap className="w-5 h-5 text-emerald-500" />
+                <FaGraduationCap className={`w-5 h-5 ${lowGrade ? "text-red-500" : "text-emerald-500"}`} />
                 <div>
-                  <h4 className="bold-14 text-emerald-800">الدرجة</h4>
-                  <p className="regular-12 text-emerald-600">
+                  <h4 className={`bold-14 ${lowGrade ? "text-red-800" : "text-emerald-800"}`}>الدرجة</h4>
+                  <p className={`regular-12 ${lowGrade ? "text-red-600" : "text-emerald-600"}`}>
                     {assignmentData.grade} من {assignment.maxPoints}
                   </p>
                 </div>
@@ -879,7 +904,7 @@ const AssignmentTab = ({
             onChange={(e) => setSubmission(e.target.value)}
             placeholder="اكتب إجابتك هنا..."
             className="w-full h-40 px-3 py-2 border border-slate-200 rounded-lg resize-none focus:ring-4 focus:ring-brand-600/10 focus:border-brand-600 text-sm focus:outline-none"
-            disabled={isOverdue}
+            disabled={locked}
           />
 
           <div className="flex justify-between items-center">
@@ -887,8 +912,8 @@ const AssignmentTab = ({
 
             <button
               onClick={onSubmit}
-              disabled={!submission.trim() || isSubmitting || isOverdue}
-              className={`px-4 py-2 rounded-lg cursor-pointer bold-14 transition-colors ${submission.trim() && !isSubmitting && !isOverdue
+              disabled={!submission.trim() || isSubmitting || locked}
+              className={`px-4 py-2 rounded-lg cursor-pointer bold-14 transition-colors ${submission.trim() && !isSubmitting && !locked
  ? "bg-accent text-white hover:bg-opacity-90"
  : "bg-gray-300 text-gray-500 cursor-not-allowed"
  }`}
@@ -901,6 +926,9 @@ const AssignmentTab = ({
             <p className="regular-12 text-red-500">
               انتهى موعد تسليم هذا الواجب
             </p>
+          )}
+          {readOnly && (
+            <p className="regular-12 text-amber-700">عرض المعلم: الطلاب فقط يسلّمون الواجب</p>
           )}
         </div>
       )}

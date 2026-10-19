@@ -25,7 +25,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import LoadingSpinner from "@/app/components/LoadingSpinner";
+
+import LoadingSpinner from "../../components/LoadingSpinner";
 
 const formatDate = (dateInput) => {
   if (!dateInput) return "";
@@ -130,7 +131,6 @@ const DashboardOverview = ({ setActiveTab }) => {
 
   if (loading) return <LoadingSpinner fullScreen />;
   if (!stats) return <div className="p-8 text-center text-red-500 text-lg font-bold">خطأ في تحميل البيانات</div>;
-  console.log(stats)
   const paymentData = [
     { name: 'مدفوع', value: Number(stats.totalPaid) || 0 },
     { name: 'معلق', value: Number(stats.totalPending) || 0 },
@@ -175,15 +175,8 @@ const DashboardOverview = ({ setActiveTab }) => {
   return (
     <div className="p-4 lg:p-8 space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex">
         <h1 className="text-3xl font-bold text-gray-900">لوحة التحكم</h1>
-        <button
-          onClick={fetchDashboardStats}
-          className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors"
-        >
-          <FiActivity className="w-4 h-4" />
-          تحديث
-        </button>
       </div>
 
       {/* Main Stats Grid */}

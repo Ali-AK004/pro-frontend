@@ -135,7 +135,7 @@ const LessonManagement = () => {
         await adminAPI.lessons.createWithVideo(
           lessonData.courseId,
           formData,
-          (progress) => setUploadProgress(progress)
+          (progress) => setUploadProgress(progress),
         );
       } else {
         // For regular JSON payload
@@ -166,37 +166,43 @@ const LessonManagement = () => {
     }
   };
 
-const handleUpdateLesson = async (e) => {
-  e.preventDefault();
-  try {
-    setIsLoading(true);
+  const handleUpdateLesson = async (e) => {
+    e.preventDefault();
+    try {
+      setIsLoading(true);
 
-    if (editVideoFile) {
-      // إذا تم اختيار ملف فيديو جديد، استخدم endpoint رفع الفيديو
-      const formData = new FormData();
-      formData.append("file", editVideoFile);
-      formData.append("name", editForm.name);
-      formData.append("description", editForm.description);
-      formData.append("price", editForm.price);
-      formData.append("free", "false"); // أو حسب الحالة
-      if (editForm.photoUrl) formData.append("photoUrl", editForm.photoUrl);
+      if (editVideoFile) {
+        // إذا تم اختيار ملف فيديو جديد، استخدم endpoint رفع الفيديو
+        const formData = new FormData();
+        formData.append("file", editVideoFile);
+        formData.append("name", editForm.name);
+        formData.append("description", editForm.description);
+        formData.append("price", editForm.price);
+        formData.append("free", "false"); // أو حسب الحالة
+        if (editForm.photoUrl) formData.append("photoUrl", editForm.photoUrl);
 
-      await adminAPI.lessons.updateWithVideo(selectedLesson.id, formData, (progress) => setUploadProgress(progress));
-    } else {
-      // تحديث بدون فيديو
-      await adminAPI.lessons.update(selectedLesson.id, editForm);
+        await adminAPI.lessons.updateWithVideo(
+          selectedLesson.id,
+          formData,
+          (progress) => setUploadProgress(progress),
+        );
+      } else {
+        // تحديث بدون فيديو
+        await adminAPI.lessons.update(selectedLesson.id, editForm);
+      }
+
+      toast.success("تم تحديث الدرس بنجاح");
+      setShowEditModal(false);
+      setSelectedLesson(null);
+      setEditVideoFile(null); // Clear the video file state
+      fetchAllLessons();
+    } catch (error) {
+      toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
+    } finally {
+      setIsLoading(false);
+      setUploadProgress(0);
     }
-
-    toast.success("تم تحديث الدرس بنجاح");
-    setShowEditModal(false);
-    fetchAllLessons(); // إعادة تحميل الدروس
-  } catch (error) {
-    toast.error(handleAPIError(error, "فشل في تحديث الدرس"));
-  } finally {
-    setIsLoading(false);
-    setUploadProgress(0);
-  }
-};
+  };
 
   const handleDeleteLesson = async () => {
     if (!lessonToDelete) return;

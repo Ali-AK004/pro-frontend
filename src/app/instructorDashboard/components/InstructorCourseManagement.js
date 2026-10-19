@@ -418,9 +418,10 @@ const InstructorCourseManagement = () => {
               placeholder="مثال: الفيزياء - الصف الثالث الثانوي"
             />
           </Field>
-          <Field label="الوصف" hint="اختياري">
+          <Field label="الوصف" hint={`اختياري · ${courseForm.description.length.toLocaleString("ar-EG")} / ٢٠٠٠ حرف`}>
             <textarea
               rows={3}
+              maxLength={2000}
               value={courseForm.description}
               onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
               className={textareaClass}
@@ -469,9 +470,10 @@ const InstructorCourseManagement = () => {
               className={inputClass}
             />
           </Field>
-          <Field label="الوصف">
+          <Field label="الوصف" hint={`${editForm.description.length.toLocaleString("ar-EG")} / ٢٠٠٠ حرف`}>
             <textarea
               rows={3}
+              maxLength={2000}
               value={editForm.description}
               onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
               className={textareaClass}
