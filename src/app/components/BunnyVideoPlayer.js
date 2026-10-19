@@ -108,8 +108,8 @@ const BunnyVideoPlayer = ({
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement) {
         // Reset player when exiting fullscreen
-        if (containerRef.current) {
-          containerRef.current.scrollIntoView();
+        if (playerContainerRef.current) {
+          playerContainerRef.current.scrollIntoView();
         }
       }
     };

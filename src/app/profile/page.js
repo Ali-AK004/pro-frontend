@@ -395,7 +395,7 @@ const Profile = () => {
                   <div>
                     <p className="regular-14 text-gray-600">تاريخ الميلاد</p>
                     <p className="bold-14 text-gray-900">
-                      {formatDate(user?.dateOfBirth) || "لا يوجد"}
+                      {user?.dateOfBirth ? formatDate(user.dateOfBirth) : "لا يوجد"}
                     </p>
                   </div>
                 </div>

@@ -43,7 +43,7 @@ const InstructorSidebar = ({ activeTab, setActiveTab }) => {
           }
         )
         .catch(() => {}); // Ignore any errors
-      closeMenus();
+      setIsMobileMenuOpen(false);
 
       // Redirect to home page
       router.replace("/");
