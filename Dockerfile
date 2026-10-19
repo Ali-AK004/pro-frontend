@@ -3,12 +3,12 @@
 # NEXT_PUBLIC_* values and the security headers are fixed at build time, so pass them as build args:
 #   docker build --build-arg NEXT_PUBLIC_API_BASE_URL=https://academitna.online/api -t academitna-web .
 
-FROM node:22-alpine AS deps
+FROM node:26-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 ARG NEXT_PUBLIC_API_BASE_URL=https://academitna.online/api
 ARG NEXT_PUBLIC_APP_URL=https://academitna.online
@@ -24,7 +24,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-FROM node:22-alpine
+FROM node:26-alpine
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
